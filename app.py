@@ -99,34 +99,30 @@ def calc_saju(year: int, month: int, day: int, hour: int = 0):
 # ──────────────────────────────────────────────
 
 def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
-    """오행 + 설문 → 취향 프로필"""
+    """오행(내부 보정용) + 설문 → 취향 프로필"""
     total = sum(elements.values()) or 1
 
-    # 오행 비율
+    # 오행 비율 (내부 미세 보정에만 사용, 외부 노출 안 함)
     wood  = elements.get("목", 0) / total
     fire  = elements.get("화", 0) / total
     earth = elements.get("토", 0) / total
     metal = elements.get("금", 0) / total
     water = elements.get("수", 0) / total
 
-    # 설문 보정값 (0~1 범위)
-    social      = survey.get("social", 0.5)        # 외향성
-    aesthetic   = survey.get("aesthetic", 0.5)     # 심미성
-    adventurous = survey.get("adventurous", 0.5)   # 모험성
-    comfort     = survey.get("comfort", 0.5)       # 편안함
-    budget      = survey.get("budget", 0.5)        # 예산 여유
+    def blend(saju_val, survey_val, w=0.25):
+        """사주 보정값 25%, 설문값 75% 블렌딩"""
+        return round(min(1.0, max(0.0, saju_val * w + survey_val * (1 - w))), 3)
 
     return {
-        "wood":        round(wood, 3),
-        "fire":        round(fire, 3),
-        "earth":       round(earth, 3),
-        "metal":       round(metal, 3),
-        "water":       round(water, 3),
-        "social":      round((wood + fire) * 0.5 + social * 0.3, 3),
-        "aesthetic":   round((metal + water) * 0.5 + aesthetic * 0.3, 3),
-        "adventurous": round((fire + wood) * 0.4 + adventurous * 0.4, 3),
-        "comfort":     round((earth + metal) * 0.4 + comfort * 0.4, 3),
-        "budget":      round(budget, 3),
+        "social":      blend((wood + fire) * 0.5, survey.get("social", 0.5)),
+        "aesthetic":   blend((metal + water) * 0.5, survey.get("aesthetic", 0.5)),
+        "adventurous": blend((fire + wood) * 0.4 + 0.1, survey.get("adventurous", 0.5)),
+        "comfort":     blend((earth + metal) * 0.4 + 0.1, survey.get("comfort", 0.5)),
+        "budget":      round(survey.get("budget", 0.5), 3),
+        "maximalist":  round(survey.get("maximalist", 0.5), 3),
+        "energetic":   blend((fire + wood) * 0.4, survey.get("energetic", 0.5)),
+        "urban":       round(survey.get("urban", 0.5), 3),
+        "bitter":      blend(water * 0.6, survey.get("bitter", 0.5)),
     }
 
 
@@ -135,91 +131,129 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
 # ──────────────────────────────────────────────
 
 def recommend_coffee(profile: dict) -> dict:
-    water = profile["water"]
-    fire  = profile["fire"]
-    if water > 0.25:
-        return {"item": "콜드브루 블랙", "reason": "수(水) 기운이 강해 깔끔하고 깊은 맛 선호"}
-    elif fire > 0.25:
-        return {"item": "에스프레소 마키아토", "reason": "화(火) 기운으로 강렬하고 진한 맛 선호"}
+    bitter = profile.get("bitter", 0.5)
+    budget = profile.get("budget", 0.5)
+    if bitter > 0.65:
+        if budget > 0.6:
+            return {"item": "스페셜티 싱글오리진 핸드드립", "reason": "진하고 복잡한 맛을 즐기는 미식가형"}
+        return {"item": "에스프레소·아이스 아메리카노", "reason": "강하고 깔끔한 커피를 선호하는 타입"}
+    elif bitter < 0.35:
+        return {"item": "달달한 라떼·플랫화이트", "reason": "부드럽고 달콤한 풍미를 즐기는 타입"}
     else:
-        return {"item": "오트밀크 라떼", "reason": "균형 잡힌 오행으로 부드럽고 안정적인 맛 선호"}
+        if budget > 0.6:
+            return {"item": "오트밀크 라떼·콜드브루", "reason": "트렌디하고 감각적인 카페 경험을 선호"}
+        return {"item": "아이스 라떼·아메리카노", "reason": "무난하지만 믿을 수 있는 클래식한 취향"}
 
 
 def recommend_perfume(profile: dict) -> dict:
-    wood  = profile["wood"]
-    metal = profile["metal"]
-    if wood > 0.25:
-        return {"item": "그린 플로럴 계열", "reason": "목(木) 기운으로 자연스럽고 생동감 있는 향 선호"}
-    elif metal > 0.25:
-        return {"item": "머스크·우디 계열", "reason": "금(金) 기운으로 세련되고 미니멀한 향 선호"}
+    aesthetic  = profile.get("aesthetic", 0.5)
+    maximalist = profile.get("maximalist", 0.5)
+    adventurous = profile.get("adventurous", 0.5)
+    if maximalist < 0.35 and aesthetic > 0.5:
+        return {"item": "머스크·클린 미니멀 향", "reason": "정제되고 세련된 감각, 은은한 존재감을 선호"}
+    elif maximalist > 0.65:
+        return {"item": "오리엔탈·우디 레이어드 향", "reason": "풍부하고 개성 강한 향으로 존재감을 표현"}
+    elif adventurous > 0.6:
+        return {"item": "니치 퍼퓸·아방가르드 향", "reason": "남들과 다른 독특한 향기에 끌리는 탐험가 취향"}
     else:
-        return {"item": "시트러스 아쿠아틱", "reason": "균형 잡힌 오행으로 청량하고 밝은 향 선호"}
+        return {"item": "시트러스·그린 플로럴", "reason": "청량하고 자연스러운 향으로 편안한 인상"}
 
 
 def recommend_music(profile: dict) -> dict:
-    social = profile["social"]
-    calm   = 1 - social
-    if social > 0.55:
-        return {"item": "업템포 팝·일렉트로닉", "reason": "외향적 에너지가 높아 활기차고 리듬감 있는 음악 선호"}
-    elif calm > 0.55:
-        return {"item": "어쿠스틱·로파이 힙합", "reason": "내향적 에너지로 조용하고 집중력 있는 음악 선호"}
+    energetic = profile.get("energetic", 0.5)
+    social    = profile.get("social", 0.5)
+    aesthetic = profile.get("aesthetic", 0.5)
+    if energetic > 0.65 and social > 0.6:
+        return {"item": "업템포 팝·하우스·EDM", "reason": "활동적이고 사교적인 에너지에 맞는 비트"}
+    elif energetic > 0.65:
+        return {"item": "힙합·트랩·록", "reason": "강한 에너지를 혼자서도 즐기는 집중형 취향"}
+    elif aesthetic > 0.6 and energetic < 0.5:
+        return {"item": "재즈·보사노바·어쿠스틱", "reason": "감각적이고 여유로운 무드를 즐기는 타입"}
+    elif energetic < 0.35:
+        return {"item": "로파이 힙합·앰비언트", "reason": "조용하고 집중력 있는 배경음악 선호"}
     else:
-        return {"item": "인디 팝·재즈", "reason": "균형 잡힌 성향으로 다양한 장르를 즐김"}
+        return {"item": "인디 팝·얼터너티브 R&B", "reason": "감성과 에너지 사이에서 균형 잡힌 취향"}
 
 
 def recommend_restaurant(profile: dict) -> dict:
-    adventurous = profile["adventurous"]
-    comfort     = profile["comfort"]
-    if adventurous > 0.5:
-        return {"item": "에스닉 퓨전 레스토랑", "reason": "모험적 성향으로 새로운 맛과 문화 경험 선호"}
-    elif comfort > 0.5:
-        return {"item": "한식 가정식 맛집", "reason": "안정 추구 성향으로 익숙하고 편안한 음식 선호"}
+    adventurous = profile.get("adventurous", 0.5)
+    aesthetic   = profile.get("aesthetic", 0.5)
+    budget      = profile.get("budget", 0.5)
+    if adventurous > 0.65:
+        return {"item": "에스닉·퓨전 레스토랑", "reason": "새로운 맛과 문화를 탐험하는 미식 모험가"}
+    elif aesthetic > 0.65 and budget > 0.55:
+        return {"item": "분위기 좋은 파인다이닝·비스트로", "reason": "음식만큼 공간과 경험을 중요하게 여기는 타입"}
+    elif budget < 0.35:
+        return {"item": "로컬 맛집·가성비 한식", "reason": "진짜 맛을 아는 가성비 맛집 전문가"}
     else:
-        return {"item": "이탈리안 비스트로", "reason": "균형 잡힌 취향으로 클래식하지만 새로운 경험"}
+        return {"item": "이탈리안·모던 한식", "reason": "익숙하면서도 수준 있는 식사를 즐기는 타입"}
 
 
 def recommend_exercise(profile: dict) -> dict:
-    fire  = profile["fire"]
-    earth = profile["earth"]
-    if fire > 0.25:
-        return {"item": "HIIT·크로스핏", "reason": "화(火) 기운으로 강렬하고 도전적인 운동 선호"}
-    elif earth > 0.25:
-        return {"item": "요가·필라테스", "reason": "토(土) 기운으로 안정적이고 마음챙김 운동 선호"}
+    energetic = profile.get("energetic", 0.5)
+    social    = profile.get("social", 0.5)
+    urban     = profile.get("urban", 0.5)
+    if energetic > 0.7:
+        return {"item": "크로스핏·HIIT·복싱", "reason": "강렬한 자극과 도전을 즐기는 고강도 운동 타입"}
+    elif energetic > 0.5 and urban < 0.4:
+        return {"item": "등산·트레일 러닝·사이클", "reason": "자연 속에서 활동적으로 움직이는 아웃도어 타입"}
+    elif social > 0.6 and energetic > 0.4:
+        return {"item": "필라테스·클라이밍·댄스", "reason": "함께하며 성장하는 커뮤니티 운동을 선호"}
+    elif energetic < 0.35:
+        return {"item": "요가·스트레칭·산책", "reason": "몸과 마음의 균형을 챙기는 마음챙김형 운동"}
     else:
-        return {"item": "수영·사이클링", "reason": "균형 잡힌 오행으로 지속적이고 리듬감 있는 운동 선호"}
+        return {"item": "수영·헬스·러닝", "reason": "꾸준하고 안정적인 루틴 운동을 선호하는 타입"}
 
 
 def recommend_travel(profile: dict) -> dict:
-    adventurous = profile["adventurous"]
-    aesthetic   = profile["aesthetic"]
-    if adventurous > 0.5:
-        return {"item": "동남아 배낭여행·트레킹", "reason": "모험 지수 높아 미지의 자연 탐험 선호"}
-    elif aesthetic > 0.5:
-        return {"item": "유럽 예술·문화 도시 투어", "reason": "심미성 높아 아름다운 건축과 예술 선호"}
+    adventurous = profile.get("adventurous", 0.5)
+    aesthetic   = profile.get("aesthetic", 0.5)
+    urban       = profile.get("urban", 0.5)
+    budget      = profile.get("budget", 0.5)
+    if adventurous > 0.7:
+        return {"item": "동남아 배낭여행·중남미 트레킹", "reason": "예측 불가능한 모험을 즐기는 진짜 탐험가"}
+    elif aesthetic > 0.65 and urban > 0.5:
+        return {"item": "유럽 예술·건축 도시 투어", "reason": "아름다운 것을 찾아 떠나는 감성 여행자"}
+    elif urban < 0.35:
+        return {"item": "제주·규슈·뉴질랜드 자연 여행", "reason": "도시를 벗어나 자연 속 힐링을 원하는 타입"}
+    elif budget > 0.65:
+        return {"item": "럭셔리 리조트·몰디브·발리", "reason": "완벽한 휴식과 프리미엄 경험을 추구하는 타입"}
     else:
-        return {"item": "일본 소도시 온천 여행", "reason": "균형 잡힌 취향으로 편안하고 감성적인 여행 선호"}
+        return {"item": "일본 소도시·대만·포르투갈", "reason": "편안하면서도 감성적인 감각 여행을 선호"}
 
 
 def recommend_fashion(profile: dict) -> dict:
-    metal = profile["metal"]
-    wood  = profile["wood"]
-    if metal > 0.25:
-        return {"item": "미니멀 모노톤 스타일", "reason": "금(金) 기운으로 깔끔하고 정제된 패션 선호"}
-    elif wood > 0.25:
-        return {"item": "내추럴 보헤미안 스타일", "reason": "목(木) 기운으로 자연스럽고 자유로운 패션 선호"}
+    maximalist = profile.get("maximalist", 0.5)
+    aesthetic  = profile.get("aesthetic", 0.5)
+    budget     = profile.get("budget", 0.5)
+    adventurous = profile.get("adventurous", 0.5)
+    if maximalist < 0.3:
+        return {"item": "미니멀·모노톤 룩", "reason": "군더더기 없는 정제된 스타일로 세련미를 표현"}
+    elif maximalist > 0.7 and adventurous > 0.5:
+        return {"item": "스트리트·빈티지 레이어드", "reason": "개성 강한 믹스매치로 눈에 띄는 스타일링"}
+    elif aesthetic > 0.6 and budget > 0.55:
+        return {"item": "컨템포러리·디자이너 캐주얼", "reason": "감각적이고 수준 있는 아이템에 투자하는 타입"}
+    elif maximalist > 0.5:
+        return {"item": "내추럴·보헤미안 스타일", "reason": "편안하면서도 감성적인 무드를 즐기는 타입"}
     else:
-        return {"item": "캐주얼 스트리트 스타일", "reason": "균형 잡힌 취향으로 편하면서 감각적인 스타일"}
+        return {"item": "스마트 캐주얼·트렌디 베이직", "reason": "무난하지만 트렌드를 놓치지 않는 스타일"}
 
 
 def recommend_interior(profile: dict) -> dict:
-    earth = profile["earth"]
-    water = profile["water"]
-    if earth > 0.25:
-        return {"item": "웜톤 내추럴 인테리어", "reason": "토(土) 기운으로 따뜻하고 안정적인 공간 선호"}
-    elif water > 0.25:
-        return {"item": "스칸디나비안 미니멀", "reason": "수(水) 기운으로 깔끔하고 여백 있는 공간 선호"}
+    maximalist = profile.get("maximalist", 0.5)
+    urban      = profile.get("urban", 0.5)
+    aesthetic  = profile.get("aesthetic", 0.5)
+    budget     = profile.get("budget", 0.5)
+    if maximalist < 0.3 and urban > 0.5:
+        return {"item": "스칸디나비안·재패니즈 미니멀", "reason": "깔끔한 여백과 기능적 아름다움을 추구"}
+    elif maximalist > 0.65 and aesthetic > 0.5:
+        return {"item": "맥시멀리스트·보헤미안 스타일", "reason": "다양한 오브제와 텍스처로 개성 넘치는 공간"}
+    elif urban < 0.35:
+        return {"item": "우드톤·내추럴 소재 인테리어", "reason": "자연 소재로 따뜻하고 편안한 공간 구성"}
+    elif budget > 0.65 and aesthetic > 0.55:
+        return {"item": "모던 럭셔리·하이엔드 인테리어", "reason": "퀄리티 있는 소재와 감각적인 조명을 중시"}
     else:
-        return {"item": "모던 빈티지 믹스", "reason": "균형 잡힌 취향으로 개성 있고 아늑한 공간 선호"}
+        return {"item": "모던 빈티지·인더스트리얼 믹스", "reason": "트렌디하면서 개성 있는 공간을 선호"}
 
 
 def run_all_domains(profile: dict) -> dict:
@@ -256,6 +290,10 @@ def submit():
             "adventurous": float(data.get("adventurous", 0.5)),
             "comfort":     float(data.get("comfort", 0.5)),
             "budget":      float(data.get("budget", 0.5)),
+            "maximalist":  float(data.get("maximalist", 0.5)),
+            "energetic":   float(data.get("energetic", 0.5)),
+            "urban":       float(data.get("urban", 0.5)),
+            "bitter":      float(data.get("bitter", 0.5)),
         }
 
         # 생년월일 파싱
@@ -289,7 +327,6 @@ def submit():
             "status": "ok",
             "id": result_id,
             "name": name,
-            "saju": saju,
             "profile": profile,
             "results": results,
         })
