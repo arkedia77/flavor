@@ -14,6 +14,9 @@ app = Flask(__name__)
 
 DB_PATH = os.environ.get("DB_PATH", "/tmp/saju_submissions.db")
 
+# 프로필 버전 — 가중치/공식 변경 시 올릴 것 (캘리브레이션 재분석용)
+PROFILE_VERSION = "1.1"
+
 # ──────────────────────────────────────────────
 # DB 초기화
 # ──────────────────────────────────────────────
@@ -28,13 +31,24 @@ def init_db():
             birth_date TEXT,
             birth_time TEXT,
             gender TEXT,
-            elements_json TEXT,   -- 오행 원본 (캘리브레이션용)
-            survey_json TEXT,     -- 설문 응답 원본 (캘리브레이션용)
-            profile_json TEXT,    -- blend된 최종 프로필
+            elements_json TEXT,      -- 오행 원본 (캘리브레이션용)
+            raw_survey_json TEXT,    -- q1~q27 개별 응답 원본 (캘리브레이션용)
+            survey_json TEXT,        -- 9개 차원 계산값
+            profile_json TEXT,       -- blend된 최종 프로필
             results_json TEXT,
+            profile_version TEXT,    -- 버전 관리 (가중치 변경 추적용)
             created_at TEXT
         )
     """)
+    # 기존 DB 마이그레이션 — 신규 컬럼이 없으면 추가
+    for col, col_type in [
+        ("raw_survey_json", "TEXT"),
+        ("profile_version", "TEXT"),
+    ]:
+        try:
+            c.execute(f"ALTER TABLE submissions ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass  # 이미 존재하면 무시
     # 알림 테이블: 임계점 도달 기록
     c.execute("""
         CREATE TABLE IF NOT EXISTS milestones (
@@ -108,10 +122,16 @@ def calc_saju(year: int, month: int, day: int, hour: int = 0):
 # ──────────────────────────────────────────────
 
 def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
-    """오행(내부 보정용) + 설문 → 취향 프로필"""
+    """오행(내부 보정용) + 설문 → 취향 프로필
+
+    [v1.1 수정]
+    - 사주 보정값을 [0,1] 전 범위로 정규화 (기존: 최대 0.5 → 사주 기여 1/8에 불과)
+    - aesthetic 공식: 금 위주로 재조정 (금*0.7 + 수*0.3)
+    - 오행 합산 방식: wood+fire는 각 비율 합 → [0,1] 범위 보장
+    """
     total = sum(elements.values()) or 1
 
-    # 오행 비율 (내부 미세 보정에만 사용, 외부 노출 안 함)
+    # 오행 비율 (각각 0~1, 합계=1)
     wood  = elements.get("목", 0) / total
     fire  = elements.get("화", 0) / total
     earth = elements.get("토", 0) / total
@@ -119,19 +139,28 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
     water = elements.get("수", 0) / total
 
     def blend(saju_val, survey_val, w=0.25):
-        """사주 보정값 25%, 설문값 75% 블렌딩"""
+        """사주 보정값 25%, 설문값 75% 블렌딩 — saju_val은 반드시 [0,1] 범위"""
         return round(min(1.0, max(0.0, saju_val * w + survey_val * (1 - w))), 3)
 
+    # 오행 조합 → [0,1] 정규화된 사주 보정값
+    # wood+fire의 합 ≤ 1.0 (오행 비율의 합=1이므로), min(1.0, ...)은 안전장치
+    saju_social      = min(1.0, wood + fire)           # 목화: 외향, 활동적
+    saju_aesthetic   = min(1.0, metal * 0.7 + water * 0.3)  # 금 위주, 수 보조
+    saju_adventurous = min(1.0, fire + wood * 0.6)     # 화 위주, 목 보조
+    saju_comfort     = min(1.0, earth + metal)         # 토금: 안정, 지속성
+    saju_energetic   = min(1.0, fire + wood * 0.5)     # 화 위주
+    saju_bitter      = min(1.0, water * 1.5)           # 수: 쓴맛/깊은 맛 선호
+
     return {
-        "social":      blend((wood + fire) * 0.5, survey.get("social", 0.5)),
-        "aesthetic":   blend((metal + water) * 0.5, survey.get("aesthetic", 0.5)),
-        "adventurous": blend((fire + wood) * 0.4 + 0.1, survey.get("adventurous", 0.5)),
-        "comfort":     blend((earth + metal) * 0.4 + 0.1, survey.get("comfort", 0.5)),
+        "social":      blend(saju_social,      survey.get("social", 0.5)),
+        "aesthetic":   blend(saju_aesthetic,   survey.get("aesthetic", 0.5)),
+        "adventurous": blend(saju_adventurous, survey.get("adventurous", 0.5)),
+        "comfort":     blend(saju_comfort,     survey.get("comfort", 0.5)),
         "budget":      round(survey.get("budget", 0.5), 3),
         "maximalist":  round(survey.get("maximalist", 0.5), 3),
-        "energetic":   blend((fire + wood) * 0.4, survey.get("energetic", 0.5)),
+        "energetic":   blend(saju_energetic,   survey.get("energetic", 0.5)),
         "urban":       round(survey.get("urban", 0.5), 3),
-        "bitter":      blend(water * 0.6, survey.get("bitter", 0.5)),
+        "bitter":      blend(saju_bitter,      survey.get("bitter", 0.5)),
     }
 
 
@@ -140,16 +169,21 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
 # ──────────────────────────────────────────────
 
 def recommend_coffee(profile: dict) -> dict:
-    bitter = profile.get("bitter", 0.5)
-    budget = profile.get("budget", 0.5)
+    bitter  = profile.get("bitter", 0.5)
+    budget  = profile.get("budget", 0.5)
+    comfort = profile.get("comfort", 0.5)
     if bitter > 0.65:
         if budget > 0.6:
             return {"item": "스페셜티 싱글오리진 핸드드립", "reason": "진하고 복잡한 맛을 즐기는 미식가형"}
         return {"item": "에스프레소·아이스 아메리카노", "reason": "강하고 깔끔한 커피를 선호하는 타입"}
     elif bitter < 0.35:
+        if comfort > 0.65:
+            return {"item": "카페라떼·바닐라라떼", "reason": "부드럽고 달콤한, 언제나 변함없이 믿는 메뉴"}
         return {"item": "달달한 라떼·플랫화이트", "reason": "부드럽고 달콤한 풍미를 즐기는 타입"}
     else:
         if budget > 0.6:
+            if comfort < 0.35:
+                return {"item": "스페셜티 콜드브루·블랙워터", "reason": "새로운 커피 경험을 찾는 감각적인 탐험가"}
             return {"item": "오트밀크 라떼·콜드브루", "reason": "트렌디하고 감각적인 카페 경험을 선호"}
         return {"item": "아이스 라떼·아메리카노", "reason": "무난하지만 믿을 수 있는 클래식한 취향"}
 
@@ -188,12 +222,15 @@ def recommend_restaurant(profile: dict) -> dict:
     adventurous = profile.get("adventurous", 0.5)
     aesthetic   = profile.get("aesthetic", 0.5)
     budget      = profile.get("budget", 0.5)
+    comfort     = profile.get("comfort", 0.5)
     if adventurous > 0.65:
         return {"item": "에스닉·퓨전 레스토랑", "reason": "새로운 맛과 문화를 탐험하는 미식 모험가"}
     elif aesthetic > 0.65 and budget > 0.55:
         return {"item": "분위기 좋은 파인다이닝·비스트로", "reason": "음식만큼 공간과 경험을 중요하게 여기는 타입"}
     elif budget < 0.35:
         return {"item": "로컬 맛집·가성비 한식", "reason": "진짜 맛을 아는 가성비 맛집 전문가"}
+    elif comfort > 0.65:
+        return {"item": "단골 한식집·동네 맛집", "reason": "익숙하고 편안한 곳에서 제대로 된 한 끼를 즐기는 타입"}
     else:
         return {"item": "이탈리안·모던 한식", "reason": "익숙하면서도 수준 있는 식사를 즐기는 타입"}
 
@@ -202,6 +239,7 @@ def recommend_exercise(profile: dict) -> dict:
     energetic = profile.get("energetic", 0.5)
     social    = profile.get("social", 0.5)
     urban     = profile.get("urban", 0.5)
+    comfort   = profile.get("comfort", 0.5)
     if energetic > 0.7:
         return {"item": "크로스핏·HIIT·복싱", "reason": "강렬한 자극과 도전을 즐기는 고강도 운동 타입"}
     elif energetic > 0.5 and urban < 0.4:
@@ -210,6 +248,8 @@ def recommend_exercise(profile: dict) -> dict:
         return {"item": "필라테스·클라이밍·댄스", "reason": "함께하며 성장하는 커뮤니티 운동을 선호"}
     elif energetic < 0.35:
         return {"item": "요가·스트레칭·산책", "reason": "몸과 마음의 균형을 챙기는 마음챙김형 운동"}
+    elif comfort > 0.65:
+        return {"item": "홈트·수영·꾸준한 헬스", "reason": "익숙한 루틴으로 꾸준히 이어가는 안정형 운동"}
     else:
         return {"item": "수영·헬스·러닝", "reason": "꾸준하고 안정적인 루틴 운동을 선호하는 타입"}
 
@@ -219,6 +259,7 @@ def recommend_travel(profile: dict) -> dict:
     aesthetic   = profile.get("aesthetic", 0.5)
     urban       = profile.get("urban", 0.5)
     budget      = profile.get("budget", 0.5)
+    comfort     = profile.get("comfort", 0.5)
     if adventurous > 0.7:
         return {"item": "동남아 배낭여행·중남미 트레킹", "reason": "예측 불가능한 모험을 즐기는 진짜 탐험가"}
     elif aesthetic > 0.65 and urban > 0.5:
@@ -227,6 +268,8 @@ def recommend_travel(profile: dict) -> dict:
         return {"item": "제주·규슈·뉴질랜드 자연 여행", "reason": "도시를 벗어나 자연 속 힐링을 원하는 타입"}
     elif budget > 0.65:
         return {"item": "럭셔리 리조트·몰디브·발리", "reason": "완벽한 휴식과 프리미엄 경험을 추구하는 타입"}
+    elif comfort > 0.65:
+        return {"item": "일본·대만 꼼꼼 자유여행", "reason": "안전하고 친숙한 환경에서 여유 있게 즐기는 타입"}
     else:
         return {"item": "일본 소도시·대만·포르투갈", "reason": "편안하면서도 감성적인 감각 여행을 선호"}
 
@@ -349,7 +392,7 @@ def calibration_data():
     c = conn.cursor()
     c.execute("""
         SELECT id, birth_date, birth_time, gender,
-               elements_json, survey_json, created_at
+               elements_json, raw_survey_json, survey_json, profile_version, created_at
         FROM submissions ORDER BY created_at ASC
     """)
     rows = c.fetchall()
@@ -359,6 +402,7 @@ def calibration_data():
 
     return jsonify({
         "total": total,
+        "profile_version": PROFILE_VERSION,
         "calibration_thresholds": CALIBRATION_THRESHOLDS,
         "next_threshold": next((m for m in [50, 200, 500] if m > total), None),
         "data": [{
@@ -367,8 +411,10 @@ def calibration_data():
             "birth_time": r[2],
             "gender": r[3],
             "elements": json.loads(r[4]) if r[4] else {},
-            "survey": json.loads(r[5]) if r[5] else {},
-            "created_at": r[6],
+            "raw_answers": json.loads(r[5]) if r[5] else {},   # q1~q27 원본
+            "survey": json.loads(r[6]) if r[6] else {},
+            "profile_version": r[7],
+            "created_at": r[8],
         } for r in rows]
     })
 
@@ -387,7 +433,10 @@ def submit():
         birth_time = data.get("birth_time", "12") # 시 (0~23), 기본값 낮 12시
         gender     = data.get("gender", "unknown")
 
-        # 설문 응답 파싱 (0~1 범위로 정규화)
+        # q1~q27 원본 개별 응답 저장 (캘리브레이션·재분석용)
+        raw_answers = data.get("raw_answers", {})
+
+        # 설문 응답 파싱 (0~1 범위로 정규화된 9개 차원)
         survey = {
             "social":      float(data.get("social", 0.5)),
             "aesthetic":   float(data.get("aesthetic", 0.5)),
@@ -416,14 +465,17 @@ def submit():
         c = conn.cursor()
         c.execute("""
             INSERT INTO submissions (id, name, birth_date, birth_time, gender,
-                                     elements_json, survey_json, profile_json, results_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     elements_json, raw_survey_json, survey_json,
+                                     profile_json, results_json, profile_version, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             result_id, name, birth_date, birth_time, gender,
-            json.dumps(saju["elements"], ensure_ascii=False),  # 오행 원본
-            json.dumps(survey, ensure_ascii=False),             # 설문 원본
-            json.dumps(profile, ensure_ascii=False),
+            json.dumps(saju["elements"], ensure_ascii=False),   # 오행 원본
+            json.dumps(raw_answers, ensure_ascii=False),        # q1~q27 원본
+            json.dumps(survey, ensure_ascii=False),             # 9개 차원 계산값
+            json.dumps(profile, ensure_ascii=False),            # blend된 최종 프로필
             json.dumps(results, ensure_ascii=False),
+            PROFILE_VERSION,
             datetime.now().isoformat()
         ))
 

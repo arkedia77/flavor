@@ -121,7 +121,7 @@
   <div id="survey">
     <div class="hero">
       <h1>나의 취향을<br><span>정확하게</span> 찾아드려요</h1>
-      <p>25개 질문 · 약 3분</p>
+      <p>27개 질문 · 약 3분</p>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
 
@@ -485,6 +485,33 @@
       </div>
     </div>
 
+    <!-- 안정감 & 루틴 (comfort 독립 측정) -->
+    <div class="section">
+      <div class="section-label">안정감 &amp; 루틴</div>
+
+      <div class="question">
+        <div class="question-num">Q26</div>
+        <p>낯선 환경이나 새로운 상황에서 나는?</p>
+        <div class="options">
+          <div class="option-item"><input type="radio" name="q26" id="q26a" value="0.9"><label for="q26a">많이 불편하고 적응에 시간이 걸려요</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26b" value="0.6"><label for="q26b">좀 불편하지만 곧 적응해요</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26c" value="0.3"><label for="q26c">금방 익숙해지는 편이에요</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26d" value="0.1"><label for="q26d">오히려 설레고 즐거워요</label></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <div class="question-num">Q27</div>
+        <p>여행이나 외출 전 나는?</p>
+        <div class="options">
+          <div class="option-item"><input type="radio" name="q27" id="q27a" value="0.1"><label for="q27a">완전 즉흥파, 계획 없이 나가요</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27b" value="0.4"><label for="q27b">대략적인 방향만 잡아요</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27c" value="0.7"><label for="q27c">어느 정도 계획을 세워요</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27d" value="0.95"><label for="q27d">꼼꼼하게 다 계획해요</label></div>
+        </div>
+      </div>
+    </div>
+
     <button class="btn-submit" id="submitBtn" onclick="submitSurvey()">✨ 나의 취향 분석하기</button>
   </div>
 
@@ -527,12 +554,13 @@ const API_BASE = window.location.origin;
 })();
 
 /* ── 진행바 업데이트 ── */
+const TOTAL_QUESTIONS = 27;
 document.querySelectorAll('input[type=radio]').forEach(el => {
   el.addEventListener('change', () => {
     const answered = new Set(
       [...document.querySelectorAll('input[type=radio]:checked')].map(e => e.name)
     ).size;
-    document.getElementById('progress').style.width = (answered / 25 * 100) + '%';
+    document.getElementById('progress').style.width = (answered / TOTAL_QUESTIONS * 100) + '%';
   });
 });
 
@@ -550,7 +578,8 @@ function computeProfile() {
   const adventurous = clamp(avg(q('q13'), q('q21'), q('q22'), q('q23')));
   const aesthetic   = clamp(avg(q('q14'), q('q9') * 0.7 + 0.1, q('q24'), q('q10') * 0.5 + 0.2));
   const budget      = clamp(q('q25'));
-  const comfort     = clamp(1 - adventurous * 0.6);
+  // comfort: Q26·Q27으로 독립 측정 (이전: adventurous 역산 → 수정됨)
+  const comfort     = clamp(avg(q('q26'), q('q27')));
   const maximalist  = clamp(avg(q('q6'), q('q7'), q('q11') * 0.8, q('q10') * 0.6));
   const energetic   = clamp(avg(q('q19'), q('q20') * 0.6 + 0.1, q('q4') * 0.5 + 0.2, q('q3') * 0.4 + 0.2));
   const urban       = clamp(q('q8'));
@@ -568,7 +597,7 @@ function getPersonalityTags(p) {
   if (p.maximalist < 0.35)       tags.push("미니멀리스트");
   else if (p.maximalist > 0.65)  tags.push("감성 충만");
   if (p.adventurous > 0.65)      tags.push("탐험가");
-  else if (p.adventurous < 0.35) tags.push("안정주의자");
+  else if (p.comfort > 0.65)     tags.push("안정주의자");
   if (p.aesthetic > 0.65)        tags.push("감각적인");
   if (p.urban > 0.65)            tags.push("도시인");
   else if (p.urban < 0.35)       tags.push("자연친화적");
@@ -599,7 +628,15 @@ async function submitSurvey() {
   btn.disabled = true; btn.textContent = '분석 중...';
 
   const profile = computeProfile();
-  const payload = { name, birth_date, gender, ...profile };
+
+  // q1~q27 원본값 수집 (캘리브레이션·재분석용)
+  const raw_answers = {};
+  for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+    const el = document.querySelector(`input[name="q${i}"]:checked`);
+    raw_answers[`q${i}`] = el ? parseFloat(el.value) : null;
+  }
+
+  const payload = { name, birth_date, gender, raw_answers, ...profile };
 
   try {
     const resp = await fetch(`${API_BASE}/api/submit`, {
