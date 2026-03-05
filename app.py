@@ -655,18 +655,114 @@ def result_page(result_id):
     if not row:
         return "결과를 찾을 수 없습니다.", 404
 
-    _, name, birth_date, birth_time, gender, profile_json, results_json, created_at = row
-    profile = json.loads(profile_json)
-    results = json.loads(results_json)
+    # 컬럼: id, name, birth_date, birth_time, gender,
+    #        elements_json, raw_survey_json, survey_json,
+    #        profile_json, results_json, profile_version, created_at
+    (rid, name, birth_date, birth_time, gender,
+     elements_json, raw_survey_json, survey_json,
+     profile_json, results_json, profile_version, created_at) = row
 
-    return jsonify({
-        "id": result_id,
-        "name": name,
-        "birth_date": birth_date,
-        "profile": profile,
-        "results": results,
-        "created_at": created_at
-    })
+    profile = json.loads(profile_json) if profile_json else {}
+    results = json.loads(results_json) if results_json else {}
+
+    DOMAIN_EMOJI = {
+        "커피": "☕", "향수": "🌸", "음악": "🎵", "식당": "🍽️",
+        "운동": "🏃", "여행": "✈️", "패션": "👗", "인테리어": "🏠"
+    }
+
+    cards_html = ""
+    for domain, rec in results.items():
+        emoji = DOMAIN_EMOJI.get(domain, "✨")
+        desc_html = f'<div class="d-description">"{rec.get("description","")}"</div>' if rec.get("description") else ""
+        cards_html += f"""
+        <div class="domain-card">
+          <div class="d-emoji">{emoji}</div>
+          <div class="d-label">{domain}</div>
+          <div class="d-item">{rec.get('item','')}</div>
+          <div class="d-reason">{rec.get('reason','')}</div>
+          {desc_html}
+        </div>"""
+
+    share_url = f"https://flavor.arkedia.work/result/{result_id}"
+
+    html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="{name}의 사주 취향 분석 결과">
+<meta property="og:description" content="나의 사주로 분석한 취향 — 커피·향수·음악·여행·패션까지">
+<meta property="og:url" content="{share_url}">
+<title>{name}의 취향 분석 결과</title>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ background: #0d0d1a; color: #e8e8f0; font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; min-height: 100vh; }}
+  .container {{ max-width: 480px; margin: 0 auto; padding: 24px 16px 80px; }}
+  .hero {{ text-align: center; padding: 32px 0 24px; }}
+  .hero .badge {{ display: inline-block; font-size: 0.75rem; color: #ff8906; border: 1px solid #ff890644; border-radius: 20px; padding: 4px 14px; margin-bottom: 14px; }}
+  .hero h1 {{ font-size: 1.5rem; font-weight: 800; line-height: 1.3; }}
+  .hero h1 span {{ color: #ff8906; }}
+  .hero p {{ font-size: 0.85rem; color: #a7a9be; margin-top: 8px; }}
+  .domain-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }}
+  .domain-card {{ background: #16162a; border-radius: 16px; padding: 16px; }}
+  .domain-card .d-emoji {{ font-size: 1.3rem; margin-bottom: 6px; }}
+  .domain-card .d-label {{ font-size: 0.72rem; color: #a7a9be; margin-bottom: 4px; }}
+  .domain-card .d-item {{ font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }}
+  .domain-card .d-reason {{ font-size: 0.79rem; color: #a7a9be; line-height: 1.4; }}
+  .domain-card .d-description {{ font-size: 0.76rem; color: #ff890699; line-height: 1.4; margin-top: 6px; font-style: italic; }}
+  .cta-box {{ background: #16162a; border-radius: 20px; padding: 24px 20px; margin-top: 20px; text-align: center; }}
+  .cta-box p {{ font-size: 0.88rem; color: #a7a9be; margin-bottom: 16px; line-height: 1.6; }}
+  .btn-try {{
+    display: block; width: 100%; height: 54px; line-height: 54px;
+    background: linear-gradient(135deg, #ff8906, #ff6b35);
+    color: #fff; font-weight: 800; font-size: 1rem;
+    border-radius: 14px; text-decoration: none;
+    border: none; cursor: pointer; font-family: inherit;
+  }}
+  .btn-share {{
+    display: block; width: 100%; height: 46px; line-height: 46px;
+    background: transparent; color: #a7a9be; font-size: 0.88rem;
+    border: 1.5px solid #2a2a45; border-radius: 12px;
+    cursor: pointer; margin-top: 10px; font-family: inherit;
+  }}
+  .btn-share:active {{ border-color: #ff8906; color: #ff8906; }}
+  .copied {{ color: #4ade80 !important; border-color: #4ade80 !important; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <div class="badge">✨ 사주 취향 분석</div>
+    <h1><span>{name}</span>님의<br>취향 지도</h1>
+    <p>사주 오행 × 27가지 질문으로 분석한 결과</p>
+  </div>
+
+  <div class="domain-grid">
+    {cards_html}
+  </div>
+
+  <div class="cta-box">
+    <p>나의 사주로 분석한 취향이 궁금하다면?<br>커피부터 인테리어까지, 27가지 질문으로 알아보세요 👇</p>
+    <a class="btn-try" href="/survey">나도 취향 분석하기</a>
+    <button class="btn-share" onclick="copyLink()">🔗 링크 복사해서 공유하기</button>
+  </div>
+</div>
+<script>
+function copyLink() {{
+  navigator.clipboard.writeText('{share_url}').then(() => {{
+    const btn = document.querySelector('.btn-share');
+    btn.textContent = '✅ 복사됐어요!';
+    btn.classList.add('copied');
+    setTimeout(() => {{
+      btn.textContent = '🔗 링크 복사해서 공유하기';
+      btn.classList.remove('copied');
+    }}, 2000);
+  }});
+}}
+</script>
+</body>
+</html>"""
+    return html, 200, {{"Content-Type": "text/html; charset=utf-8"}}
 
 
 @app.route("/api/feedback", methods=["POST"])
