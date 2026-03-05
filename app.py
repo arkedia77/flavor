@@ -782,7 +782,7 @@ def result_page(result_id):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta property="og:title" content="{name}의 취향 유형: {ptype} {pemoji}">
-<meta property="og:description" content="{ptagline} — 사주 × 27문항 취향 분석">
+<meta property="og:description" content="{ptagline} — 생년월일 × 27문항 취향 분석">
 <meta property="og:url" content="{share_url}">
 <title>{name}의 취향 유형: {ptype}</title>
 <style>
@@ -984,12 +984,12 @@ body {{
 
   <!-- HERO: 취향 유형 -->
   <div class="hero">
-    <div class="hero-badge">✦ 사주 취향 분석</div>
+    <div class="hero-badge">✦ 취향 유형 분석</div>
     <span class="type-emoji">{pemoji}</span>
     <div class="type-name">{ptype}</div>
     <div class="type-tagline">"{ptagline}"</div>
     <div class="type-detail">{pdetail}</div>
-    <div class="hero-name-line">사주 오행 × 27문항 — <strong>{name}</strong>님의 결과</div>
+    <div class="hero-name-line">생년월일 × 27문항 — <strong>{name}</strong>님의 결과</div>
   </div>
 
   <!-- DOMAIN CARDS -->
@@ -1001,7 +1001,7 @@ body {{
   <!-- CTA -->
   <div class="cta-box">
     <div class="cta-lead">내 취향 유형은 뭘까? 🤔</div>
-    <div class="cta-sub">사주 오행 × 27가지 질문<br>커피부터 인테리어까지 분석해드려요</div>
+    <div class="cta-sub">생년월일 × 27가지 질문<br>커피부터 인테리어까지 분석해드려요</div>
     <a class="btn-primary" href="/survey">👉 나도 취향 분석하기 (무료)</a>
     <button class="btn-secondary" id="btn-share" onclick="copyLink()">🔗 이 결과 공유하기</button>
   </div>
