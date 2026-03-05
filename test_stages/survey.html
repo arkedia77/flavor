@@ -112,6 +112,12 @@
   .share-box { background: #16162a; border-radius: 16px; padding: 18px; margin-top: 14px; text-align: center; }
   .share-box p { font-size: 0.84rem; color: #a7a9be; margin-bottom: 8px; }
   .share-url { font-size: 0.81rem; color: #ff8906; word-break: break-all; }
+  .btn-copy {
+    width: 100%; height: 50px; background: linear-gradient(135deg, #ff8906, #ff6b35);
+    color: #fff; font-weight: 800; font-size: 0.95rem;
+    border: none; border-radius: 12px; cursor: pointer; font-family: inherit;
+  }
+  .btn-copy.copied { background: #4ade80; }
   .btn-again {
     width: 100%; height: 50px; background: transparent; color: #a7a9be;
     border: 1.5px solid #2a2a45; border-radius: 12px; font-size: 0.93rem;
@@ -539,8 +545,9 @@
     </div>
     <div class="domain-grid" id="domain-results"></div>
     <div class="share-box">
-      <p>결과 링크 공유하기</p>
-      <div class="share-url" id="share-url">저장 중...</div>
+      <p>친구에게 결과 공유하기 👇</p>
+      <button class="btn-copy" id="btn-copy" onclick="copyShareUrl()">🔗 링크 복사하기</button>
+      <div class="share-url" id="share-url" style="display:none"></div>
     </div>
     <button class="btn-again" onclick="location.reload()">↩ 다시 분석하기</button>
   </div>
@@ -703,9 +710,32 @@ function showResult(data, profile) {
     grid.appendChild(card);
   });
 
-  document.getElementById('share-url').textContent =
-    data.id ? `${API_BASE}/result/${data.id}` : '(링크 저장 안됨)';
+  const shareUrl = data.id ? `${API_BASE}/result/${data.id}` : '';
+  document.getElementById('share-url').textContent = shareUrl;
+  if (!shareUrl) {
+    document.getElementById('btn-copy').textContent = '(링크 저장 안됨)';
+    document.getElementById('btn-copy').disabled = true;
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyShareUrl() {
+  const url = document.getElementById('share-url').textContent;
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = '✅ 복사됐어요! 친구에게 보내세요';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '🔗 링크 복사하기';
+      btn.classList.remove('copied');
+    }, 2500);
+  }).catch(() => {
+    // 클립보드 실패 시 URL 직접 보여주기
+    const shareDiv = document.getElementById('share-url');
+    shareDiv.style.display = 'block';
+    shareDiv.style.marginTop = '8px';
+  });
 }
 
 async function sendFeedback(btn, submissionId, domain, thumb) {
