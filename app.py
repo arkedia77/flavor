@@ -28,9 +28,18 @@ def init_db():
             birth_date TEXT,
             birth_time TEXT,
             gender TEXT,
-            profile_json TEXT,
+            elements_json TEXT,   -- 오행 원본 (캘리브레이션용)
+            survey_json TEXT,     -- 설문 응답 원본 (캘리브레이션용)
+            profile_json TEXT,    -- blend된 최종 프로필
             results_json TEXT,
             created_at TEXT
+        )
+    """)
+    # 알림 테이블: 임계점 도달 기록
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS milestones (
+            milestone INTEGER PRIMARY KEY,
+            reached_at TEXT
         )
     """)
     conn.commit()
@@ -270,6 +279,101 @@ def run_all_domains(profile: dict) -> dict:
 
 
 # ──────────────────────────────────────────────
+# 임계점 알림 (agent-comm push)
+# ──────────────────────────────────────────────
+
+AGENT_COMM = os.environ.get("AGENT_COMM_PATH", os.path.expanduser("~/agent-comm"))
+CALIBRATION_THRESHOLDS = {
+    50:  "방향성 확인 — 오행-차원 상관관계 양/음 검증 가능",
+    200: "1차 파라미터 보정 — blend 가중치 및 계수 재보정 가능",
+    500: "레이어 구조 재설계 — 회귀분석 기반 파라미터 도출 가능",
+}
+
+def _notify_milestone(milestone: int, total: int):
+    """임계점 도달 시 flavor/tasks/에 JSON push"""
+    try:
+        import subprocess
+        from datetime import datetime as dt
+
+        tasks_dir = os.path.join(AGENT_COMM, "flavor", "tasks")
+        if not os.path.isdir(tasks_dir):
+            return
+
+        ts = dt.now().strftime("%Y%m%d_%H%M%S")
+        fname = f"{ts}_flavor_reklvm_calibration_milestone_{milestone}.json"
+        payload = {
+            "id": f"{ts}_flavor_reklvm_calibration_milestone_{milestone}",
+            "from": "flavor",
+            "to": "reklvm",
+            "project": "flavor",
+            "task": "calibration_alert",
+            "status": "pending",
+            "created_at": dt.now().isoformat(),
+            "message": f"설문 {milestone}명 도달! 레이어1-4 캘리브레이션 분석 요청",
+            "payload": {
+                "total_submissions": total,
+                "milestone": milestone,
+                "note": CALIBRATION_THRESHOLDS.get(milestone, ""),
+                "data_endpoint": "/api/calibration-data",
+            }
+        }
+        fpath = os.path.join(tasks_dir, fname)
+        with open(fpath, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+
+        subprocess.run(
+            ["git", "-C", AGENT_COMM, "add", f"flavor/tasks/{fname}"],
+            capture_output=True
+        )
+        subprocess.run(
+            ["git", "-C", AGENT_COMM, "commit", "-m",
+             f"alert: flavor→reklvm 설문 {milestone}명 도달, 캘리브레이션 요청"],
+            capture_output=True
+        )
+        subprocess.run(
+            ["git", "-C", AGENT_COMM, "push", "origin", "main"],
+            capture_output=True
+        )
+    except Exception as e:
+        app.logger.warning(f"milestone notify failed: {e}")
+
+
+# ──────────────────────────────────────────────
+# 캘리브레이션용 raw 데이터 엔드포인트
+# ──────────────────────────────────────────────
+
+@app.route("/api/calibration-data")
+def calibration_data():
+    """오행 원본 + 설문 원본 — 레이어1-4 파라미터 분석용"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, birth_date, birth_time, gender,
+               elements_json, survey_json, created_at
+        FROM submissions ORDER BY created_at ASC
+    """)
+    rows = c.fetchall()
+    c.execute("SELECT COUNT(*) FROM submissions")
+    total = c.fetchone()[0]
+    conn.close()
+
+    return jsonify({
+        "total": total,
+        "calibration_thresholds": CALIBRATION_THRESHOLDS,
+        "next_threshold": next((m for m in [50, 200, 500] if m > total), None),
+        "data": [{
+            "id": r[0],
+            "birth_date": r[1],
+            "birth_time": r[2],
+            "gender": r[3],
+            "elements": json.loads(r[4]) if r[4] else {},
+            "survey": json.loads(r[5]) if r[5] else {},
+            "created_at": r[6],
+        } for r in rows]
+    })
+
+
+# ──────────────────────────────────────────────
 # API 라우트
 # ──────────────────────────────────────────────
 
@@ -312,16 +416,35 @@ def submit():
         c = conn.cursor()
         c.execute("""
             INSERT INTO submissions (id, name, birth_date, birth_time, gender,
-                                     profile_json, results_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                     elements_json, survey_json, profile_json, results_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             result_id, name, birth_date, birth_time, gender,
+            json.dumps(saju["elements"], ensure_ascii=False),  # 오행 원본
+            json.dumps(survey, ensure_ascii=False),             # 설문 원본
             json.dumps(profile, ensure_ascii=False),
             json.dumps(results, ensure_ascii=False),
             datetime.now().isoformat()
         ))
+
+        # 임계점 도달 체크 (50, 200, 500명)
+        c.execute("SELECT COUNT(*) FROM submissions")
+        total = c.fetchone()[0]
+        milestone_hit = None
+        for m in [50, 200, 500]:
+            if total >= m:
+                c.execute("SELECT 1 FROM milestones WHERE milestone=?", (m,))
+                if not c.fetchone():
+                    c.execute("INSERT INTO milestones VALUES (?, ?)",
+                              (m, datetime.now().isoformat()))
+                    milestone_hit = m
+
         conn.commit()
         conn.close()
+
+        # 임계점 도달 시 agent-comm으로 알림 push
+        if milestone_hit:
+            _notify_milestone(milestone_hit, total)
 
         return jsonify({
             "status": "ok",
