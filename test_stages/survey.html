@@ -80,13 +80,62 @@
 
   /* 결과 화면 */
   #result { display: none; }
-  .result-hero { text-align: center; padding: 30px 0 20px; }
-  .result-hero .name { font-size: 1.5rem; font-weight: 700; }
-  .result-hero .tagline { color: #a7a9be; margin-top: 6px; font-size: 0.9rem; }
-  .profile-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+  /* ─── result hero: 취향 타입 ─── */
+  .result-hero {
+    text-align: center;
+    padding: 36px 20px 24px;
+    background: linear-gradient(180deg, #13132b 0%, #0d0d1a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; left: 50%;
+    transform: translateX(-50%);
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(255,137,6,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .type-emoji-hero {
+    font-size: 3.8rem;
+    line-height: 1;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(255,137,6,0.5));
+  }
+  .type-name-hero {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+  .type-tagline-hero {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ff8906;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .type-detail-hero {
+    font-size: 0.84rem;
+    color: #7777aa;
+    line-height: 1.7;
+    max-width: 300px;
+    margin: 0 auto 16px;
+  }
+  .result-name-sub {
+    font-size: 0.78rem;
+    color: #444466;
+    margin-bottom: 12px;
+  }
+  .result-name-sub strong { color: #8888aa; font-weight: 600; }
+  .profile-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .profile-tag {
-    padding: 6px 16px; border-radius: 20px; font-size: 0.83rem; font-weight: 600;
-    background: #1a1a2e; border: 1.5px solid #ff890666; color: #ff8906;
+    padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+    background: rgba(255,137,6,0.08); border: 1px solid rgba(255,137,6,0.25); color: #ff8906;
   }
   .domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
   .domain-card { background: #16162a; border-radius: 16px; padding: 16px; }
@@ -539,13 +588,16 @@
   <!-- 결과 -->
   <div id="result">
     <div class="result-hero">
-      <div class="name" id="result-name"></div>
-      <div class="tagline">님의 취향 프로필이 완성됐어요</div>
+      <span class="type-emoji-hero" id="type-emoji-hero">✨</span>
+      <div class="type-name-hero" id="type-name-hero">취향 분석 중</div>
+      <div class="type-tagline-hero" id="type-tagline-hero"></div>
+      <div class="type-detail-hero" id="type-detail-hero"></div>
+      <div class="result-name-sub">사주 오행 × 27문항 — <strong id="result-name"></strong>님의 결과</div>
       <div class="profile-tags" id="profile-tags"></div>
     </div>
     <div class="domain-grid" id="domain-results"></div>
     <div class="share-box">
-      <p>친구에게 결과 공유하기 👇</p>
+      <p>이 결과 친구한테 보내보기 👇</p>
       <button class="btn-copy" id="btn-copy" onclick="copyShareUrl()">🔗 링크 복사하기</button>
       <div class="share-url" id="share-url" style="display:none"></div>
     </div>
@@ -682,6 +734,15 @@ function showResult(data, profile) {
   document.getElementById('survey').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   document.getElementById('result-name').textContent = data.name;
+
+  // 취향 타입 표시
+  if (data.personality) {
+    const pt = data.personality;
+    document.getElementById('type-emoji-hero').textContent = pt.emoji || '✨';
+    document.getElementById('type-name-hero').textContent = pt.type || '';
+    document.getElementById('type-tagline-hero').textContent = pt.tagline ? `"${pt.tagline}"` : '';
+    document.getElementById('type-detail-hero').textContent = pt.detail || '';
+  }
 
   const tags = getPersonalityTags(profile);
   document.getElementById('profile-tags').innerHTML =
