@@ -94,6 +94,21 @@
   .domain-card .d-label { font-size: 0.72rem; color: #a7a9be; margin-bottom: 4px; }
   .domain-card .d-item { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
   .domain-card .d-reason { font-size: 0.79rem; color: #a7a9be; line-height: 1.4; }
+  .domain-card .d-description {
+    font-size: 0.76rem; color: #ff890699; line-height: 1.4;
+    margin-top: 6px; font-style: italic;
+  }
+  .thumb-row {
+    display: flex; gap: 6px; margin-top: 10px;
+  }
+  .thumb-btn {
+    flex: 1; padding: 5px 0; border-radius: 8px; border: 1.5px solid #2a2a45;
+    background: transparent; color: #a7a9be; font-size: 0.9rem;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .thumb-btn:active { transform: scale(0.95); }
+  .thumb-btn.up.active   { border-color: #4ade80; color: #4ade80; background: #4ade8011; }
+  .thumb-btn.down.active { border-color: #f87171; color: #f87171; background: #f8717111; }
   .share-box { background: #16162a; border-radius: 16px; padding: 18px; margin-top: 14px; text-align: center; }
   .share-box p { font-size: 0.84rem; color: #a7a9be; margin-bottom: 8px; }
   .share-url { font-size: 0.81rem; color: #ff8906; word-break: break-all; }
@@ -667,20 +682,49 @@ function showResult(data, profile) {
 
   const grid = document.getElementById('domain-results');
   grid.innerHTML = '';
+  const submissionId = data.id || null;
   Object.entries(data.results).forEach(([domain, rec]) => {
     const card = document.createElement('div');
     card.className = 'domain-card';
+    const descHtml = rec.description
+      ? `<div class="d-description">"${rec.description}"</div>` : '';
+    const thumbHtml = submissionId ? `
+      <div class="thumb-row">
+        <button class="thumb-btn up"   onclick="sendFeedback(this,'${submissionId}','${domain}',1)">👍 맞아요</button>
+        <button class="thumb-btn down" onclick="sendFeedback(this,'${submissionId}','${domain}',-1)">👎 아닌데요</button>
+      </div>` : '';
     card.innerHTML = `
       <div class="d-emoji">${DOMAIN_EMOJI[domain] || '✨'}</div>
       <div class="d-label">${domain}</div>
       <div class="d-item">${rec.item}</div>
-      <div class="d-reason">${rec.reason}</div>`;
+      <div class="d-reason">${rec.reason}</div>
+      ${descHtml}
+      ${thumbHtml}`;
     grid.appendChild(card);
   });
 
   document.getElementById('share-url').textContent =
     data.id ? `${API_BASE}/result/${data.id}` : '(링크 저장 안됨)';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function sendFeedback(btn, submissionId, domain, thumb) {
+  // 같은 카드의 두 버튼 가져오기
+  const row = btn.closest('.thumb-row');
+  const buttons = row.querySelectorAll('.thumb-btn');
+  // 이미 눌렸으면 무시
+  if (btn.classList.contains('active')) return;
+  // 활성화
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // API 전송 (실패해도 UI는 반영)
+  try {
+    await fetch(`${API_BASE}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ submission_id: submissionId, domain, thumb })
+    });
+  } catch (e) { /* 네트워크 오류 무시 */ }
 }
 
 function showOfflineResult(payload, profile) {
