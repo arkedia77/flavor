@@ -341,6 +341,13 @@ def health():
     return jsonify({"status": "ok", "service": "flavor-saju"})
 
 
+@app.route("/survey")
+def survey():
+    survey_path = os.path.join(os.path.dirname(__file__), "test_stages", "survey.html")
+    with open(survey_path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 @app.route("/")
 def index():
     return """<!DOCTYPE html>
