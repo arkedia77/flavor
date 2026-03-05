@@ -648,19 +648,14 @@ def submit():
 def result_page(result_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT * FROM submissions WHERE id=?", (result_id,))
+    c.execute("SELECT id, name, birth_date, birth_time, gender, profile_json, results_json FROM submissions WHERE id=?", (result_id,))
     row = c.fetchone()
     conn.close()
 
     if not row:
         return "결과를 찾을 수 없습니다.", 404
 
-    # 컬럼: id, name, birth_date, birth_time, gender,
-    #        elements_json, raw_survey_json, survey_json,
-    #        profile_json, results_json, profile_version, created_at
-    (rid, name, birth_date, birth_time, gender,
-     elements_json, raw_survey_json, survey_json,
-     profile_json, results_json, profile_version, created_at) = row
+    rid, name, birth_date, birth_time, gender, profile_json, results_json = row
 
     profile = json.loads(profile_json) if profile_json else {}
     results = json.loads(results_json) if results_json else {}
@@ -762,7 +757,7 @@ function copyLink() {{
 </script>
 </body>
 </html>"""
-    return html, 200, {{"Content-Type": "text/html; charset=utf-8"}}
+    return html, 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
 @app.route("/api/feedback", methods=["POST"])
