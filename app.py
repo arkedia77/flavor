@@ -8,7 +8,7 @@ import json
 import uuid
 import sqlite3
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, redirect
 
 app = Flask(__name__)
 
@@ -384,7 +384,7 @@ def submit():
 
         name       = data.get("name", "익명")
         birth_date = data.get("birth_date", "")  # "YYYY-MM-DD"
-        birth_time = data.get("birth_time", "0") # 시 (0~23)
+        birth_time = data.get("birth_time", "12") # 시 (0~23), 기본값 낮 12시
         gender     = data.get("gender", "unknown")
 
         # 설문 응답 파싱 (0~1 범위로 정규화)
@@ -510,15 +510,7 @@ def survey():
 
 @app.route("/")
 def index():
-    return """<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><title>SAJU 취향 분석</title></head>
-<body style="font-family:sans-serif;text-align:center;padding:50px">
-  <h1>🌟 SAJU 취향 분석</h1>
-  <p>사주로 알아보는 나만의 취향</p>
-  <a href="/survey">설문 시작하기</a>
-</body>
-</html>"""
+    return redirect("/survey", code=302)
 
 
 if __name__ == "__main__":
