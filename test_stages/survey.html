@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAJU 취향 분석 | flavor.arkedia.work</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #0f0e17; color: #fffffe; min-height: 100vh; }
+  .container { max-width: 680px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 2rem; text-align: center; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #a7a9be; margin-bottom: 40px; font-size: 0.95rem; }
+  .section { background: #1a1a2e; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .section h2 { font-size: 1rem; color: #ff8906; margin-bottom: 16px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.9rem; color: #a7a9be; margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid #333; background: #0f0e17; color: #fffffe;
+    font-size: 1rem;
+  }
+  .question { margin-bottom: 20px; }
+  .question p { font-size: 0.95rem; margin-bottom: 10px; }
+  .options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .options label {
+    flex: 1; min-width: 80px; text-align: center;
+    padding: 10px 6px; border: 1px solid #333; border-radius: 10px;
+    cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+  }
+  .options input[type=radio] { display: none; }
+  .options input[type=radio]:checked + label { background: #ff8906; border-color: #ff8906; color: #0f0e17; font-weight: bold; }
+  .btn {
+    width: 100%; padding: 16px; background: #ff8906; color: #0f0e17;
+    border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold;
+    cursor: pointer; margin-top: 10px;
+  }
+  .btn:hover { opacity: 0.9; }
+  #result { display: none; }
+  .result-card { background: #1a1a2e; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .result-card h3 { color: #ff8906; margin-bottom: 8px; font-size: 1rem; }
+  .item { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
+  .reason { font-size: 0.85rem; color: #a7a9be; }
+  .elements { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .element-tag {
+    padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
+  }
+  .el-목 { background: #2d6a4f; }
+  .el-화 { background: #7b2d2d; }
+  .el-토 { background: #7b6a2d; }
+  .el-금 { background: #4a4a7b; }
+  .el-수 { background: #2d4a7b; }
+  .share-link { background: #0f0e17; padding: 12px; border-radius: 8px; font-size: 0.85rem; word-break: break-all; color: #ff8906; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 설문 폼 -->
+  <div id="survey">
+    <h1>🌟 SAJU 취향 분석</h1>
+    <p class="subtitle">사주로 알아보는 나만의 취향 — 2분이면 충분해요</p>
+
+    <!-- 기본 정보 -->
+    <div class="section">
+      <h2>기본 정보</h2>
+      <div class="field">
+        <label>이름 / 닉네임</label>
+        <input type="text" id="name" placeholder="예: 이지은, 달빛여우, 익명가능" />
+      </div>
+      <div class="field">
+        <label>생년월일</label>
+        <input type="date" id="birth_date" />
+      </div>
+      <div class="field">
+        <label>태어난 시간 (모르면 12시로)</label>
+        <select id="birth_time">
+          <option value="0">자시 (밤 11시~1시)</option>
+          <option value="2">축시 (새벽 1~3시)</option>
+          <option value="4">인시 (새벽 3~5시)</option>
+          <option value="6">묘시 (새벽 5~7시)</option>
+          <option value="8">진시 (오전 7~9시)</option>
+          <option value="10">사시 (오전 9~11시)</option>
+          <option value="12" selected>오시 (오전 11~오후1시)</option>
+          <option value="14">미시 (오후 1~3시)</option>
+          <option value="16">신시 (오후 3~5시)</option>
+          <option value="18">유시 (오후 5~7시)</option>
+          <option value="20">술시 (오후 7~9시)</option>
+          <option value="22">해시 (오후 9~11시)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>성별</label>
+        <select id="gender">
+          <option value="female">여성</option>
+          <option value="male">남성</option>
+          <option value="other">기타</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 취향 설문 -->
+    <div class="section">
+      <h2>취향 설문</h2>
+
+      <!-- Q1 -->
+      <div class="question">
+        <p>Q1. 주말에 혼자 있다면?</p>
+        <div class="options">
+          <input type="radio" name="q1" id="q1a" value="0.2"><label for="q1a">집에서 혼자</label>
+          <input type="radio" name="q1" id="q1b" value="0.4"><label for="q1b">카페에서 혼자</label>
+          <input type="radio" name="q1" id="q1c" value="0.7"><label for="q1c">친구 불러서</label>
+          <input type="radio" name="q1" id="q1d" value="0.9"><label for="q1d">파티 열기</label>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="question">
+        <p>Q2. 여행지 선택 기준은?</p>
+        <div class="options">
+          <input type="radio" name="q2" id="q2a" value="0.2"><label for="q2a">힐링·휴양</label>
+          <input type="radio" name="q2" id="q2b" value="0.5"><label for="q2b">문화·예술</label>
+          <input type="radio" name="q2" id="q2c" value="0.8"><label for="q2c">모험·액티비티</label>
+          <input type="radio" name="q2" id="q2d" value="1.0"><label for="q2d">완전 낯선 곳</label>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="question">
+        <p>Q3. 내 공간 스타일에 가까운 건?</p>
+        <div class="options">
+          <input type="radio" name="q3" id="q3a" value="0.2"><label for="q3a">미니멀·깔끔</label>
+          <input type="radio" name="q3" id="q3b" value="0.5"><label for="q3b">따뜻·아늑</label>
+          <input type="radio" name="q3" id="q3c" value="0.7"><label for="q3c">개성·빈티지</label>
+          <input type="radio" name="q3" id="q3d" value="0.9"><label for="q3d">화려·컬러풀</label>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question">
+        <p>Q4. 옷 살 때 가장 중요한 건?</p>
+        <div class="options">
+          <input type="radio" name="q4" id="q4a" value="0.8"><label for="q4a">개성·스타일</label>
+          <input type="radio" name="q4" id="q4b" value="0.5"><label for="q4b">편안함</label>
+          <input type="radio" name="q4" id="q4c" value="0.9"><label for="q4c">트렌디함</label>
+          <input type="radio" name="q4" id="q4d" value="0.3"><label for="q4d">가성비</label>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="question">
+        <p>Q5. 음악 듣는 상황은?</p>
+        <div class="options">
+          <input type="radio" name="q5" id="q5a" value="0.2"><label for="q5a">집중할 때</label>
+          <input type="radio" name="q5" id="q5b" value="0.5"><label for="q5b">이동할 때</label>
+          <input type="radio" name="q5" id="q5c" value="0.7"><label for="q5c">운동할 때</label>
+          <input type="radio" name="q5" id="q5d" value="0.9"><label for="q5d">파티할 때</label>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="question">
+        <p>Q6. 외식할 때 선택 기준?</p>
+        <div class="options">
+          <input type="radio" name="q6" id="q6a" value="0.2"><label for="q6a">익숙한 음식</label>
+          <input type="radio" name="q6" id="q6b" value="0.5"><label for="q6b">분위기 좋은 곳</label>
+          <input type="radio" name="q6" id="q6c" value="0.8"><label for="q6c">새로운 맛</label>
+          <input type="radio" name="q6" id="q6d" value="1.0"><label for="q6d">이색 음식점</label>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="question">
+        <p>Q7. 운동 스타일은?</p>
+        <div class="options">
+          <input type="radio" name="q7" id="q7a" value="0.2"><label for="q7a">산책·요가</label>
+          <input type="radio" name="q7" id="q7b" value="0.5"><label for="q7b">수영·사이클</label>
+          <input type="radio" name="q7" id="q7c" value="0.8"><label for="q7c">헬스·러닝</label>
+          <input type="radio" name="q7" id="q7d" value="1.0"><label for="q7d">크로스핏·격투기</label>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="question">
+        <p>Q8. 향기 선호도는?</p>
+        <div class="options">
+          <input type="radio" name="q8" id="q8a" value="0.8"><label for="q8a">강하고 독특한</label>
+          <input type="radio" name="q8" id="q8b" value="0.4"><label for="q8b">은은하고 자연스러운</label>
+          <input type="radio" name="q8" id="q8c" value="0.2"><label for="q8c">향 없이 무향</label>
+          <input type="radio" name="q8" id="q8d" value="0.6"><label for="q8d">상황에 따라 달라요</label>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="question">
+        <p>Q9. 커피 취향은?</p>
+        <div class="options">
+          <input type="radio" name="q9" id="q9a" value="0.2"><label for="q9a">아이스 아메리카노</label>
+          <input type="radio" name="q9" id="q9b" value="0.5"><label for="q9b">라떼 계열</label>
+          <input type="radio" name="q9" id="q9c" value="0.8"><label for="q9c">스페셜티 핸드드립</label>
+          <input type="radio" name="q9" id="q9d" value="0.1"><label for="q9d">커피 안 마셔요</label>
+        </div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="question">
+        <p>Q10. 지출 여유도는?</p>
+        <div class="options">
+          <input type="radio" name="q10" id="q10a" value="0.1"><label for="q10a">가성비 최우선</label>
+          <input type="radio" name="q10" id="q10b" value="0.4"><label for="q10b">적당히 여유</label>
+          <input type="radio" name="q10" id="q10c" value="0.7"><label for="q10c">취향에 투자</label>
+          <input type="radio" name="q10" id="q10d" value="0.95"><label for="q10d">가격 신경 안 써요</label>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="btn" onclick="submitSurvey()">✨ 내 취향 분석하기</button>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="result">
+    <h1>🌟 취향 분석 결과</h1>
+    <p class="subtitle" id="result-name"></p>
+
+    <div class="result-card">
+      <h3>🔥 오행 분포</h3>
+      <div class="elements" id="elements-display"></div>
+    </div>
+
+    <div id="domain-results"></div>
+
+    <div class="result-card">
+      <h3>🔗 결과 공유 링크</h3>
+      <div class="share-link" id="share-link">결과 저장 중...</div>
+    </div>
+
+    <button class="btn" onclick="location.reload()">🔄 다시 분석하기</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+async function submitSurvey() {
+  const name = document.getElementById('name').value.trim() || '익명';
+  const birth_date = document.getElementById('birth_date').value;
+  const birth_time = document.getElementById('birth_time').value;
+  const gender = document.getElementById('gender').value;
+
+  if (!birth_date) {
+    alert('생년월일을 입력해주세요!');
+    return;
+  }
+
+  // 설문 값 수집
+  const getVal = (name) => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? parseFloat(el.value) : 0.5;
+  };
+
+  const social      = (getVal('q1') + getVal('q5')) / 2;
+  const adventurous = (getVal('q2') + getVal('q6')) / 2;
+  const aesthetic   = (getVal('q3') + getVal('q4') + getVal('q8')) / 3;
+  const comfort     = 1 - adventurous * 0.6;
+  const budget      = getVal('q10');
+
+  const payload = {
+    name, birth_date, birth_time, gender,
+    social, adventurous, aesthetic, comfort, budget
+  };
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) throw new Error('서버 오류');
+    const data = await resp.json();
+    showResult(data);
+
+  } catch (e) {
+    // 오프라인 fallback
+    console.warn('서버 없음, 오프라인 모드:', e);
+    showOfflineResult(payload);
+  }
+}
+
+const DOMAIN_EMOJI = {
+  "커피": "☕", "향수": "🌸", "음악": "🎵", "식당": "🍽️",
+  "운동": "💪", "여행": "✈️", "패션": "👗", "인테리어": "🏠"
+};
+
+function showResult(data) {
+  document.getElementById('survey').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result-name').textContent = `${data.name}님의 취향 분석 완료!`;
+
+  // 오행 표시
+  const elDiv = document.getElementById('elements-display');
+  elDiv.innerHTML = '';
+  const elNames = { wood: '목', fire: '화', earth: '토', metal: '금', water: '수' };
+  Object.entries(data.profile).filter(([k]) => elNames[k]).forEach(([k, v]) => {
+    const name = elNames[k];
+    const tag = document.createElement('span');
+    tag.className = `element-tag el-${name}`;
+    tag.textContent = `${name} ${Math.round(v * 100)}%`;
+    elDiv.appendChild(tag);
+  });
+
+  // 도메인 결과
+  const domDiv = document.getElementById('domain-results');
+  domDiv.innerHTML = '';
+  Object.entries(data.results).forEach(([domain, rec]) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <h3>${DOMAIN_EMOJI[domain] || '✨'} ${domain}</h3>
+      <div class="item">${rec.item}</div>
+      <div class="reason">${rec.reason}</div>
+    `;
+    domDiv.appendChild(card);
+  });
+
+  // 공유 링크
+  const linkEl = document.getElementById('share-link');
+  if (data.id) {
+    linkEl.textContent = `${API_BASE}/result/${data.id}`;
+  } else {
+    linkEl.textContent = '(오프라인 모드 - 링크 저장 안됨)';
+  }
+}
+
+function showOfflineResult(payload) {
+  // 서버 없을 때 간단한 클라이언트 추천
+  const fakeResult = {
+    name: payload.name,
+    profile: { wood: 0.2, fire: 0.2, earth: 0.2, metal: 0.2, water: 0.2 },
+    results: {
+      "커피": { item: "오트밀크 라떼", reason: "(오프라인 추천) 서버 연결 후 정확한 분석 가능" },
+      "향수": { item: "시트러스 계열", reason: "(오프라인 추천)" },
+      "음악": { item: "인디 팝", reason: "(오프라인 추천)" },
+      "식당": { item: "이탈리안 비스트로", reason: "(오프라인 추천)" },
+      "운동": { item: "수영", reason: "(오프라인 추천)" },
+      "여행": { item: "일본 소도시", reason: "(오프라인 추천)" },
+      "패션": { item: "캐주얼 스트리트", reason: "(오프라인 추천)" },
+      "인테리어": { item: "모던 빈티지", reason: "(오프라인 추천)" },
+    },
+    id: null
+  };
+  showResult(fakeResult);
+}
+</script>
+</body>
+</html>
