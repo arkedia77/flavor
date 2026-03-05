@@ -15,7 +15,7 @@ app = Flask(__name__)
 DB_PATH = os.environ.get("DB_PATH", "/tmp/saju_submissions.db")
 
 # 프로필 버전 — 가중치/공식 변경 시 올릴 것 (캘리브레이션 재분석용)
-PROFILE_VERSION = "1.1"
+PROFILE_VERSION = "1.2"
 
 # ──────────────────────────────────────────────
 # DB 초기화
@@ -118,7 +118,65 @@ def calc_saju(year: int, month: int, day: int, hour: int = 0):
 
 
 # ──────────────────────────────────────────────
-# 10차원 프로필 → 취향 벡터 변환
+# 추천 경계값 상수 (데이터 축적 후 캘리브레이션으로 조정)
+# ──────────────────────────────────────────────
+HIGH  = 0.65   # 이 이상: 강한 경향
+LOW   = 0.35   # 이 이하: 반대 경향
+MHI   = 0.60   # 보조 상위 임계
+MLO   = 0.40   # 보조 하위 임계
+
+
+# ──────────────────────────────────────────────
+# Layer 2 — raw 설문 → 9개 차원 계산 (백엔드 소스 오브 트루스)
+# ──────────────────────────────────────────────
+
+def raw_to_survey(raw: dict) -> dict:
+    """q1~q27 원본 응답 → 9개 차원 계산
+
+    [v1.2 변경사항]
+    - 백엔드가 유일한 계산 주체 (프론트엔드 computeProfile()과 동일 로직)
+    - adventurous 다변화: 여행 4개 → 음식/여행스타일/여행목적/결정방식으로 분산
+    - budget 보강: q25 단일 → q25 + 숙소선택(q22) 결합
+    - maximalist 보강: q12(충동구매) 약하게 추가
+    """
+    def qv(k):
+        v = raw.get(k) or raw.get(str(k))
+        return float(v) if v is not None else 0.5
+
+    def avg(*vals):
+        return sum(vals) / len(vals)
+
+    def clamp(v):
+        return min(1.0, max(0.0, v))
+
+    social      = clamp(avg(qv('q1'), 1 - qv('q2'), qv('q3') * 0.6 + 0.2, qv('q17') * 0.4 + 0.2))
+    # adventurous: 음식(q13)·여행스타일(q21)·여행목적(q23)·결정방식(q5) — 4가지 맥락으로 분산
+    adventurous = clamp(avg(qv('q13'), qv('q21'), qv('q23'), qv('q5') * 0.8 + 0.1))
+    aesthetic   = clamp(avg(qv('q14'), qv('q9') * 0.7 + 0.1, qv('q24'), qv('q10') * 0.5 + 0.2))
+    # budget: 지출철학(q25) + 숙소수준(q22 역산) — q22 낮을수록 고급숙소 = 고예산
+    budget      = clamp(avg(qv('q25'), (1 - qv('q22')) * 0.5 + 0.1))
+    comfort     = clamp(avg(qv('q26'), qv('q27')))
+    # maximalist: 공간/컬러/패션 + 충동구매(q12) 약하게
+    maximalist  = clamp(avg(qv('q6'), qv('q7'), qv('q11') * 0.8, qv('q10') * 0.6, qv('q12') * 0.4))
+    energetic   = clamp(avg(qv('q19'), qv('q20') * 0.6 + 0.1, qv('q4') * 0.5 + 0.2, qv('q3') * 0.4 + 0.2))
+    urban       = clamp(qv('q8'))
+    bitter      = clamp(avg(qv('q16'), qv('q15') * 0.7 + 0.1))
+
+    return {
+        'social':      round(social,      3),
+        'adventurous': round(adventurous, 3),
+        'aesthetic':   round(aesthetic,   3),
+        'budget':      round(budget,      3),
+        'comfort':     round(comfort,     3),
+        'maximalist':  round(maximalist,  3),
+        'energetic':   round(energetic,   3),
+        'urban':       round(urban,       3),
+        'bitter':      round(bitter,      3),
+    }
+
+
+# ──────────────────────────────────────────────
+# Layer 1+2 통합 — 오행 보정 + 설문 블렌딩
 # ──────────────────────────────────────────────
 
 def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
@@ -181,23 +239,28 @@ def recommend_coffee(profile: dict) -> dict:
             return {"item": "카페라떼·바닐라라떼", "reason": "부드럽고 달콤한, 언제나 변함없이 믿는 메뉴"}
         return {"item": "달달한 라떼·플랫화이트", "reason": "부드럽고 달콤한 풍미를 즐기는 타입"}
     else:
-        if budget > 0.6:
-            if comfort < 0.35:
+        if budget > MHI:
+            if comfort < LOW:
                 return {"item": "스페셜티 콜드브루·블랙워터", "reason": "새로운 커피 경험을 찾는 감각적인 탐험가"}
             return {"item": "오트밀크 라떼·콜드브루", "reason": "트렌디하고 감각적인 카페 경험을 선호"}
+        elif comfort > HIGH:
+            return {"item": "따뜻한 아메리카노·단골 블렌드", "reason": "매일 같은 메뉴에서 안정감을 찾는 타입"}
         return {"item": "아이스 라떼·아메리카노", "reason": "무난하지만 믿을 수 있는 클래식한 취향"}
 
 
 def recommend_perfume(profile: dict) -> dict:
-    aesthetic  = profile.get("aesthetic", 0.5)
-    maximalist = profile.get("maximalist", 0.5)
+    aesthetic   = profile.get("aesthetic", 0.5)
+    maximalist  = profile.get("maximalist", 0.5)
     adventurous = profile.get("adventurous", 0.5)
-    if maximalist < 0.35 and aesthetic > 0.5:
+    comfort     = profile.get("comfort", 0.5)
+    if maximalist < LOW and aesthetic > 0.5:
         return {"item": "머스크·클린 미니멀 향", "reason": "정제되고 세련된 감각, 은은한 존재감을 선호"}
-    elif maximalist > 0.65:
+    elif maximalist > HIGH:
         return {"item": "오리엔탈·우디 레이어드 향", "reason": "풍부하고 개성 강한 향으로 존재감을 표현"}
-    elif adventurous > 0.6:
+    elif adventurous > MHI:
         return {"item": "니치 퍼퓸·아방가르드 향", "reason": "남들과 다른 독특한 향기에 끌리는 탐험가 취향"}
+    elif comfort > HIGH:
+        return {"item": "클래식 시그니처 향·익숙한 우디 향", "reason": "오래 써온 익숙한 향이 주는 안정감을 선호"}
     else:
         return {"item": "시트러스·그린 플로럴", "reason": "청량하고 자연스러운 향으로 편안한 인상"}
 
@@ -206,14 +269,17 @@ def recommend_music(profile: dict) -> dict:
     energetic = profile.get("energetic", 0.5)
     social    = profile.get("social", 0.5)
     aesthetic = profile.get("aesthetic", 0.5)
-    if energetic > 0.65 and social > 0.6:
+    comfort   = profile.get("comfort", 0.5)
+    if energetic > HIGH and social > MHI:
         return {"item": "업템포 팝·하우스·EDM", "reason": "활동적이고 사교적인 에너지에 맞는 비트"}
-    elif energetic > 0.65:
+    elif energetic > HIGH:
         return {"item": "힙합·트랩·록", "reason": "강한 에너지를 혼자서도 즐기는 집중형 취향"}
-    elif aesthetic > 0.6 and energetic < 0.5:
+    elif aesthetic > MHI and energetic < 0.5:
         return {"item": "재즈·보사노바·어쿠스틱", "reason": "감각적이고 여유로운 무드를 즐기는 타입"}
-    elif energetic < 0.35:
+    elif energetic < LOW:
         return {"item": "로파이 힙합·앰비언트", "reason": "조용하고 집중력 있는 배경음악 선호"}
+    elif comfort > HIGH:
+        return {"item": "잔잔한 팝·어쿠스틱 발라드", "reason": "편안하고 익숙한 멜로디, 마음이 쉬어가는 음악"}
     else:
         return {"item": "인디 팝·얼터너티브 R&B", "reason": "감성과 에너지 사이에서 균형 잡힌 취향"}
 
@@ -275,16 +341,19 @@ def recommend_travel(profile: dict) -> dict:
 
 
 def recommend_fashion(profile: dict) -> dict:
-    maximalist = profile.get("maximalist", 0.5)
-    aesthetic  = profile.get("aesthetic", 0.5)
-    budget     = profile.get("budget", 0.5)
+    maximalist  = profile.get("maximalist", 0.5)
+    aesthetic   = profile.get("aesthetic", 0.5)
+    budget      = profile.get("budget", 0.5)
     adventurous = profile.get("adventurous", 0.5)
+    comfort     = profile.get("comfort", 0.5)
     if maximalist < 0.3:
         return {"item": "미니멀·모노톤 룩", "reason": "군더더기 없는 정제된 스타일로 세련미를 표현"}
     elif maximalist > 0.7 and adventurous > 0.5:
         return {"item": "스트리트·빈티지 레이어드", "reason": "개성 강한 믹스매치로 눈에 띄는 스타일링"}
-    elif aesthetic > 0.6 and budget > 0.55:
+    elif aesthetic > MHI and budget > MHI:
         return {"item": "컨템포러리·디자이너 캐주얼", "reason": "감각적이고 수준 있는 아이템에 투자하는 타입"}
+    elif comfort > HIGH:
+        return {"item": "편안한 캐주얼·슬랙스 무드", "reason": "편안함이 최우선, 오래 입어도 질리지 않는 기본"}
     elif maximalist > 0.5:
         return {"item": "내추럴·보헤미안 스타일", "reason": "편안하면서도 감성적인 무드를 즐기는 타입"}
     else:
@@ -296,14 +365,17 @@ def recommend_interior(profile: dict) -> dict:
     urban      = profile.get("urban", 0.5)
     aesthetic  = profile.get("aesthetic", 0.5)
     budget     = profile.get("budget", 0.5)
+    comfort    = profile.get("comfort", 0.5)
     if maximalist < 0.3 and urban > 0.5:
         return {"item": "스칸디나비안·재패니즈 미니멀", "reason": "깔끔한 여백과 기능적 아름다움을 추구"}
-    elif maximalist > 0.65 and aesthetic > 0.5:
+    elif maximalist > HIGH and aesthetic > 0.5:
         return {"item": "맥시멀리스트·보헤미안 스타일", "reason": "다양한 오브제와 텍스처로 개성 넘치는 공간"}
-    elif urban < 0.35:
+    elif urban < LOW:
         return {"item": "우드톤·내추럴 소재 인테리어", "reason": "자연 소재로 따뜻하고 편안한 공간 구성"}
-    elif budget > 0.65 and aesthetic > 0.55:
+    elif budget > HIGH and aesthetic > MHI:
         return {"item": "모던 럭셔리·하이엔드 인테리어", "reason": "퀄리티 있는 소재와 감각적인 조명을 중시"}
+    elif comfort > HIGH:
+        return {"item": "코지 홈·패브릭 소재 따뜻한 공간", "reason": "홈카페 감성, 쉬고 싶어지는 아늑한 공간"}
     else:
         return {"item": "모던 빈티지·인더스트리얼 믹스", "reason": "트렌디하면서 개성 있는 공간을 선호"}
 
@@ -436,18 +508,22 @@ def submit():
         # q1~q27 원본 개별 응답 저장 (캘리브레이션·재분석용)
         raw_answers = data.get("raw_answers", {})
 
-        # 설문 응답 파싱 (0~1 범위로 정규화된 9개 차원)
-        survey = {
-            "social":      float(data.get("social", 0.5)),
-            "aesthetic":   float(data.get("aesthetic", 0.5)),
-            "adventurous": float(data.get("adventurous", 0.5)),
-            "comfort":     float(data.get("comfort", 0.5)),
-            "budget":      float(data.get("budget", 0.5)),
-            "maximalist":  float(data.get("maximalist", 0.5)),
-            "energetic":   float(data.get("energetic", 0.5)),
-            "urban":       float(data.get("urban", 0.5)),
-            "bitter":      float(data.get("bitter", 0.5)),
-        }
+        # 백엔드가 소스 오브 트루스: raw_answers → 9개 차원 계산
+        if raw_answers:
+            survey = raw_to_survey(raw_answers)
+        else:
+            # 하위 호환: 프론트엔드가 직접 계산값 전송한 구버전 요청
+            survey = {
+                "social":      float(data.get("social", 0.5)),
+                "aesthetic":   float(data.get("aesthetic", 0.5)),
+                "adventurous": float(data.get("adventurous", 0.5)),
+                "comfort":     float(data.get("comfort", 0.5)),
+                "budget":      float(data.get("budget", 0.5)),
+                "maximalist":  float(data.get("maximalist", 0.5)),
+                "energetic":   float(data.get("energetic", 0.5)),
+                "urban":       float(data.get("urban", 0.5)),
+                "bitter":      float(data.get("bitter", 0.5)),
+            }
 
         # 생년월일 파싱
         parts = birth_date.split("-")

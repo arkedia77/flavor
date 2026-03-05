@@ -572,15 +572,17 @@ const q = (name) => {
 const avg = (...vals) => vals.reduce((a, b) => a + b, 0) / vals.length;
 const clamp = (v) => Math.min(1, Math.max(0, v));
 
-/* ── 프로필 계산 ── */
+/* ── 프로필 계산 (오프라인 폴백용 — 백엔드 raw_to_survey()와 동일 로직 유지) ── */
 function computeProfile() {
   const social      = clamp(avg(q('q1'), 1 - q('q2'), q('q3') * 0.6 + 0.2, q('q17') * 0.4 + 0.2));
-  const adventurous = clamp(avg(q('q13'), q('q21'), q('q22'), q('q23')));
+  // adventurous 다변화: 음식(q13)·여행스타일(q21)·여행목적(q23)·결정방식(q5)
+  const adventurous = clamp(avg(q('q13'), q('q21'), q('q23'), q('q5') * 0.8 + 0.1));
   const aesthetic   = clamp(avg(q('q14'), q('q9') * 0.7 + 0.1, q('q24'), q('q10') * 0.5 + 0.2));
-  const budget      = clamp(q('q25'));
-  // comfort: Q26·Q27으로 독립 측정 (이전: adventurous 역산 → 수정됨)
+  // budget 보강: 지출철학(q25) + 숙소수준(q22 역산)
+  const budget      = clamp(avg(q('q25'), (1 - q('q22')) * 0.5 + 0.1));
   const comfort     = clamp(avg(q('q26'), q('q27')));
-  const maximalist  = clamp(avg(q('q6'), q('q7'), q('q11') * 0.8, q('q10') * 0.6));
+  // maximalist 보강: 충동구매(q12) 약하게 추가
+  const maximalist  = clamp(avg(q('q6'), q('q7'), q('q11') * 0.8, q('q10') * 0.6, q('q12') * 0.4));
   const energetic   = clamp(avg(q('q19'), q('q20') * 0.6 + 0.1, q('q4') * 0.5 + 0.2, q('q3') * 0.4 + 0.2));
   const urban       = clamp(q('q8'));
   const bitter      = clamp(avg(q('q16'), q('q15') * 0.7 + 0.1));
@@ -627,16 +629,15 @@ async function submitSurvey() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '분석 중...';
 
-  const profile = computeProfile();
-
-  // q1~q27 원본값 수집 (캘리브레이션·재분석용)
+  // q1~q27 원본값 수집 (백엔드 SoT — 계산은 서버가 담당)
   const raw_answers = {};
   for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
     const el = document.querySelector(`input[name="q${i}"]:checked`);
     raw_answers[`q${i}`] = el ? parseFloat(el.value) : null;
   }
 
-  const payload = { name, birth_date, gender, raw_answers, ...profile };
+  // 프론트엔드는 raw_answers만 전송 (개별 프로필 필드 제거)
+  const payload = { name, birth_date, gender, raw_answers };
 
   try {
     const resp = await fetch(`${API_BASE}/api/submit`, {
@@ -646,9 +647,12 @@ async function submitSurvey() {
     });
     if (!resp.ok) throw new Error();
     const data = await resp.json();
-    showResult(data, profile);
+    // 백엔드에서 계산된 프로필 사용 (소스 오브 트루스)
+    showResult(data, data.profile);
   } catch(e) {
-    showOfflineResult(payload, profile);
+    // 오프라인 폴백: 프론트엔드에서 임시 계산
+    const localProfile = computeProfile();
+    showOfflineResult(payload, localProfile);
   }
 }
 
