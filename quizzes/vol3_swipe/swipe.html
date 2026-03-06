@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta property="og:title" content="나의 취향 스와이프 테스트 ✨">
+<meta property="og:description" content="20장 카드, 좋으면 오른쪽 싫으면 왼쪽. 3초면 판단 가능.">
+<title>취향 스와이프</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --like-color: #FF4B7B;
+    --nope-color: #5B8DEF;
+    --bg: #0E0E12;
+    --card-bg: #1A1A24;
+    --text: #F0F0F5;
+    --sub: #888;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Noto Sans KR', sans-serif;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 8px;
+    flex-shrink: 0;
+  }
+  .topbar-title { font-size: 13px; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; }
+  .progress-text { font-size: 13px; color: var(--sub); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { padding: 0 20px 12px; flex-shrink: 0; }
+  .progress-bar { height: 3px; background: #222; border-radius: 2px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--nope-color), var(--like-color)); border-radius: 2px; transition: width 0.3s ease; }
+
+  /* ── CARD STACK ── */
+  .card-stack {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    min-height: 0;
+  }
+
+  .card {
+    position: absolute;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 3/4;
+    max-height: calc(100dvh - 220px);
+    background: var(--card-bg);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    cursor: grab;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    will-change: transform;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    touch-action: none;
+  }
+  .card:active { cursor: grabbing; }
+  .card.back1 { transform: scale(0.94) translateY(14px); opacity: 0.6; pointer-events: none; }
+  .card.back2 { transform: scale(0.88) translateY(28px); opacity: 0.3; pointer-events: none; }
+
+  .card-emoji {
+    font-size: clamp(60px, 16vw, 90px);
+    line-height: 1;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+  }
+  .card-label {
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .card-sublabel {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+  }
+  .card-category {
+    position: absolute;
+    top: 16px;
+    left: 18px;
+    font-size: 11px;
+    color: var(--sub);
+    background: rgba(255,255,255,0.05);
+    padding: 4px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* STAMP overlays */
+  .stamp {
+    position: absolute;
+    top: 30px;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    border: 4px solid;
+    padding: 6px 14px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.1s;
+    transform: rotate(-20deg);
+    pointer-events: none;
+  }
+  .stamp.like { right: 20px; color: var(--like-color); border-color: var(--like-color); transform: rotate(15deg); }
+  .stamp.nope { left: 20px; color: var(--nope-color); border-color: var(--nope-color); transform: rotate(-15deg); }
+
+  /* ── BOTTOM BUTTONS ── */
+  .btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 12px 20px 24px;
+    flex-shrink: 0;
+  }
+  .btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+  }
+  .btn:active { transform: scale(0.88); }
+  .btn-nope { background: rgba(91,141,239,0.15); color: var(--nope-color); box-shadow: 0 4px 20px rgba(91,141,239,0.15); }
+  .btn-nope:active { background: rgba(91,141,239,0.3); }
+  .btn-like { background: rgba(255,75,123,0.15); color: var(--like-color); box-shadow: 0 4px 20px rgba(255,75,123,0.15); }
+  .btn-like:active { background: rgba(255,75,123,0.3); }
+  .btn-skip { width: 48px; height: 48px; font-size: 20px; background: rgba(255,255,255,0.06); color: var(--sub); }
+
+  .hint-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 36px 8px;
+    flex-shrink: 0;
+  }
+  .hint { font-size: 11px; color: var(--sub); }
+  .hint.left { color: var(--nope-color); opacity: 0.6; }
+  .hint.right { color: var(--like-color); opacity: 0.6; }
+
+  /* ── LOADING ── */
+  #loading {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; z-index: 100;
+  }
+  .loading-emoji { font-size: 48px; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  #loading p { color: var(--sub); font-size: 14px; }
+
+  /* ── DONE SCREEN ── */
+  #done-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 32px; z-index: 100;
+  }
+  #done-screen .big-emoji { font-size: 64px; margin-bottom: 8px; }
+  #done-screen h2 { font-size: 24px; font-weight: 800; text-align: center; }
+  #done-screen p { color: var(--sub); font-size: 15px; text-align: center; }
+  .done-stats {
+    display: flex; gap: 24px; margin: 8px 0;
+  }
+  .done-stat { text-align: center; }
+  .done-stat .num { font-size: 28px; font-weight: 800; }
+  .done-stat .num.like-num { color: var(--like-color); }
+  .done-stat .num.nope-num { color: var(--nope-color); }
+  .done-stat .lbl { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .submit-btn {
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--nope-color), var(--like-color));
+    color: #fff; border: none; border-radius: 50px;
+    padding: 16px 40px; font-size: 17px; font-weight: 700;
+    cursor: pointer; width: 100%; max-width: 300px;
+    transition: opacity 0.2s;
+  }
+  .submit-btn:active { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="loading-emoji">✨</div>
+  <p>취향 카드 준비 중...</p>
+</div>
+
+<div id="done-screen">
+  <div class="big-emoji">🎉</div>
+  <h2>스와이프 완료!</h2>
+  <p>총 <span id="done-total">0</span>장 판단했어요</p>
+  <div class="done-stats">
+    <div class="done-stat"><div class="num like-num" id="done-like">0</div><div class="lbl">💗 좋아</div></div>
+    <div class="done-stat"><div class="num nope-num" id="done-nope">0</div><div class="lbl">💙 별로</div></div>
+  </div>
+  <p style="font-size:13px">취향 프로파일 계산 중이에요</p>
+  <button class="submit-btn" id="submit-btn">내 취향 결과 보기 →</button>
+</div>
+
+<!-- MAIN UI -->
+<div class="topbar">
+  <span class="topbar-title">✦ 취향 스와이프</span>
+  <span class="progress-text"><span id="cur">1</span> / <span id="total">20</span></span>
+</div>
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="card-stack" id="card-stack">
+  <!-- cards injected by JS -->
+</div>
+
+<div class="hint-row">
+  <span class="hint left">← 별로</span>
+  <span class="hint right">좋아 →</span>
+</div>
+<div class="btn-row">
+  <button class="btn btn-nope" id="btn-nope" onclick="vote('nope')">💙</button>
+  <button class="btn btn-skip" onclick="vote('skip')">⏭</button>
+  <button class="btn btn-like" id="btn-like" onclick="vote('like')">💗</button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CARDS DATA  (dimension, emoji, label, sublabel, like_val, nope_val)
+//  9차원: social, adventurous, aesthetic, comfort, budget, maximalist, energetic, urban, bitter
+// ─────────────────────────────────────────────
+const CARDS = [
+  // ── SOCIAL
+  { id:'c01', dim:'social',      emoji:'🎉', label:'와글와글 파티',      sub:'사람 많을수록 에너지 넘침',  like:0.85, nope:0.15, cat:'소셜' },
+  { id:'c02', dim:'social',      emoji:'🪴', label:'혼자만의 조용한 저녁',sub:'조용한 공간, 나만의 시간',   like:0.15, nope:0.85, cat:'소셜' },
+  // ── ADVENTUROUS
+  { id:'c03', dim:'adventurous', emoji:'🏄', label:'파도 서핑',           sub:'처음 해보는 것도 도전',      like:0.9,  nope:0.1,  cat:'모험' },
+  { id:'c04', dim:'adventurous', emoji:'🛋️', label:'집에서 넷플릭스',     sub:'익숙하고 편한 게 최고',      like:0.1,  nope:0.9,  cat:'모험' },
+  { id:'c05', dim:'adventurous', emoji:'🌏', label:'즉흥 해외여행',        sub:'비행기 표 먼저, 계획은 나중', like:0.85, nope:0.15, cat:'모험' },
+  // ── AESTHETIC
+  { id:'c06', dim:'aesthetic',   emoji:'🖼️', label:'현대미술 전시',        sub:'의미 모르지만 분위기는 있어', like:0.85, nope:0.15, cat:'감성' },
+  { id:'c07', dim:'aesthetic',   emoji:'📐', label:'미니멀 인테리어',       sub:'없는 것이 아름다움',          like:0.85, nope:0.15, cat:'감성' },
+  { id:'c08', dim:'aesthetic',   emoji:'🌸', label:'벚꽃 사진 찍기',        sub:'예쁜 거 발견하면 기록 필수',  like:0.8,  nope:0.2,  cat:'감성' },
+  // ── COMFORT
+  { id:'c09', dim:'comfort',     emoji:'🛁', label:'아로마 배쓰밤 목욕',    sub:'퇴근 후 최고의 루틴',         like:0.9,  nope:0.1,  cat:'안락' },
+  { id:'c10', dim:'comfort',     emoji:'⛺', label:'캠핑 & 텐트',           sub:'불편함도 즐거움이 될 수 있어', like:0.2,  nope:0.8,  cat:'안락' },
+  // ── ENERGETIC
+  { id:'c11', dim:'energetic',   emoji:'🏃', label:'새벽 6시 러닝',         sub:'아침에 뛰면 하루가 달라짐',   like:0.9,  nope:0.1,  cat:'에너지' },
+  { id:'c12', dim:'energetic',   emoji:'💆', label:'마사지 & 스파',          sub:'몸이 녹는 경험',              like:0.2,  nope:0.8,  cat:'에너지' },
+  { id:'c13', dim:'energetic',   emoji:'🎵', label:'클럽 & 라이브 음악',     sub:'몸이 저절로 움직이는 비트',   like:0.85, nope:0.15, cat:'에너지' },
+  // ── URBAN
+  { id:'c14', dim:'urban',       emoji:'🌆', label:'도심 루프탑 바',         sub:'야경이 배경인 한 잔',          like:0.9,  nope:0.1,  cat:'공간' },
+  { id:'c15', dim:'urban',       emoji:'🌾', label:'시골 논밭 드라이브',     sub:'도시 소음에서 완전 탈출',      like:0.1,  nope:0.9,  cat:'공간' },
+  { id:'c16', dim:'urban',       emoji:'🏬', label:'백화점 쇼핑',            sub:'에어컨, 구경, 커피 한 잔',     like:0.8,  nope:0.2,  cat:'공간' },
+  // ── BITTER / TASTE
+  { id:'c17', dim:'bitter',      emoji:'🍫', label:'다크 초콜릿 85%',        sub:'진하고 쌉쌀한 맛이 매력',     like:0.85, nope:0.15, cat:'미각' },
+  { id:'c18', dim:'bitter',      emoji:'🧁', label:'크림치즈 케이크',         sub:'달달하고 부드러운 게 최고',    like:0.15, nope:0.85, cat:'미각' },
+  // ── MAXIMALIST
+  { id:'c19', dim:'maximalist',  emoji:'💎', label:'풀 세팅 코스 요리',      sub:'10가지 코스, 격식과 퍼포먼스', like:0.9,  nope:0.1,  cat:'스타일' },
+  { id:'c20', dim:'maximalist',  emoji:'🍜', label:'단골 포장마차 라면',      sub:'가성비, 익숙함, 편안함',       like:0.1,  nope:0.9,  cat:'스타일' },
+];
+
+// ─────────────────────────────────────────────
+let deck = [...CARDS];
+let answers = [];
+let current = 0;
+let isDragging = false;
+let startX = 0, startY = 0, currentX = 0;
+let activeCard = null;
+
+// Birth date from Vol.1 flow (optional)
+const urlParams = new URLSearchParams(window.location.search);
+const birthdate = urlParams.get('bd') || '';
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('total').textContent = deck.length;
+  renderCards();
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+  }, 600);
+});
+
+function renderCards() {
+  const stack = document.getElementById('card-stack');
+  stack.innerHTML = '';
+
+  // Render top 3 cards
+  for (let i = Math.min(2, deck.length - current - 1); i >= 0; i--) {
+    const cardData = deck[current + i];
+    if (!cardData) continue;
+    const el = makeCardEl(cardData);
+    if (i === 0) {
+      el.classList.remove('back1', 'back2');
+      bindDrag(el);
+    } else if (i === 1) {
+      el.classList.add('back1');
+    } else {
+      el.classList.add('back2');
+    }
+    stack.prepend(el);
+  }
+  updateProgress();
+}
+
+function makeCardEl(data) {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.dataset.id = data.id;
+  el.innerHTML = `
+    <span class="card-category">${data.cat}</span>
+    <div class="stamp like">좋아💗</div>
+    <div class="stamp nope">별로💙</div>
+    <div class="card-emoji">${data.emoji}</div>
+    <div class="card-label">${data.label}</div>
+    <div class="card-sublabel">${data.sub}</div>
+  `;
+  return el;
+}
+
+function updateProgress() {
+  const pct = (current / deck.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('cur').textContent = Math.min(current + 1, deck.length);
+}
+
+// ─────────────────────────────────────────────
+//  DRAG
+// ─────────────────────────────────────────────
+function bindDrag(el) {
+  // Touch
+  el.addEventListener('touchstart', onDragStart, { passive: true });
+  el.addEventListener('touchmove', onDragMove, { passive: false });
+  el.addEventListener('touchend', onDragEnd);
+  // Mouse
+  el.addEventListener('mousedown', onDragStart);
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('mouseup', onDragEnd);
+}
+
+function getClientXY(e) {
+  if (e.touches) return [e.touches[0].clientX, e.touches[0].clientY];
+  return [e.clientX, e.clientY];
+}
+
+function onDragStart(e) {
+  isDragging = true;
+  activeCard = e.currentTarget;
+  [startX, startY] = getClientXY(e);
+  currentX = 0;
+  activeCard.style.transition = 'none';
+}
+
+function onDragMove(e) {
+  if (!isDragging || !activeCard) return;
+  if (e.cancelable) e.preventDefault();
+  const [cx, cy] = getClientXY(e);
+  currentX = cx - startX;
+  const currentY = cy - startY;
+  const rotation = currentX * 0.08;
+  activeCard.style.transform = `translate(${currentX}px, ${currentY * 0.4}px) rotate(${rotation}deg)`;
+
+  // stamp opacity
+  const likeStamp = activeCard.querySelector('.stamp.like');
+  const nopeStamp = activeCard.querySelector('.stamp.nope');
+  const ratio = Math.min(Math.abs(currentX) / 80, 1);
+  if (currentX > 0) {
+    likeStamp.style.opacity = ratio;
+    nopeStamp.style.opacity = 0;
+  } else {
+    nopeStamp.style.opacity = ratio;
+    likeStamp.style.opacity = 0;
+  }
+}
+
+function onDragEnd() {
+  if (!isDragging || !activeCard) return;
+  isDragging = false;
+  window.removeEventListener('mousemove', onDragMove);
+  window.removeEventListener('mouseup', onDragEnd);
+
+  const threshold = window.innerWidth * 0.28;
+  if (currentX > threshold) {
+    flyOut('like');
+  } else if (currentX < -threshold) {
+    flyOut('nope');
+  } else {
+    // snap back
+    activeCard.style.transition = 'transform 0.4s cubic-bezier(.17,.67,.24,1.3)';
+    activeCard.style.transform = '';
+    activeCard.querySelector('.stamp.like').style.opacity = 0;
+    activeCard.querySelector('.stamp.nope').style.opacity = 0;
+    activeCard = null;
+  }
+}
+
+function flyOut(dir) {
+  if (!activeCard) return;
+  const x = dir === 'like' ? window.innerWidth * 1.4 : -window.innerWidth * 1.4;
+  activeCard.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+  activeCard.style.transform = `translate(${x}px, -60px) rotate(${dir === 'like' ? 25 : -25}deg)`;
+  activeCard.style.opacity = '0';
+
+  recordVote(dir);
+
+  setTimeout(() => {
+    if (activeCard) { activeCard.remove(); activeCard = null; }
+    advanceCard();
+  }, 350);
+}
+
+// ─────────────────────────────────────────────
+//  VOTE (buttons)
+// ─────────────────────────────────────────────
+function vote(dir) {
+  const stack = document.getElementById('card-stack');
+  const topCard = stack.querySelector('.card:not(.back1):not(.back2)');
+  if (!topCard || isDragging) return;
+
+  activeCard = topCard;
+  if (dir === 'skip') {
+    recordVote('skip');
+    topCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    topCard.style.transform = 'translateY(-60px) scale(0.85)';
+    topCard.style.opacity = '0';
+    setTimeout(() => { topCard.remove(); activeCard = null; advanceCard(); }, 300);
+    return;
+  }
+
+  const x = dir === 'like' ? window.innerWidth * 1.4 : -window.innerWidth * 1.4;
+  topCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+  topCard.style.transform = `translate(${x}px, -40px) rotate(${dir === 'like' ? 20 : -20}deg)`;
+  topCard.style.opacity = '0';
+
+  recordVote(dir);
+  setTimeout(() => { topCard.remove(); activeCard = null; advanceCard(); }, 300);
+}
+
+function recordVote(dir) {
+  const cardData = deck[current];
+  if (!cardData) return;
+  const responseMs = Date.now();
+  answers.push({
+    id: cardData.id,
+    dimension: cardData.dim,
+    choice: dir,
+    value: dir === 'like' ? cardData.like : dir === 'nope' ? cardData.nope : 0.5,
+    response_ms: responseMs,
+  });
+}
+
+function advanceCard() {
+  current++;
+  if (current >= deck.length) {
+    showDone();
+    return;
+  }
+  renderCards();
+}
+
+// ─────────────────────────────────────────────
+//  DONE
+// ─────────────────────────────────────────────
+function showDone() {
+  const likes = answers.filter(a => a.choice === 'like').length;
+  const nopes = answers.filter(a => a.choice === 'nope').length;
+  document.getElementById('done-total').textContent = answers.length;
+  document.getElementById('done-like').textContent = likes;
+  document.getElementById('done-nope').textContent = nopes;
+  document.getElementById('done-screen').style.display = 'flex';
+  document.getElementById('submit-btn').addEventListener('click', submitResult);
+}
+
+// ─────────────────────────────────────────────
+//  BUILD 9D PROFILE
+// ─────────────────────────────────────────────
+function buildProfile() {
+  const dims = ['social','adventurous','aesthetic','comfort','budget','maximalist','energetic','urban','bitter'];
+  const dimVals = {};
+  dims.forEach(d => dimVals[d] = []);
+
+  answers.forEach(a => {
+    if (a.choice !== 'skip' && dimVals[a.dimension] !== undefined) {
+      dimVals[a.dimension].push(a.value);
+    }
+  });
+
+  const profile = {};
+  dims.forEach(d => {
+    if (dimVals[d].length > 0) {
+      profile[d] = dimVals[d].reduce((s, v) => s + v, 0) / dimVals[d].length;
+    } else {
+      profile[d] = 0.5; // default
+    }
+  });
+  return profile;
+}
+
+// ─────────────────────────────────────────────
+//  SUBMIT
+// ─────────────────────────────────────────────
+async function submitResult() {
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '분석 중...';
+  btn.disabled = true;
+
+  const profile = buildProfile();
+
+  // Fill birthdate fields (swipe is standalone — no birth date)
+  const payload = {
+    quiz_type: 'vol3_swipe',
+    birth_year:  parseInt(birthdate.slice(0,4)) || 1995,
+    birth_month: parseInt(birthdate.slice(4,6)) || 6,
+    birth_day:   parseInt(birthdate.slice(6,8)) || 15,
+    birth_hour:  12,
+    gender: 'unknown',
+    survey: profile,
+    swipe_answers: answers,
+  };
+
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.result_id) {
+      window.location.href = `/result/${data.result_id}`;
+    } else {
+      btn.textContent = '오류. 다시 시도';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = '오류. 다시 시도';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

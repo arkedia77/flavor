@@ -648,16 +648,17 @@ def submit():
         birth_time = data.get("birth_time", "12") # 시 (0~23), 기본값 낮 12시
         gender     = data.get("gender", "unknown")
 
-        quiz_type   = data.get("quiz_type", "vol1_taste")  # vol1_taste / vol2_ab / ...
+        quiz_type   = data.get("quiz_type", "vol1_taste")  # vol1_taste / vol2_ab / vol3_swipe / ...
 
         # q1~q27 원본 개별 응답 저장 (캘리브레이션·재분석용)
-        raw_answers = data.get("raw_answers", {})
-        ab_answers  = data.get("ab_answers", [])   # A/B 포맷 응답
+        raw_answers   = data.get("raw_answers", {})
+        ab_answers    = data.get("ab_answers", [])     # A/B 포맷 응답
+        swipe_answers = data.get("swipe_answers", [])  # 스와이프 포맷 응답
 
         # 백엔드가 소스 오브 트루스: raw_answers → 9개 차원 계산
         if raw_answers:
             survey = raw_to_survey(raw_answers)
-        elif ab_answers:
+        elif swipe_answers or ab_answers:
             # A/B 포맷: 프론트에서 계산한 dimension 평균값을 survey로 직접 수신
             survey_raw = data.get("survey", {})
             survey = {
@@ -685,10 +686,16 @@ def submit():
                 "bitter":      float(data.get("bitter", 0.5)),
             }
 
-        # 생년월일 파싱
-        parts = birth_date.split("-")
-        year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
-        hour = int(birth_time)
+        # 생년월일 파싱 (swipe/ab: 개별 필드 우선, 없으면 birth_date 문자열 분해)
+        if data.get("birth_year"):
+            year  = int(data.get("birth_year", 1995))
+            month = int(data.get("birth_month", 6))
+            day   = int(data.get("birth_day", 15))
+            hour  = int(data.get("birth_hour", 12))
+        else:
+            parts = birth_date.split("-")
+            year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
+            hour = int(birth_time)
 
         # 사주 계산
         saju = calc_saju(year, month, day, hour)
@@ -708,7 +715,7 @@ def submit():
         """, (
             result_id, name, birth_date, birth_time, gender,
             json.dumps(saju["elements"], ensure_ascii=False),
-            json.dumps(raw_answers or ab_answers, ensure_ascii=False),  # 원본 응답
+            json.dumps(raw_answers or swipe_answers or ab_answers, ensure_ascii=False),  # 원본 응답
             json.dumps(survey, ensure_ascii=False),
             json.dumps(profile, ensure_ascii=False),
             json.dumps(results, ensure_ascii=False),
@@ -1097,6 +1104,14 @@ def ab_quiz():
     """A/B 바이너리 취향 테스트 (Vol.2 파일럿)"""
     ab_path = os.path.join(os.path.dirname(__file__), "quizzes", "vol2_ab", "ab.html")
     with open(ab_path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@app.route("/swipe")
+def swipe_quiz():
+    """스와이프 취향 테스트 (Vol.3 파일럿)"""
+    swipe_path = os.path.join(os.path.dirname(__file__), "quizzes", "vol3_swipe", "swipe.html")
+    with open(swipe_path, "r", encoding="utf-8") as f:
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
