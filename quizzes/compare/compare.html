@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="취향 테스트 3종 비교 체험 🧪">
+<meta property="og:description" content="설문형 vs A/B 선택형 vs 스와이프형 — 셋 다 해보고 어떤 방식이 제일 재밌었는지 알려줘!">
+<meta property="og:image" content="https://flavor.arkedia.work/static/og_compare.png">
+<title>취향 테스트 3종 비교</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0C0C10;
+    --card: #16161E;
+    --border: rgba(255,255,255,0.07);
+    --text: #F0F0F5;
+    --sub: #888;
+    --c1: #FF6B6B;   /* Vol.1 설문형 */
+    --c2: #5B8DEF;   /* Vol.2 A/B    */
+    --c3: #FF4B7B;   /* Vol.3 스와이프 */
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Noto Sans KR', sans-serif;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 52px 24px 36px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--sub);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(24px, 7vw, 36px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { background: linear-gradient(135deg, var(--c1), var(--c3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p {
+    font-size: 15px;
+    color: var(--sub);
+    line-height: 1.6;
+    max-width: 340px;
+    margin: 0 auto 8px;
+  }
+  .hero-note {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 8px;
+  }
+
+  /* ── CARDS ── */
+  .cards-wrap {
+    padding: 8px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .vol-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s, border-color 0.18s;
+  }
+  .vol-card:active { transform: scale(0.98); }
+  .vol-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 20px 20px 0 0;
+  }
+  .vol-card.v1::before { background: var(--c1); }
+  .vol-card.v2::before { background: var(--c2); }
+  .vol-card.v3::before { background: linear-gradient(90deg, var(--c2), var(--c3)); }
+
+  .vol-card.done { border-color: rgba(255,255,255,0.15); }
+  .vol-card.done .card-cta { opacity: 0.5; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-meta { flex: 1; }
+  .vol-label {
+    font-size: 11px;
+    color: var(--sub);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .card-tagline {
+    font-size: 13px;
+    color: var(--sub);
+    font-style: italic;
+  }
+  .card-emoji-big {
+    font-size: 40px;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.06);
+    color: var(--sub);
+  }
+  .v1 .chip { color: var(--c1); background: rgba(255,107,107,0.1); }
+  .v2 .chip { color: var(--c2); background: rgba(91,141,239,0.1); }
+  .v3 .chip { color: var(--c3); background: rgba(255,75,123,0.1); }
+
+  .card-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+    transition: opacity 0.2s, transform 0.15s;
+    cursor: pointer;
+    border: none;
+  }
+  .cta-btn:active { opacity: 0.8; transform: scale(0.95); }
+  .v1 .cta-btn { background: var(--c1); }
+  .v2 .cta-btn { background: var(--c2); }
+  .v3 .cta-btn { background: linear-gradient(135deg, var(--c2), var(--c3)); }
+
+  .done-badge {
+    display: none;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    align-items: center;
+    gap: 4px;
+  }
+  .done-badge::before { content: '✓'; color: #5ecd7f; font-weight: 700; }
+  .vol-card.done .done-badge { display: flex; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 18px;
+    opacity: 0.2;
+  }
+
+  /* ── VOTE SECTION ── */
+  #vote-section {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 48px;
+    display: none;
+  }
+  #vote-section.visible { display: block; }
+
+  .vote-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 20px;
+  }
+  .vote-title {
+    font-size: 18px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .vote-sub {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .vote-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    text-align: left;
+    width: 100%;
+  }
+  .vote-btn:active { transform: scale(0.97); }
+  .vote-btn.selected { background: rgba(255,255,255,0.06); }
+  .vote-btn.v1-btn.selected { border-color: var(--c1); }
+  .vote-btn.v2-btn.selected { border-color: var(--c2); }
+  .vote-btn.v3-btn.selected { border-color: var(--c3); }
+  .vote-icon { font-size: 22px; flex-shrink: 0; }
+  .vote-label { flex: 1; }
+  .vote-label .vl-title { display: block; }
+  .vote-label .vl-sub { display: block; font-size: 12px; color: var(--sub); font-weight: 400; margin-top: 2px; }
+  .vote-check { font-size: 18px; opacity: 0; transition: opacity 0.15s; }
+  .vote-btn.selected .vote-check { opacity: 1; }
+
+  .comment-wrap { margin-bottom: 16px; }
+  .comment-wrap label { font-size: 13px; color: var(--sub); display: block; margin-bottom: 8px; }
+  .comment-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+    height: 72px;
+  }
+  .comment-input:focus { border-color: rgba(255,255,255,0.2); }
+
+  .submit-vote-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, var(--c1), var(--c3));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .submit-vote-btn:disabled { opacity: 0.4; cursor: default; }
+  .submit-vote-btn:not(:disabled):active { opacity: 0.85; }
+
+  /* ── THANKS ── */
+  #thanks {
+    display: none;
+    text-align: center;
+    padding: 32px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+  }
+  #thanks.visible { display: block; }
+  #thanks .big { font-size: 48px; margin-bottom: 12px; }
+  #thanks h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  #thanks p { font-size: 14px; color: var(--sub); line-height: 1.6; }
+
+  /* ── PROGRESS DOTS ── */
+  .progress-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 0 20px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: background 0.3s;
+  }
+  .dot.done { background: #5ecd7f; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">🧪 UX 비교 테스트</div>
+  <h1>취향 테스트<br><span>3가지 방식</span> 비교</h1>
+  <p>셋 다 해보고<br>어떤 방식이 제일 재밌었는지 알려줘 👇</p>
+  <p class="hero-note">각 테스트 2~5분 / 결과는 바로 나와요</p>
+</div>
+
+<div class="progress-dots">
+  <div class="dot" id="dot1"></div>
+  <div class="dot" id="dot2"></div>
+  <div class="dot" id="dot3"></div>
+</div>
+
+<div class="cards-wrap">
+
+  <!-- VOL.1 설문형 -->
+  <div class="vol-card v1" id="card1">
+    <div class="card-top">
+      <div class="card-meta">
+        <div class="vol-label">Vol.1</div>
+        <div class="card-title">27문항 설문형</div>
+        <div class="card-tagline">"정밀 분석형"</div>
+      </div>
+      <div class="card-emoji-big">📋</div>
+    </div>
+    <p class="card-desc">생년월일 입력 후 27개 질문에 슬라이더로 답해. 가장 정밀하게 취향 벡터가 나오는 방식.</p>
+    <div class="card-chips">
+      <span class="chip">⏱ 약 5분</span>
+      <span class="chip">슬라이더 27개</span>
+      <span class="chip">생년월일 필요</span>
+    </div>
+    <div class="card-cta">
+      <a class="cta-btn" href="/survey" target="_blank" onclick="markDone(1)">시작하기 →</a>
+      <span class="done-badge">완료</span>
+    </div>
+  </div>
+
+  <div class="divider">↓</div>
+
+  <!-- VOL.2 A/B -->
+  <div class="vol-card v2" id="card2">
+    <div class="card-top">
+      <div class="card-meta">
+        <div class="vol-label">Vol.2</div>
+        <div class="card-title">A/B 강제선택형</div>
+        <div class="card-tagline">"스피드 바이너리형"</div>
+      </div>
+      <div class="card-emoji-big">⚡</div>
+    </div>
+    <p class="card-desc">두 개 중 하나만 골라. 고민할 틈이 없어서 오히려 진짜 취향이 나온다는 게 포인트.</p>
+    <div class="card-chips">
+      <span class="chip">⏱ 약 2분</span>
+      <span class="chip">15문항 양자택일</span>
+      <span class="chip">전체화면 분할</span>
+    </div>
+    <div class="card-cta">
+      <a class="cta-btn" href="/ab" target="_blank" onclick="markDone(2)">시작하기 →</a>
+      <span class="done-badge">완료</span>
+    </div>
+  </div>
+
+  <div class="divider">↓</div>
+
+  <!-- VOL.3 스와이프 -->
+  <div class="vol-card v3" id="card3">
+    <div class="card-top">
+      <div class="card-meta">
+        <div class="vol-label">Vol.3 · NEW</div>
+        <div class="card-title">스와이프 카드형</div>
+        <div class="card-tagline">"직관 반응형"</div>
+      </div>
+      <div class="card-emoji-big">🃏</div>
+    </div>
+    <p class="card-desc">카드 보고 좋으면 오른쪽, 별로면 왼쪽으로 스와이프. 틴더처럼 하는 취향 테스트.</p>
+    <div class="card-chips">
+      <span class="chip">⏱ 약 1분</span>
+      <span class="chip">20장 카드</span>
+      <span class="chip">스와이프 or 버튼</span>
+    </div>
+    <div class="card-cta">
+      <a class="cta-btn" href="/swipe" target="_blank" onclick="markDone(3)">시작하기 →</a>
+      <span class="done-badge">완료</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- VOTE SECTION -->
+<div id="vote-section">
+  <div class="vote-wrap" id="vote-form">
+    <div class="vote-title">어떤 방식이 제일 좋았어? 🙋</div>
+    <div class="vote-sub">피드백이 다음 버전에 바로 반영돼요</div>
+
+    <div class="vote-btns">
+      <button class="vote-btn v1-btn" onclick="selectVote('vol1_taste')">
+        <span class="vote-icon">📋</span>
+        <span class="vote-label">
+          <span class="vl-title">27문항 설문형</span>
+          <span class="vl-sub">정밀하게 분석되는 느낌이 좋았다</span>
+        </span>
+        <span class="vote-check">✓</span>
+      </button>
+      <button class="vote-btn v2-btn" onclick="selectVote('vol2_ab')">
+        <span class="vote-icon">⚡</span>
+        <span class="vote-label">
+          <span class="vl-title">A/B 강제선택형</span>
+          <span class="vl-sub">빠르고 고민 없이 할 수 있어서 좋았다</span>
+        </span>
+        <span class="vote-check">✓</span>
+      </button>
+      <button class="vote-btn v3-btn" onclick="selectVote('vol3_swipe')">
+        <span class="vote-icon">🃏</span>
+        <span class="vote-label">
+          <span class="vl-title">스와이프 카드형</span>
+          <span class="vl-sub">손이 자꾸 가는 느낌, 중독성 있었다</span>
+        </span>
+        <span class="vote-check">✓</span>
+      </button>
+    </div>
+
+    <div class="comment-wrap">
+      <label>💬 한마디 더 (선택)</label>
+      <textarea class="comment-input" id="vote-comment" placeholder="어떤 부분이 좋거나 별로였어? 자유롭게 써줘 🙏"></textarea>
+    </div>
+
+    <button class="submit-vote-btn" id="submit-vote-btn" disabled onclick="submitVote()">
+      피드백 보내기 🚀
+    </button>
+  </div>
+
+  <div id="thanks">
+    <div class="big">🙏</div>
+    <h3>고마워!</h3>
+    <p>네 피드백이 다음 버전에 반영될 거야.<br>결과 공유도 부탁해 👇</p>
+    <br>
+    <button onclick="shareCompare()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:12px 28px;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;width:100%;">
+      🔗 친구한테 공유하기
+    </button>
+  </div>
+</div>
+
+<script>
+  let doneSet = new Set();
+  let selectedVote = null;
+
+  // ── Check localStorage for already-done tests ──
+  ['1','2','3'].forEach(n => {
+    if (localStorage.getItem(`flavor_compare_done_${n}`)) {
+      markDoneUI(parseInt(n));
+    }
+  });
+
+  function markDone(n) {
+    localStorage.setItem(`flavor_compare_done_${n}`, '1');
+    setTimeout(() => {
+      markDoneUI(n);
+      checkShowVote();
+    }, 800);
+  }
+
+  function markDoneUI(n) {
+    doneSet.add(n);
+    const card = document.getElementById(`card${n}`);
+    const dot  = document.getElementById(`dot${n}`);
+    if (card) card.classList.add('done');
+    if (dot)  dot.classList.add('done');
+  }
+
+  function checkShowVote() {
+    // Show vote section after at least 2 done (or can change to 3)
+    if (doneSet.size >= 2) {
+      document.getElementById('vote-section').classList.add('visible');
+      document.getElementById('vote-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function selectVote(type) {
+    selectedVote = type;
+    document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('selected'));
+    const map = { 'vol1_taste': 'v1-btn', 'vol2_ab': 'v2-btn', 'vol3_swipe': 'v3-btn' };
+    document.querySelector(`.${map[type]}`).classList.add('selected');
+    document.getElementById('submit-vote-btn').disabled = false;
+  }
+
+  async function submitVote() {
+    if (!selectedVote) return;
+    const btn = document.getElementById('submit-vote-btn');
+    btn.disabled = true;
+    btn.textContent = '전송 중...';
+
+    const comment = document.getElementById('vote-comment').value.trim();
+    try {
+      await fetch('/api/ux-vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          preferred: selectedVote,
+          comment: comment,
+          done_set: [...doneSet],
+          source: 'compare_page',
+        }),
+      });
+    } catch (e) { /* 실패해도 thanks 보여줌 */ }
+
+    document.getElementById('vote-form').style.display = 'none';
+    document.getElementById('thanks').classList.add('visible');
+  }
+
+  function shareCompare() {
+    const url = 'https://flavor.arkedia.work/compare';
+    const text = '취향 테스트 3가지 방식 비교해봐 — 어떤 게 제일 재밌어? 🧪';
+    if (navigator.share) {
+      navigator.share({ title: '취향 테스트 3종 비교', text, url }).catch(() => copyFallback(url));
+    } else {
+      copyFallback(url);
+    }
+  }
+  function copyFallback(url) {
+    navigator.clipboard.writeText(url).then(() => alert('링크 복사됐어! 붙여넣기 해줘 🙌')).catch(() => alert(url));
+  }
+</script>
+</body>
+</html>

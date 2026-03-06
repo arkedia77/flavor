@@ -1115,6 +1115,68 @@ def swipe_quiz():
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
+@app.route("/compare")
+def compare():
+    """3가지 UX 방식 비교 랜딩페이지"""
+    path = os.path.join(os.path.dirname(__file__), "quizzes", "compare", "compare.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@app.route("/api/ux-vote", methods=["POST"])
+def ux_vote():
+    """UX 방식 선호도 투표 저장"""
+    try:
+        data = request.get_json(force=True)
+        preferred = data.get("preferred", "")
+        comment   = data.get("comment", "")
+        done_set  = data.get("done_set", [])
+        source    = data.get("source", "")
+
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS ux_votes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                preferred TEXT,
+                comment TEXT,
+                done_set TEXT,
+                source TEXT,
+                created_at TEXT
+            )
+        """)
+        c.execute(
+            "INSERT INTO ux_votes (preferred, comment, done_set, source, created_at) VALUES (?, ?, ?, ?, ?)",
+            (preferred, comment, json.dumps(done_set), source, datetime.now().isoformat())
+        )
+        conn.commit()
+
+        # 현재 집계 반환
+        c.execute("SELECT preferred, COUNT(*) FROM ux_votes GROUP BY preferred ORDER BY COUNT(*) DESC")
+        tally = {row[0]: row[1] for row in c.fetchall()}
+        conn.close()
+
+        return jsonify({"ok": True, "tally": tally})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/ux-vote/tally", methods=["GET"])
+def ux_vote_tally():
+    """UX 투표 현황 조회"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT preferred, COUNT(*) FROM ux_votes GROUP BY preferred ORDER BY COUNT(*) DESC")
+        tally = {row[0]: row[1] for row in c.fetchall()}
+        c.execute("SELECT preferred, comment, created_at FROM ux_votes WHERE comment != '' ORDER BY created_at DESC LIMIT 20")
+        comments = [{"preferred": r[0], "comment": r[1], "at": r[2]} for r in c.fetchall()]
+        conn.close()
+        return jsonify({"tally": tally, "comments": comments})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/")
 def index():
     return redirect("/survey", code=302)
