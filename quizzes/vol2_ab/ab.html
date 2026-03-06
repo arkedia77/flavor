@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>취향 테스트 — flavor</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── INTRO ── */
+#screen-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 32px;
+  text-align: center;
+}
+.intro-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #ff8906;
+  border: 1px solid rgba(255,137,6,0.3);
+  border-radius: 20px;
+  padding: 5px 16px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+}
+.intro-title {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.intro-title span { color: #ff8906; }
+.intro-sub {
+  font-size: 0.9rem;
+  color: #666688;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.intro-meta {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+.intro-meta div {
+  text-align: center;
+}
+.intro-meta .num {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ff8906;
+}
+.intro-meta .desc {
+  font-size: 0.72rem;
+  color: #555577;
+  margin-top: 2px;
+}
+
+/* 생년월일 입력 */
+.info-form {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 24px;
+}
+.info-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.info-row input, .info-row select {
+  flex: 1;
+  height: 48px;
+  background: #111124;
+  border: 1.5px solid #1e1e38;
+  border-radius: 12px;
+  color: #e8e8f0;
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-align: center;
+  padding: 0 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.info-row input:focus, .info-row select:focus {
+  border-color: #ff8906;
+}
+.info-row input::placeholder { color: #444466; }
+.info-row select option { background: #111124; }
+.gender-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.gender-btn {
+  height: 48px;
+  background: #111124;
+  border: 1.5px solid #1e1e38;
+  border-radius: 12px;
+  color: #666688;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.gender-btn.selected {
+  border-color: #ff8906;
+  color: #ff8906;
+  background: rgba(255,137,6,0.08);
+}
+
+.btn-start {
+  width: 100%;
+  max-width: 360px;
+  height: 58px;
+  background: linear-gradient(135deg, #ff8906, #ff5f40);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  box-shadow: 0 8px 24px rgba(255,137,6,0.35);
+}
+.btn-start:active { transform: scale(0.97); }
+
+/* ── QUIZ ── */
+#screen-quiz { display: none; min-height: 100vh; flex-direction: column; }
+
+.quiz-top {
+  padding: 20px 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: #1e1e38;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff8906, #ff5f40);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+.progress-text {
+  font-size: 0.78rem;
+  color: #444466;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vs-label {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #333355;
+  letter-spacing: 0.15em;
+  padding: 24px 0 16px;
+}
+
+/* A/B 선택 영역 */
+.ab-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 40px;
+}
+.ab-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111124;
+  border: 2px solid #1e1e38;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 38vh;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.ab-option:active {
+  transform: scale(0.97);
+}
+.ab-option.selected-a {
+  border-color: #ff8906;
+  background: rgba(255,137,6,0.12);
+  animation: flash-a 0.25s ease;
+}
+.ab-option.selected-b {
+  border-color: #ff8906;
+  background: rgba(255,137,6,0.12);
+  animation: flash-b 0.25s ease;
+}
+@keyframes flash-a {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); border-color: #ff8906; }
+  100% { transform: scale(1); }
+}
+@keyframes flash-b {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); border-color: #ff8906; }
+  100% { transform: scale(1); }
+}
+.ab-emoji {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  line-height: 1;
+}
+.ab-text {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #e8e8f0;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.ab-check {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff8906;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.ab-option.selected-a .ab-check,
+.ab-option.selected-b .ab-check {
+  opacity: 1;
+}
+
+.vs-divider {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #2a2a45;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+/* ── LOADING ── */
+#screen-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 40px;
+}
+.loading-emoji {
+  font-size: 4rem;
+  margin-bottom: 24px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.loading-sub {
+  font-size: 0.85rem;
+  color: #555577;
+}
+
+/* ── RESULT ── */
+#screen-result {
+  display: none;
+  min-height: 100vh;
+  padding: 0 0 80px;
+}
+.result-hero {
+  text-align: center;
+  padding: 48px 24px 32px;
+  background: linear-gradient(180deg, #13132b 0%, #080810 100%);
+  position: relative;
+  overflow: hidden;
+}
+.result-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,137,6,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.result-type-emoji {
+  font-size: 4.5rem;
+  display: block;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 0 24px rgba(255,137,6,0.5));
+  line-height: 1;
+}
+.result-type-name {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+  line-height: 1.1;
+}
+.result-tagline {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ff8906;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.result-detail {
+  font-size: 0.85rem;
+  color: #7777aa;
+  line-height: 1.7;
+  max-width: 300px;
+  margin: 0 auto 16px;
+}
+.result-name-sub {
+  font-size: 0.78rem;
+  color: #333355;
+}
+.result-name-sub strong { color: #666688; }
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #333355;
+  text-transform: uppercase;
+  padding: 24px 20px 10px;
+}
+.domain-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 16px;
+}
+.domain-card {
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 16px;
+  padding: 14px;
+}
+.d-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.d-icon { font-size: 1rem; }
+.d-label { font-size: 0.65rem; font-weight: 700; color: #444466; text-transform: uppercase; letter-spacing: 0.06em; }
+.d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
+.d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
+.d-desc { font-size: 0.7rem; color: rgba(255,137,6,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
+
+.cta-box {
+  margin: 20px 16px 0;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.cta-lead { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.cta-sub { font-size: 0.82rem; color: #555577; margin-bottom: 20px; line-height: 1.6; }
+.btn-primary {
+  display: block; width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #ff8906, #ff5f40);
+  color: #fff; font-weight: 900; font-size: 1rem;
+  border-radius: 14px; text-decoration: none; border: none;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 8px 24px rgba(255,137,6,0.3);
+}
+.btn-secondary {
+  display: block; width: 100%; padding: 14px;
+  background: transparent; color: #555577; font-size: 0.88rem;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  cursor: pointer; margin-top: 10px; font-family: inherit; font-weight: 600;
+}
+.btn-secondary.copied { color: #4ade80 !important; border-color: #4ade80 !important; }
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-badge">✦ flavor — 취향 테스트</div>
+  <div class="intro-title">마음 가는 대로만<br><span>고르면 됩니다</span></div>
+  <div class="intro-sub">
+    둘 중 하나 선택, 딱 2분<br>
+    당신의 취향 유형이 나와요
+  </div>
+  <div class="intro-meta">
+    <div><div class="num">15</div><div class="desc">문항</div></div>
+    <div><div class="num">2분</div><div class="desc">소요</div></div>
+    <div><div class="num">10+</div><div class="desc">취향 유형</div></div>
+  </div>
+
+  <div class="info-form">
+    <div class="info-row">
+      <input type="text" id="name" placeholder="닉네임" maxlength="10">
+    </div>
+    <div class="info-row">
+      <input type="number" id="birth_year" placeholder="년도 (예: 1995)" min="1940" max="2010" inputmode="numeric">
+    </div>
+    <div class="info-row">
+      <select id="birth_month">
+        <option value="">월</option>
+      </select>
+      <select id="birth_day">
+        <option value="">일</option>
+      </select>
+    </div>
+    <div class="gender-row">
+      <button class="gender-btn" data-gender="male" onclick="selectGender(this)">남성</button>
+      <button class="gender-btn" data-gender="female" onclick="selectGender(this)">여성</button>
+    </div>
+  </div>
+
+  <button class="btn-start" onclick="startQuiz()">취향 알아보기 →</button>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="vs-label">CHOOSE ONE</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🔮</div>
+  <div class="loading-text">취향 분석 중...</div>
+  <div class="loading-sub" style="margin-top:8px; font-size:0.85rem; color:#555577;">생년월일 × 선택 패턴 계산 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <span class="result-type-emoji" id="r-emoji"></span>
+    <div class="result-type-name" id="r-type"></div>
+    <div class="result-tagline" id="r-tagline"></div>
+    <div class="result-detail" id="r-detail"></div>
+    <div class="result-name-sub">생년월일 × 15문항 — <strong id="r-name"></strong>님의 결과</div>
+  </div>
+  <div class="section-label">취향 상세 분석</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 취향은 뭘까? 🤔</div>
+    <div class="cta-sub">공유하면 친구 결과도 볼 수 있어요</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 이 결과 공유하기</button>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 해보기</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+const QUESTIONS = [
+  { id:'q1',  dimension:'bitter',      A:{emoji:'🧋', label:'달달한 라떼',      val:0.2},  B:{emoji:'☕', label:'에스프레소',       val:0.85} },
+  { id:'q2',  dimension:'social',      A:{emoji:'🎉', label:'친구들이랑 북적',   val:0.85}, B:{emoji:'🎧', label:'혼자 조용히',       val:0.15} },
+  { id:'q3',  dimension:'urban',       A:{emoji:'🏙️', label:'성수 / 힙한 골목', val:0.9},  B:{emoji:'🌿', label:'제주 / 자연 속',    val:0.1} },
+  { id:'q4',  dimension:'adventurous', A:{emoji:'💛', label:'검증된 단골 메뉴',  val:0.15}, B:{emoji:'✨', label:'처음 보는 메뉴 도전', val:0.85} },
+  { id:'q5',  dimension:'aesthetic',   A:{emoji:'🎨', label:'감성 소품 가득',    val:0.3},  B:{emoji:'🪴', label:'깔끔한 미니멀 공간', val:0.85} },
+  { id:'q6',  dimension:'energetic',   A:{emoji:'🛋️', label:'집에서 쉬는 주말', val:0.15}, B:{emoji:'⚡', label:'뭔가 채우는 주말',   val:0.85} },
+  { id:'q7',  dimension:'budget',      A:{emoji:'💎', label:'좋은 거 하나',      val:0.8},  B:{emoji:'🛍️', label:'적당한 거 여러 개', val:0.25} },
+  { id:'q8',  dimension:'adventurous', A:{emoji:'📋', label:'완벽한 계획 여행',  val:0.15}, B:{emoji:'🔥', label:'즉흥으로 떠나기',    val:0.9} },
+  { id:'q9',  dimension:'maximalist',  A:{emoji:'📦', label:'물건은 최소한',     val:0.1},  B:{emoji:'🛒', label:'좋으면 사고 봄',     val:0.85} },
+  { id:'q10', dimension:'social',      A:{emoji:'🧘', label:'혼자서 충전',       val:0.15}, B:{emoji:'👥', label:'사람들로 충전',       val:0.85} },
+  { id:'q11', dimension:'aesthetic',   A:{emoji:'👟', label:'편한 기본템',       val:0.25}, B:{emoji:'💫', label:'포인트 있는 스타일', val:0.8} },
+  { id:'q12', dimension:'comfort',     A:{emoji:'🏡', label:'익숙한 단골집',     val:0.85}, B:{emoji:'🗺️', label:'새 식당 탐험',       val:0.15} },
+  { id:'q13', dimension:'budget',      A:{emoji:'🤔', label:'고민하고 또 고민',  val:0.2},  B:{emoji:'💸', label:'원하면 바로 지름',    val:0.85} },
+  { id:'q14', dimension:'urban',       A:{emoji:'🌾', label:'동네 골목 단골',    val:0.2},  B:{emoji:'🚇', label:'트렌디한 핫플',       val:0.85} },
+  { id:'q15', dimension:'energetic',   A:{emoji:'🌙', label:'느긋한 슬로우라이프', val:0.1}, B:{emoji:'🚀', label:'빠르게 활동적으로',  val:0.9} }
+];
+
+const DOMAIN_EMOJI = { '커피':'☕','향수':'🌸','음악':'🎵','식당':'🍽️','운동':'🏃','여행':'✈️','패션':'👗','인테리어':'🏠' };
+
+let currentQ = 0;
+let answers = [];   // {id, dimension, choice, value, response_ms}
+let qStartTime = 0;
+let userData = {};
+let resultShareUrl = '';
+
+/* ── 초기화 ── */
+(function() {
+  const monthSel = document.getElementById('birth_month');
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2,'0');
+    o.textContent = m + '월';
+    monthSel.appendChild(o);
+  }
+  const daySel = document.getElementById('birth_day');
+  for (let d = 1; d <= 31; d++) {
+    const o = document.createElement('option');
+    o.value = String(d).padStart(2,'0');
+    o.textContent = d + '일';
+    daySel.appendChild(o);
+  }
+})();
+
+function selectGender(btn) {
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function startQuiz() {
+  const name  = document.getElementById('name').value.trim();
+  const year  = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day   = document.getElementById('birth_day').value;
+  const genderBtn = document.querySelector('.gender-btn.selected');
+
+  if (!name)               return alert('닉네임을 입력해주세요!');
+  if (!year || year < 1940 || year > 2010) return alert('출생년도를 확인해주세요!');
+  if (!month || !day)      return alert('생년월일을 모두 선택해주세요!');
+  if (!genderBtn)          return alert('성별을 선택해주세요!');
+
+  userData = {
+    name,
+    birth_date: `${year}-${month}-${day}`,
+    birth_time: '12',
+    gender: genderBtn.dataset.gender
+  };
+
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  showQuestion(0);
+}
+
+function showQuestion(idx) {
+  const q = QUESTIONS[idx];
+  document.getElementById('emoji-a').textContent = q.A.emoji;
+  document.getElementById('text-a').textContent  = q.A.label;
+  document.getElementById('emoji-b').textContent = q.B.emoji;
+  document.getElementById('text-b').textContent  = q.B.label;
+  document.getElementById('opt-a').className = 'ab-option';
+  document.getElementById('opt-b').className = 'ab-option';
+  document.getElementById('progress-fill').style.width = (idx / QUESTIONS.length * 100) + '%';
+  document.getElementById('progress-text').textContent = `${idx + 1} / ${QUESTIONS.length}`;
+  qStartTime = Date.now();
+}
+
+function choose(side) {
+  if (currentQ >= QUESTIONS.length) return;
+  const q = QUESTIONS[currentQ];
+  const responseMs = Date.now() - qStartTime;
+  const chosen = side === 'A' ? q.A : q.B;
+
+  // 시각적 피드백
+  document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
+
+  answers.push({
+    id: q.id,
+    dimension: q.dimension,
+    choice: side,
+    value: chosen.val,
+    response_ms: responseMs
+  });
+
+  currentQ++;
+
+  if (currentQ < QUESTIONS.length) {
+    setTimeout(() => showQuestion(currentQ), 220);
+  } else {
+    setTimeout(submitAnswers, 300);
+  }
+}
+
+/* ── 프로필 계산 (dimension별 평균) ── */
+function buildProfile() {
+  const dims = {};
+  const counts = {};
+  answers.forEach(a => {
+    dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
+    counts[a.dimension] = (counts[a.dimension] || 0) + 1;
+  });
+  const profile = {};
+  Object.keys(dims).forEach(d => { profile[d] = dims[d] / counts[d]; });
+  // 미응답 차원 기본값
+  ['social','adventurous','aesthetic','comfort','budget','maximalist','energetic','urban','bitter']
+    .forEach(d => { if (profile[d] === undefined) profile[d] = 0.5; });
+  return profile;
+}
+
+async function submitAnswers() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-loading').style.display = 'flex';
+
+  const profile = buildProfile();
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...userData,
+        quiz_type: 'vol2_ab',
+        ab_answers: answers,
+        survey: profile   // 직접 계산한 profile을 survey로 전달
+      })
+    });
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      showResult(data);
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (e) {
+    // 오프라인 폴백: 로컬 계산 결과 표시
+    showResultOffline(profile);
+  }
+}
+
+function showResult(data) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+
+  const pt = data.personality || {};
+  document.getElementById('r-emoji').textContent   = pt.emoji   || '✨';
+  document.getElementById('r-type').textContent    = pt.type    || '취향인';
+  document.getElementById('r-tagline').textContent = pt.tagline ? `"${pt.tagline}"` : '';
+  document.getElementById('r-detail').textContent  = pt.detail  || '';
+  document.getElementById('r-name').textContent    = data.name  || '';
+
+  const grid = document.getElementById('r-domains');
+  grid.innerHTML = '';
+  Object.entries(data.results || {}).forEach(([domain, rec]) => {
+    const card = document.createElement('div');
+    card.className = 'domain-card';
+    const descHtml = rec.description ? `<div class="d-desc">"${rec.description}"</div>` : '';
+    card.innerHTML = `
+      <div class="d-head">
+        <span class="d-icon">${DOMAIN_EMOJI[domain]||'✨'}</span>
+        <span class="d-label">${domain}</span>
+      </div>
+      <div class="d-item">${rec.item||''}</div>
+      <div class="d-reason">${rec.reason||''}</div>
+      ${descHtml}`;
+    grid.appendChild(card);
+  });
+
+  if (data.id) {
+    resultShareUrl = `${API_BASE}/result/${data.id}`;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showResultOffline(profile) {
+  // 백엔드 실패 시 간단한 로컬 결과
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  document.getElementById('r-emoji').textContent   = '✨';
+  document.getElementById('r-type').textContent    = '취향 분석 완료';
+  document.getElementById('r-tagline').textContent = '"결과를 저장하지 못했어요"';
+  document.getElementById('r-detail').textContent  = '네트워크 오류가 발생했어요. 다시 시도해보세요.';
+  document.getElementById('r-name').textContent    = userData.name || '';
+}
+
+function copyResult() {
+  if (!resultShareUrl) {
+    alert('공유 링크를 불러오지 못했어요.');
+    return;
+  }
+  navigator.clipboard.writeText(resultShareUrl).then(() => {
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = '✅ 복사됐어요! 친구에게 보내세요';
+    setTimeout(() => { btn.textContent = '🔗 이 결과 공유하기'; }, 2500);
+  }).catch(() => {
+    prompt('아래 링크를 복사하세요', resultShareUrl);
+  });
+}
+</script>
+</body>
+</html>

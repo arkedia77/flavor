@@ -648,12 +648,29 @@ def submit():
         birth_time = data.get("birth_time", "12") # 시 (0~23), 기본값 낮 12시
         gender     = data.get("gender", "unknown")
 
+        quiz_type   = data.get("quiz_type", "vol1_taste")  # vol1_taste / vol2_ab / ...
+
         # q1~q27 원본 개별 응답 저장 (캘리브레이션·재분석용)
         raw_answers = data.get("raw_answers", {})
+        ab_answers  = data.get("ab_answers", [])   # A/B 포맷 응답
 
         # 백엔드가 소스 오브 트루스: raw_answers → 9개 차원 계산
         if raw_answers:
             survey = raw_to_survey(raw_answers)
+        elif ab_answers:
+            # A/B 포맷: 프론트에서 계산한 dimension 평균값을 survey로 직접 수신
+            survey_raw = data.get("survey", {})
+            survey = {
+                "social":      float(survey_raw.get("social", 0.5)),
+                "aesthetic":   float(survey_raw.get("aesthetic", 0.5)),
+                "adventurous": float(survey_raw.get("adventurous", 0.5)),
+                "comfort":     float(survey_raw.get("comfort", 0.5)),
+                "budget":      float(survey_raw.get("budget", 0.5)),
+                "maximalist":  float(survey_raw.get("maximalist", 0.5)),
+                "energetic":   float(survey_raw.get("energetic", 0.5)),
+                "urban":       float(survey_raw.get("urban", 0.5)),
+                "bitter":      float(survey_raw.get("bitter", 0.5)),
+            }
         else:
             # 하위 호환: 프론트엔드가 직접 계산값 전송한 구버전 요청
             survey = {
@@ -690,12 +707,12 @@ def submit():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             result_id, name, birth_date, birth_time, gender,
-            json.dumps(saju["elements"], ensure_ascii=False),   # 오행 원본
-            json.dumps(raw_answers, ensure_ascii=False),        # q1~q27 원본
-            json.dumps(survey, ensure_ascii=False),             # 9개 차원 계산값
-            json.dumps(profile, ensure_ascii=False),            # blend된 최종 프로필
+            json.dumps(saju["elements"], ensure_ascii=False),
+            json.dumps(raw_answers or ab_answers, ensure_ascii=False),  # 원본 응답
+            json.dumps(survey, ensure_ascii=False),
+            json.dumps(profile, ensure_ascii=False),
             json.dumps(results, ensure_ascii=False),
-            PROFILE_VERSION,
+            f"{PROFILE_VERSION}_{quiz_type}",   # 버전에 quiz_type 포함
             datetime.now().isoformat()
         ))
 
@@ -1072,6 +1089,14 @@ def health():
 def survey():
     survey_path = os.path.join(os.path.dirname(__file__), "test_stages", "survey.html")
     with open(survey_path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@app.route("/ab")
+def ab_quiz():
+    """A/B 바이너리 취향 테스트 (Vol.2 파일럿)"""
+    ab_path = os.path.join(os.path.dirname(__file__), "quizzes", "vol2_ab", "ab.html")
+    with open(ab_path, "r", encoding="utf-8") as f:
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 

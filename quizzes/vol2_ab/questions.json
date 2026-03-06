@@ -1,0 +1,108 @@
+[
+  {
+    "id": "q1",
+    "dimension": "bitter",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🧋", "label": "달달한 라떼", "value": 0.2 },
+    "B": { "emoji": "☕", "label": "에스프레소", "value": 0.85 }
+  },
+  {
+    "id": "q2",
+    "dimension": "social",
+    "direction": "A=high, B=low",
+    "A": { "emoji": "🎉", "label": "친구들이랑 북적", "value": 0.85 },
+    "B": { "emoji": "🎧", "label": "혼자 조용히", "value": 0.15 }
+  },
+  {
+    "id": "q3",
+    "dimension": "urban",
+    "direction": "A=high, B=low",
+    "A": { "emoji": "🏙️", "label": "성수 / 힙한 골목", "value": 0.9 },
+    "B": { "emoji": "🌿", "label": "제주 / 자연 속", "value": 0.1 }
+  },
+  {
+    "id": "q4",
+    "dimension": "adventurous",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "💛", "label": "검증된 단골 메뉴", "value": 0.15 },
+    "B": { "emoji": "✨", "label": "처음 보는 메뉴 도전", "value": 0.85 }
+  },
+  {
+    "id": "q5",
+    "dimension": "aesthetic",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🛒", "label": "소품 가득 감성 공간", "value": 0.5 },
+    "B": { "emoji": "🪴", "label": "깔끔한 미니멀 공간", "value": 0.85 },
+    "note": "aesthetic high = minimalist taste"
+  },
+  {
+    "id": "q6",
+    "dimension": "energetic",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🛋️", "label": "집에서 쉬는 주말", "value": 0.15 },
+    "B": { "emoji": "⚡", "label": "뭔가 채우는 주말", "value": 0.85 }
+  },
+  {
+    "id": "q7",
+    "dimension": "budget",
+    "direction": "A=high, B=low",
+    "A": { "emoji": "💎", "label": "좋은 거 하나", "value": 0.8 },
+    "B": { "emoji": "🛍️", "label": "적당한 거 여러 개", "value": 0.25 }
+  },
+  {
+    "id": "q8",
+    "dimension": "adventurous",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "📋", "label": "완벽한 계획 여행", "value": 0.15 },
+    "B": { "emoji": "🔥", "label": "즉흥으로 떠나기", "value": 0.9 }
+  },
+  {
+    "id": "q9",
+    "dimension": "maximalist",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "📦", "label": "물건은 최소한", "value": 0.1 },
+    "B": { "emoji": "🎨", "label": "좋으면 사고 봄", "value": 0.85 }
+  },
+  {
+    "id": "q10",
+    "dimension": "social",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🧘", "label": "혼자서 충전", "value": 0.15 },
+    "B": { "emoji": "👥", "label": "사람들로 충전", "value": 0.85 }
+  },
+  {
+    "id": "q11",
+    "dimension": "aesthetic",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "👟", "label": "편한 기본템", "value": 0.25 },
+    "B": { "emoji": "💫", "label": "포인트 있는 스타일", "value": 0.8 }
+  },
+  {
+    "id": "q12",
+    "dimension": "comfort",
+    "direction": "A=high, B=low",
+    "A": { "emoji": "🏡", "label": "익숙한 단골집", "value": 0.85 },
+    "B": { "emoji": "🗺️", "label": "새 식당 탐험", "value": 0.15 }
+  },
+  {
+    "id": "q13",
+    "dimension": "budget",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🤔", "label": "고민하고 또 고민", "value": 0.2 },
+    "B": { "emoji": "💸", "label": "원하면 바로 지름", "value": 0.85 }
+  },
+  {
+    "id": "q14",
+    "dimension": "urban",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🌾", "label": "동네 골목 단골", "value": 0.2 },
+    "B": { "emoji": "🚇", "label": "트렌디한 핫플", "value": 0.85 }
+  },
+  {
+    "id": "q15",
+    "dimension": "energetic",
+    "direction": "A=low, B=high",
+    "A": { "emoji": "🌙", "label": "느긋하게 슬로우라이프", "value": 0.1 },
+    "B": { "emoji": "🚀", "label": "빠르게 활동적으로", "value": 0.9 }
+  }
+]
