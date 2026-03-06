@@ -309,20 +309,23 @@ function renderCards() {
   const stack = document.getElementById('card-stack');
   stack.innerHTML = '';
 
-  // Render top 3 cards
-  for (let i = Math.min(2, deck.length - current - 1); i >= 0; i--) {
+  // back2 → back1 → top 순서로 appendChild (top이 마지막 = 가장 위)
+  const maxBack = Math.min(2, deck.length - current - 1);
+  for (let i = maxBack; i >= 0; i--) {
     const cardData = deck[current + i];
     if (!cardData) continue;
     const el = makeCardEl(cardData);
     if (i === 0) {
-      el.classList.remove('back1', 'back2');
+      el.style.zIndex = 10;
       bindDrag(el);
     } else if (i === 1) {
       el.classList.add('back1');
+      el.style.zIndex = 5;
     } else {
       el.classList.add('back2');
+      el.style.zIndex = 1;
     }
-    stack.prepend(el);
+    stack.appendChild(el);
   }
   updateProgress();
 }
@@ -436,9 +439,14 @@ function flyOut(dir) {
 // ─────────────────────────────────────────────
 //  VOTE (buttons)
 // ─────────────────────────────────────────────
-function vote(dir) {
+function getTopCard() {
+  // z-index 10인 카드 = 현재 top
   const stack = document.getElementById('card-stack');
-  const topCard = stack.querySelector('.card:not(.back1):not(.back2)');
+  return [...stack.querySelectorAll('.card')].find(el => parseInt(el.style.zIndex) === 10) || null;
+}
+
+function vote(dir) {
+  const topCard = getTopCard();
   if (!topCard || isDragging) return;
 
   activeCard = topCard;
