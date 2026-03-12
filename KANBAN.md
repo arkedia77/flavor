@@ -30,6 +30,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-03-12 | 매핑 v3 + 동적 가중치 (방향일치 64%→88%, bitter 25%→100%) |
 | 2026-03-12 | Phase 2: 타입+갭 시스템 (L1/L2 personality, gap.py, blend upgrade) |
 | 2026-03-12 | Phase 1: Deep Saju Engine (commit 42bed49) |
 | 2026-03-12 | Phase 0: 모듈 분리 (app.py 1187줄 → 34줄, commit d468924) |
