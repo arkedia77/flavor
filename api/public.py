@@ -42,6 +42,13 @@ def swipe_quiz():
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
+@public.route("/romance")
+def romance_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol2_romance", "romance.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 @public.route("/compare")
 def compare():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "compare", "compare.html")

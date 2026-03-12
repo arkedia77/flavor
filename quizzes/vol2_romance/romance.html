@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연애 취향 테스트 — flavor</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── INTRO ── */
+#screen-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 32px;
+  text-align: center;
+}
+.intro-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #ff6b8a;
+  border: 1px solid rgba(255,107,138,0.3);
+  border-radius: 20px;
+  padding: 5px 16px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+}
+.intro-title {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.intro-title span { color: #ff6b8a; }
+.intro-sub {
+  font-size: 0.9rem;
+  color: #666688;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.intro-meta {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+.intro-meta div { text-align: center; }
+.intro-meta .num { font-size: 1.4rem; font-weight: 900; color: #ff6b8a; }
+.intro-meta .desc { font-size: 0.72rem; color: #555577; margin-top: 2px; }
+
+.info-form { width: 100%; max-width: 360px; margin-bottom: 24px; }
+.info-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.info-row input, .info-row select {
+  flex: 1; height: 48px; background: #111124;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  color: #e8e8f0; font-size: 0.95rem; font-family: inherit;
+  text-align: center; padding: 0 8px; outline: none;
+  transition: border-color 0.2s;
+}
+.info-row input:focus, .info-row select:focus { border-color: #ff6b8a; }
+.info-row input::placeholder { color: #444466; }
+.info-row select option { background: #111124; }
+.gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gender-btn {
+  height: 48px; background: #111124;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  color: #666688; font-size: 0.95rem; font-family: inherit;
+  cursor: pointer; transition: all 0.2s;
+}
+.gender-btn.selected { border-color: #ff6b8a; color: #ff6b8a; background: rgba(255,107,138,0.08); }
+
+.btn-start {
+  width: 100%; max-width: 360px; height: 58px;
+  background: linear-gradient(135deg, #ff6b8a, #ff4570);
+  color: #fff; font-size: 1.05rem; font-weight: 900;
+  border: none; border-radius: 16px; cursor: pointer;
+  font-family: inherit; letter-spacing: -0.01em;
+  box-shadow: 0 8px 24px rgba(255,107,138,0.35);
+}
+.btn-start:active { transform: scale(0.97); }
+
+/* ── QUIZ ── */
+#screen-quiz { display: none; min-height: 100vh; flex-direction: column; }
+.quiz-top { padding: 20px 20px 0; display: flex; align-items: center; gap: 12px; }
+.progress-bar-wrap {
+  flex: 1; height: 4px; background: #1e1e38;
+  border-radius: 4px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, #ff6b8a, #ff4570);
+  border-radius: 4px; transition: width 0.3s ease; width: 0%;
+}
+.progress-text { font-size: 0.78rem; color: #444466; font-weight: 700; white-space: nowrap; }
+.vs-label {
+  text-align: center; font-size: 0.7rem; font-weight: 700;
+  color: #333355; letter-spacing: 0.15em; padding: 24px 0 16px;
+}
+
+.ab-wrap { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 16px 40px; }
+.ab-option {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #111124; border: 2px solid #1e1e38; border-radius: 24px;
+  cursor: pointer; transition: all 0.15s; min-height: 38vh;
+  user-select: none; position: relative; overflow: hidden;
+}
+.ab-option:active { transform: scale(0.97); }
+.ab-option.selected-a { border-color: #ff6b8a; background: rgba(255,107,138,0.12); animation: flash-a 0.25s ease; }
+.ab-option.selected-b { border-color: #ff6b8a; background: rgba(255,107,138,0.12); animation: flash-b 0.25s ease; }
+@keyframes flash-a { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+@keyframes flash-b { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+.ab-emoji { font-size: 4rem; margin-bottom: 16px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); line-height: 1; }
+.ab-text { font-size: 1.15rem; font-weight: 800; color: #e8e8f0; letter-spacing: -0.02em; text-align: center; }
+.ab-check {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #ff6b8a; display: flex; align-items: center;
+  justify-content: center; font-size: 0.9rem; opacity: 0; transition: opacity 0.15s;
+}
+.ab-option.selected-a .ab-check, .ab-option.selected-b .ab-check { opacity: 1; }
+.vs-divider { text-align: center; font-size: 0.72rem; font-weight: 900; color: #2a2a45; letter-spacing: 0.1em; line-height: 1; }
+
+/* ── LOADING ── */
+#screen-loading {
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; text-align: center; padding: 40px;
+}
+.loading-emoji { font-size: 4rem; margin-bottom: 24px; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.7} }
+.loading-text { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.loading-sub { font-size: 0.85rem; color: #555577; }
+
+/* ── RESULT ── */
+#screen-result { display: none; min-height: 100vh; padding: 0 0 80px; }
+.result-hero {
+  text-align: center; padding: 48px 24px 32px;
+  background: linear-gradient(180deg, #1b0f1f 0%, #080810 100%);
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: ''; position: absolute; top: -60px; left: 50%;
+  transform: translateX(-50%); width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,107,138,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.result-type-emoji { font-size: 4.5rem; display: block; margin-bottom: 14px; filter: drop-shadow(0 0 24px rgba(255,107,138,0.5)); line-height: 1; }
+.result-type-name { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 10px; line-height: 1.1; }
+.result-tagline { font-size: 1rem; font-weight: 700; color: #ff6b8a; margin-bottom: 14px; line-height: 1.4; }
+.result-detail { font-size: 0.85rem; color: #7777aa; line-height: 1.7; max-width: 300px; margin: 0 auto 16px; }
+.result-name-sub { font-size: 0.78rem; color: #333355; }
+.result-name-sub strong { color: #666688; }
+.result-persona { font-size: 0.82rem; color: #ff6b8a; margin-top: 8px; font-weight: 600; }
+
+.section-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  color: #333355; text-transform: uppercase; padding: 24px 20px 10px;
+}
+/* romance traits */
+.traits-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+.trait-row {
+  background: #111124; border: 1px solid #1e1e38; border-radius: 14px; padding: 14px 16px;
+}
+.trait-label { font-size: 0.72rem; color: #555577; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.05em; }
+.trait-bar-wrap { height: 6px; background: #1e1e38; border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+.trait-bar { height: 100%; background: linear-gradient(90deg, #ff6b8a, #ff4570); border-radius: 6px; transition: width 0.6s ease; }
+.trait-desc { font-size: 0.82rem; font-weight: 700; color: #e8e8f0; }
+
+.domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; }
+.domain-card { background: #111124; border: 1px solid #1e1e38; border-radius: 16px; padding: 14px; }
+.d-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.d-icon { font-size: 1rem; }
+.d-label { font-size: 0.65rem; font-weight: 700; color: #444466; text-transform: uppercase; letter-spacing: 0.06em; }
+.d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
+.d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
+.d-desc { font-size: 0.7rem; color: rgba(255,107,138,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
+
+.cta-box {
+  margin: 20px 16px 0; background: #111124;
+  border: 1px solid #1e1e38; border-radius: 20px; padding: 24px 20px; text-align: center;
+}
+.cta-lead { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.cta-sub { font-size: 0.82rem; color: #555577; margin-bottom: 20px; line-height: 1.6; }
+.btn-primary {
+  display: block; width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #ff6b8a, #ff4570);
+  color: #fff; font-weight: 900; font-size: 1rem;
+  border-radius: 14px; text-decoration: none; border: none;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 8px 24px rgba(255,107,138,0.3);
+}
+.btn-secondary {
+  display: block; width: 100%; padding: 14px;
+  background: transparent; color: #555577; font-size: 0.88rem;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  cursor: pointer; margin-top: 10px; font-family: inherit; font-weight: 600;
+}
+.btn-secondary.copied { color: #4ade80 !important; border-color: #4ade80 !important; }
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-badge">💕 flavor — 연애 취향 테스트</div>
+  <div class="intro-title">나의 <span>연애 취향</span>은<br>어떤 타입?</div>
+  <div class="intro-sub">
+    둘 중 끌리는 쪽만 고르세요<br>
+    당신의 연애 스타일이 보여요
+  </div>
+  <div class="intro-meta">
+    <div><div class="num">15</div><div class="desc">문항</div></div>
+    <div><div class="num">2분</div><div class="desc">소요</div></div>
+    <div><div class="num">16</div><div class="desc">연애 유형</div></div>
+  </div>
+
+  <div class="info-form">
+    <div class="info-row">
+      <input type="text" id="name" placeholder="닉네임" maxlength="10">
+    </div>
+    <div class="info-row">
+      <input type="number" id="birth_year" placeholder="년도 (예: 1995)" min="1940" max="2010" inputmode="numeric">
+    </div>
+    <div class="info-row">
+      <select id="birth_month"><option value="">월</option></select>
+      <select id="birth_day"><option value="">일</option></select>
+    </div>
+    <div class="gender-row">
+      <button class="gender-btn" data-gender="male" onclick="selectGender(this)">남성</button>
+      <button class="gender-btn" data-gender="female" onclick="selectGender(this)">여성</button>
+    </div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">내 연애 취향 알아보기 →</button>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="vs-label">CHOOSE ONE</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">💘</div>
+  <div class="loading-text">연애 취향 분석 중...</div>
+  <div class="loading-sub" style="margin-top:8px; font-size:0.85rem; color:#555577;">생년월일 × 선택 패턴 계산 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <span class="result-type-emoji" id="r-emoji"></span>
+    <div class="result-type-name" id="r-type"></div>
+    <div class="result-tagline" id="r-tagline"></div>
+    <div class="result-detail" id="r-detail"></div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="result-name-sub">생년월일 × 15문항 — <strong id="r-name"></strong>님의 결과</div>
+  </div>
+  <div class="section-label">연애 성향 분석</div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">데이트 취향 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 연애 유형은? 💕</div>
+    <div class="cta-sub">공유하면 상대방 결과도 비교할 수 있어요</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 이 결과 공유하기</button>
+    <button class="btn-secondary" onclick="location.href='/survey'">📋 전체 취향 분석도 해보기</button>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 해보기</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+/* ── 15문항: 9차원을 연애 컨텍스트로 재해석 ── */
+const QUESTIONS = [
+  // social: 연애에서의 사교성/소통 스타일
+  { id:'r1',  dimension:'social',      A:{emoji:'💬', label:'매일 연락하는 사이',   val:0.85}, B:{emoji:'🌙', label:'각자 시간도 중요',     val:0.15} },
+  { id:'r2',  dimension:'social',      A:{emoji:'👫', label:'친구들이랑 단체 데이트', val:0.8},  B:{emoji:'🕯️', label:'둘만의 시간이 최고',   val:0.2} },
+
+  // adventurous: 데이트 모험성
+  { id:'r3',  dimension:'adventurous', A:{emoji:'🗺️', label:'새로운 곳 탐험 데이트', val:0.85}, B:{emoji:'🏡', label:'우리만의 단골 코스',   val:0.15} },
+  { id:'r4',  dimension:'adventurous', A:{emoji:'🎢', label:'즉흥으로 떠나는 여행',  val:0.9},  B:{emoji:'📖', label:'완벽하게 계획한 여행',  val:0.1} },
+
+  // aesthetic: 연애에서의 감성/분위기 중시
+  { id:'r5',  dimension:'aesthetic',   A:{emoji:'🌹', label:'분위기 좋은 레스토랑',  val:0.85}, B:{emoji:'🍜', label:'맛있으면 장땡 맛집',   val:0.2} },
+  { id:'r6',  dimension:'aesthetic',   A:{emoji:'💌', label:'기념일 챙기는 타입',    val:0.8},  B:{emoji:'😎', label:'매일이 특별한 거지',    val:0.2} },
+
+  // comfort: 연애 안정감 선호
+  { id:'r7',  dimension:'comfort',     A:{emoji:'🤗', label:'편안한 집 데이트',      val:0.85}, B:{emoji:'✈️', label:'밖에서 활동적인 데이트', val:0.15} },
+  { id:'r8',  dimension:'comfort',     A:{emoji:'🧸', label:'서로 닮아가는 커플',    val:0.85}, B:{emoji:'⚡', label:'서로 다른 점이 매력',   val:0.15} },
+
+  // budget: 데이트 소비 성향
+  { id:'r9',  dimension:'budget',      A:{emoji:'🎁', label:'특별한 날엔 확실하게',  val:0.85}, B:{emoji:'💰', label:'알뜰하게 오래오래',    val:0.15} },
+
+  // maximalist: 표현/감정 표출 스타일
+  { id:'r10', dimension:'maximalist',  A:{emoji:'📱', label:'SNS에 우리 사진 공개', val:0.85}, B:{emoji:'🤫', label:'둘만 아는 연애',        val:0.15} },
+  { id:'r11', dimension:'maximalist',  A:{emoji:'🎀', label:'매일 이쁘게 꾸미기',   val:0.8},  B:{emoji:'🧢', label:'편한 모습이 진짜지',    val:0.2} },
+
+  // energetic: 연애 에너지/활동 수준
+  { id:'r12', dimension:'energetic',   A:{emoji:'🏃', label:'같이 운동하는 커플',    val:0.85}, B:{emoji:'🎬', label:'같이 넷플릭스 커플',    val:0.15} },
+  { id:'r13', dimension:'energetic',   A:{emoji:'🌅', label:'아침형 데이트',         val:0.8},  B:{emoji:'🌃', label:'밤형 데이트',            val:0.2} },
+
+  // urban: 데이트 공간 선호
+  { id:'r14', dimension:'urban',       A:{emoji:'🏙️', label:'핫플 카페 데이트',     val:0.85}, B:{emoji:'🌲', label:'자연 속 힐링 데이트',   val:0.15} },
+
+  // bitter: 연애 깊이/진지함
+  { id:'r15', dimension:'bitter',      A:{emoji:'💍', label:'깊고 진지한 연애',      val:0.85}, B:{emoji:'🦋', label:'가볍고 설레는 연애',    val:0.15} },
+];
+
+/* ── 연애 유형 (4차원 기반: social × adventurous × comfort × aesthetic) ── */
+const ROMANCE_TYPES = [
+  { cond: p => p.social>0.6 && p.adventurous>0.6 && p.aesthetic>0.6,
+    type: '설렘 헌터', emoji: '🎯', tagline: '새로운 경험이 곧 사랑의 연료',
+    detail: '매번 다른 데이트, 매번 새로운 설렘. 루틴은 죽음이고 즉흥이 로맨스인 타입.' },
+  { cond: p => p.social>0.6 && p.comfort>0.6 && p.aesthetic>0.6,
+    type: '로맨스 큐레이터', emoji: '🌹', tagline: '기념일마다 완벽한 서프라이즈',
+    detail: '분위기 좋은 레스토랑, 깜짝 편지, 기념일 알림 10개. 연애도 예술이라 믿는 타입.' },
+  { cond: p => p.social<0.4 && p.comfort>0.6 && p.aesthetic>0.6,
+    type: '감성 은둔자', emoji: '🕯️', tagline: '둘만의 세계가 제일 아름다운 법',
+    detail: '조용한 카페, 손편지, 좋아하는 영화 같이 보기. 작은 것에서 깊은 감동을 찾는 타입.' },
+  { cond: p => p.social>0.6 && p.energetic>0.6 && p.adventurous>0.6,
+    type: '액티브 소울메이트', emoji: '⚡', tagline: '함께라면 뭐든 재밌어지는 마법',
+    detail: '같이 클라이밍, 같이 여행, 같이 새벽 라면. 에너지가 넘치는 활동파 연인.' },
+  { cond: p => p.comfort>0.65 && p.social>0.5,
+    type: '포근한 동반자', emoji: '🧸', tagline: '변하지 않는 따뜻함이 최고의 고백',
+    detail: '집 데이트, 단골 식당, 매일 같은 시간 전화. 안정감이 가장 큰 사랑의 증거인 타입.' },
+  { cond: p => p.adventurous>0.6 && p.budget>0.6,
+    type: '럭셔리 모험가', emoji: '✨', tagline: '최고의 경험엔 투자를 아끼지 않는',
+    detail: '비즈니스석 여행, 오마카세 데이트, 기념일엔 호텔 스위트. 연애에 올인하는 타입.' },
+  { cond: p => p.maximalist>0.6 && p.aesthetic>0.5,
+    type: '사랑 표현왕', emoji: '💌', tagline: 'SNS 공개부터 매일 "사랑해"까지',
+    detail: '커플 사진, 매칭룩, 매일 애정 표현. 사랑은 보여줘야 진짜라고 믿는 타입.' },
+  { cond: p => p.social<0.4 && p.adventurous<0.4 && p.comfort>0.5,
+    type: '조용한 신뢰자', emoji: '🌙', tagline: '말하지 않아도 알아주는 사이',
+    detail: '각자의 시간을 존중하면서 필요할 때 곁에 있는. 묵묵한 신뢰가 사랑의 기초인 타입.' },
+  { cond: p => p.energetic>0.6 && p.urban>0.6,
+    type: '시티 데이터', emoji: '🏙️', tagline: '핫플은 내가 섭외할게',
+    detail: '팝업스토어, 전시회, 새로 오픈한 카페. 도시의 모든 즐길 거리를 섭렵하는 데이트 고수.' },
+  { cond: p => p.bitter>0.6 && p.comfort>0.5,
+    type: '진심 올인러', emoji: '💍', tagline: '한 번 사귀면 끝까지 간다',
+    detail: '가볍게 만나는 건 체질이 아니다. 깊고 진지하게, 서로의 일상까지 공유하는 타입.' },
+  { cond: p => p.aesthetic<0.4 && p.energetic>0.5 && p.budget<0.5,
+    type: '실속 파트너', emoji: '🤝', tagline: '겉치레보다 진짜 알찬 데이트',
+    detail: '맛집 줄 서기, 공원 산책, 편의점 데이트도 행복. 함께하는 게 중요하지 어디가 중요한 게 아닌 타입.' },
+  { cond: p => p.adventurous<0.4 && p.aesthetic>0.5 && p.comfort>0.5,
+    type: '일상 낭만가', emoji: '☕', tagline: '매일 반복되는 일상이 가장 로맨틱',
+    detail: '아침 커피 한 잔, 퇴근 후 산책, 주말 브런치. 소소한 일상이 최고의 데이트인 타입.' },
+  // 기본 폴백
+  { cond: () => true,
+    type: '밸런스 연인', emoji: '💫', tagline: '어떤 상황에서든 맞춰가는 유연함',
+    detail: '상대에 따라, 기분에 따라 유연하게 변하는 연애 스타일. 적응력이 최고 매력인 타입.' },
+];
+
+const DATE_RECS = {
+  '커피데이트':  { emoji:'☕', label:'커피데이트' },
+  '식사':       { emoji:'🍽️', label:'식사' },
+  '액티비티':   { emoji:'🏃', label:'액티비티' },
+  '여행':       { emoji:'✈️', label:'여행' },
+};
+
+const DOMAIN_EMOJI = { '커피':'☕','향수':'🌸','음악':'🎵','식당':'🍽️','운동':'🏃','여행':'✈️','패션':'👗','인테리어':'🏠' };
+
+let currentQ = 0;
+let answers = [];
+let qStartTime = 0;
+let userData = {};
+let resultShareUrl = '';
+
+/* ── 초기화 ── */
+(function() {
+  const monthSel = document.getElementById('birth_month');
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2,'0');
+    o.textContent = m + '월';
+    monthSel.appendChild(o);
+  }
+  const daySel = document.getElementById('birth_day');
+  for (let d = 1; d <= 31; d++) {
+    const o = document.createElement('option');
+    o.value = String(d).padStart(2,'0');
+    o.textContent = d + '일';
+    daySel.appendChild(o);
+  }
+})();
+
+function selectGender(btn) {
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function startQuiz() {
+  const name = document.getElementById('name').value.trim();
+  const year = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day = document.getElementById('birth_day').value;
+  const genderBtn = document.querySelector('.gender-btn.selected');
+
+  if (!name) return alert('닉네임을 입력해주세요!');
+  if (!year || year < 1940 || year > 2010) return alert('출생년도를 확인해주세요!');
+  if (!month || !day) return alert('생년월일을 모두 선택해주세요!');
+  if (!genderBtn) return alert('성별을 선택해주세요!');
+
+  userData = { name, birth_date: `${year}-${month}-${day}`, birth_time: '12', gender: genderBtn.dataset.gender };
+
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  showQuestion(0);
+}
+
+function showQuestion(idx) {
+  const q = QUESTIONS[idx];
+  document.getElementById('emoji-a').textContent = q.A.emoji;
+  document.getElementById('text-a').textContent  = q.A.label;
+  document.getElementById('emoji-b').textContent = q.B.emoji;
+  document.getElementById('text-b').textContent  = q.B.label;
+  document.getElementById('opt-a').className = 'ab-option';
+  document.getElementById('opt-b').className = 'ab-option';
+  document.getElementById('progress-fill').style.width = (idx / QUESTIONS.length * 100) + '%';
+  document.getElementById('progress-text').textContent = `${idx + 1} / ${QUESTIONS.length}`;
+  qStartTime = Date.now();
+}
+
+function choose(side) {
+  if (currentQ >= QUESTIONS.length) return;
+  const q = QUESTIONS[currentQ];
+  const responseMs = Date.now() - qStartTime;
+  const chosen = side === 'A' ? q.A : q.B;
+
+  document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
+
+  answers.push({ id: q.id, dimension: q.dimension, choice: side, value: chosen.val, response_ms: responseMs });
+  currentQ++;
+
+  if (currentQ < QUESTIONS.length) {
+    setTimeout(() => showQuestion(currentQ), 220);
+  } else {
+    setTimeout(submitAnswers, 300);
+  }
+}
+
+function buildProfile() {
+  const dims = {};
+  const counts = {};
+  answers.forEach(a => {
+    dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
+    counts[a.dimension] = (counts[a.dimension] || 0) + 1;
+  });
+  const profile = {};
+  Object.keys(dims).forEach(d => { profile[d] = dims[d] / counts[d]; });
+  ['social','adventurous','aesthetic','comfort','budget','maximalist','energetic','urban','bitter']
+    .forEach(d => { if (profile[d] === undefined) profile[d] = 0.5; });
+  return profile;
+}
+
+function getRomanceType(profile) {
+  for (const rt of ROMANCE_TYPES) {
+    if (rt.cond(profile)) return rt;
+  }
+  return ROMANCE_TYPES[ROMANCE_TYPES.length - 1];
+}
+
+/* ── 연애 성향 트레이트 해석 ── */
+function getTraits(profile) {
+  const traits = [
+    { dim: 'social',      label: '소통 스타일',  low: '독립적 연애', high: '밀착형 연애' },
+    { dim: 'adventurous', label: '데이트 모험도', low: '안정적 루틴',  high: '즉흥 탐험파' },
+    { dim: 'aesthetic',   label: '분위기 감성',   low: '실용적',      high: '로맨틱 감성파' },
+    { dim: 'comfort',     label: '안정감 선호',   low: '자극 추구',   high: '안정감 추구' },
+    { dim: 'maximalist',  label: '표현 스타일',   low: '은근한 타입',  high: '적극 표현파' },
+    { dim: 'energetic',   label: '활동 에너지',   low: '집순이/집돌이', high: '밖에서 놀자파' },
+    { dim: 'bitter',      label: '연애 깊이',     low: '가볍게 즐기는', high: '진지하게 올인' },
+  ];
+  return traits.map(t => {
+    const val = profile[t.dim] || 0.5;
+    return { ...t, value: val, desc: val > 0.55 ? t.high : val < 0.45 ? t.low : `${t.low} ↔ ${t.high}` };
+  });
+}
+
+async function submitAnswers() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-loading').style.display = 'flex';
+
+  const profile = buildProfile();
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...userData,
+        quiz_type: 'vol2_romance',
+        ab_answers: answers,
+        survey: profile
+      })
+    });
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      showResult(data, profile);
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (e) {
+    showResultLocal(profile);
+  }
+}
+
+function showResult(data, profile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+
+  const rt = getRomanceType(profile);
+  document.getElementById('r-emoji').textContent   = rt.emoji;
+  document.getElementById('r-type').textContent    = rt.type;
+  document.getElementById('r-tagline').textContent = `"${rt.tagline}"`;
+  document.getElementById('r-detail').textContent  = rt.detail;
+  document.getElementById('r-name').textContent    = data.name || '';
+
+  // 사주 페르소나 표시
+  if (data.persona && data.persona.name) {
+    document.getElementById('r-persona').textContent = `${data.persona.emoji || ''} ${data.persona.name}`;
+  }
+
+  // 연애 성향 트레이트 바
+  const traitsDiv = document.getElementById('r-traits');
+  traitsDiv.innerHTML = '';
+  getTraits(profile).forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'trait-row';
+    row.innerHTML = `
+      <div class="trait-label">${t.label}</div>
+      <div class="trait-bar-wrap"><div class="trait-bar" style="width:${t.value*100}%"></div></div>
+      <div class="trait-desc">${t.desc}</div>`;
+    traitsDiv.appendChild(row);
+  });
+
+  // 도메인 추천 (서버에서 받은 것)
+  const grid = document.getElementById('r-domains');
+  grid.innerHTML = '';
+  Object.entries(data.results || {}).forEach(([domain, rec]) => {
+    const card = document.createElement('div');
+    card.className = 'domain-card';
+    const descHtml = rec.description ? `<div class="d-desc">"${rec.description}"</div>` : '';
+    card.innerHTML = `
+      <div class="d-head">
+        <span class="d-icon">${DOMAIN_EMOJI[domain]||'✨'}</span>
+        <span class="d-label">${domain}</span>
+      </div>
+      <div class="d-item">${rec.item||''}</div>
+      <div class="d-reason">${rec.reason||''}</div>
+      ${descHtml}`;
+    grid.appendChild(card);
+  });
+
+  if (data.id) {
+    resultShareUrl = `${API_BASE}/result/${data.id}`;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showResultLocal(profile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+
+  const rt = getRomanceType(profile);
+  document.getElementById('r-emoji').textContent   = rt.emoji;
+  document.getElementById('r-type').textContent    = rt.type;
+  document.getElementById('r-tagline').textContent = `"${rt.tagline}"`;
+  document.getElementById('r-detail').textContent  = rt.detail;
+  document.getElementById('r-name').textContent    = userData.name || '';
+
+  const traitsDiv = document.getElementById('r-traits');
+  traitsDiv.innerHTML = '';
+  getTraits(profile).forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'trait-row';
+    row.innerHTML = `
+      <div class="trait-label">${t.label}</div>
+      <div class="trait-bar-wrap"><div class="trait-bar" style="width:${t.value*100}%"></div></div>
+      <div class="trait-desc">${t.desc}</div>`;
+    traitsDiv.appendChild(row);
+  });
+}
+
+function copyResult() {
+  if (!resultShareUrl) { alert('공유 링크를 불러오지 못했어요.'); return; }
+  navigator.clipboard.writeText(resultShareUrl).then(() => {
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = '✅ 복사됐어요! 보내보세요 💕';
+    setTimeout(() => { btn.textContent = '🔗 이 결과 공유하기'; }, 2500);
+  }).catch(() => { prompt('아래 링크를 복사하세요', resultShareUrl); });
+}
+</script>
+</body>
+</html>

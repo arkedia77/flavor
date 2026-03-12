@@ -5,7 +5,7 @@
 2. 유사 유저의 피드백으로 보정 (데이터 축적 시)
 
 핵심 아이디어:
-- 9차원 벡터 간 코사인 유사도로 "유사 유저" 탐색
+- 9차원 벡터 간 centered cosine 유사도로 "유사 유저" 탐색
 - 유사 유저들의 👍👎 패턴을 가중 투표
 - 규칙 기반 추천 + 피드백 보정 = 하이브리드 추천
 """
@@ -16,11 +16,26 @@ from config import DIMENSIONS
 from engines.domains import run_all_domains
 
 
-def cosine_similarity(a: dict, b: dict) -> float:
-    """9차원 프로필 간 코사인 유사도 (0~1)"""
-    dot = sum(a.get(d, 0.5) * b.get(d, 0.5) for d in DIMENSIONS)
-    mag_a = math.sqrt(sum(a.get(d, 0.5) ** 2 for d in DIMENSIONS))
-    mag_b = math.sqrt(sum(b.get(d, 0.5) ** 2 for d in DIMENSIONS))
+def centered_cosine(a: dict, b: dict) -> float:
+    """9차원 프로필 간 centered cosine 유사도 (-1 ~ +1)
+
+    일반 cosine은 양수 벡터에서 0.85+ 집중 → 변별력 부족.
+    각 벡터를 mean-shift(평균 빼기) 후 cosine 계산하면
+    Pearson 상관계수와 동등 → 변별력 확보.
+    """
+    vals_a = [a.get(d, 0.5) for d in DIMENSIONS]
+    vals_b = [b.get(d, 0.5) for d in DIMENSIONS]
+
+    mean_a = sum(vals_a) / len(vals_a)
+    mean_b = sum(vals_b) / len(vals_b)
+
+    shifted_a = [v - mean_a for v in vals_a]
+    shifted_b = [v - mean_b for v in vals_b]
+
+    dot = sum(sa * sb for sa, sb in zip(shifted_a, shifted_b))
+    mag_a = math.sqrt(sum(v ** 2 for v in shifted_a))
+    mag_b = math.sqrt(sum(v ** 2 for v in shifted_b))
+
     if mag_a == 0 or mag_b == 0:
         return 0.0
     return dot / (mag_a * mag_b)
@@ -39,17 +54,17 @@ def find_similar_users(target_profile: dict, all_profiles: list, top_k: int = 10
     """
     scored = []
     for user in all_profiles:
-        sim = cosine_similarity(target_profile, user["profile"])
+        sim = centered_cosine(target_profile, user["profile"])
         scored.append((sim, user))
 
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored[:top_k]
 
 
-def feedback_boost(rule_results: dict, similar_users: list, min_sim: float = 0.85) -> dict:
+def feedback_boost(rule_results: dict, similar_users: list, min_sim: float = 0.5) -> dict:
     """유사 유저 피드백으로 규칙 기반 추천 보정
 
-    - 유사도 min_sim 이상인 유저만 참고
+    - centered cosine 기준 min_sim 이상인 유저만 참고 (0.5 = 중간 이상 상관)
     - 도메인별로 👍가 압도적이면 신뢰도 ↑, 👎 많으면 대안 표시
 
     Returns:
