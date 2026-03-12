@@ -46,21 +46,57 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
     }
 
 
-def blend_profile(innate_vector: list, survey: dict, saju_weight: float = 0.25) -> dict:
+def _calc_skewness(vals):
+    """값 목록의 편향도 (CV) — 균등하면 0, 편향되면 높음"""
+    mean = sum(vals) / len(vals) if vals else 0
+    if mean == 0:
+        return 0
+    import math
+    return math.sqrt(sum((v - mean) ** 2 for v in vals) / len(vals)) / mean
+
+
+def _calc_dim_confidence(expected_val):
+    """예상값이 극단(0 or 1 근처)일수록 높은 확신도 (0~1)"""
+    return abs(expected_val - 0.5) * 2  # 0.5→0, 0.0/1.0→1
+
+
+def dynamic_saju_weight(innate_vector: list) -> float:
+    """편향도 기반 동적 사주 가중치 (15%~50%)
+
+    편향 클수록 사주를 더 신뢰 (sigmoid 형태)
+    """
+    import math
+    el = innate_vector[0:5]
+    ss = innate_vector[5:10]
+    skew = (_calc_skewness(el) + _calc_skewness(ss)) / 2
+    # sigmoid: 편향 0.3→~18%, 0.5→~25%, 0.7→~35%, 1.0→~45%
+    return 0.15 + 0.35 / (1 + math.exp(-5 * (skew - 0.5)))
+
+
+def blend_profile(innate_vector: list, survey: dict, saju_weight: float = None) -> dict:
     """12D innate vector + 설문 → 취향 프로필 (Phase 2)
 
-    사주 기여: innate vector → 9차원 예상 프로필 (gap.py 매핑)
-    설문 기여: survey 9차원 그대로
-    블렌딩: saju_weight (기본 25%) / survey (75%)
+    saju_weight=None이면 편향도 기반 동적 가중치 사용.
+    차원별로도 확신도에 따라 미세 조정.
     """
     expected = innate_to_expected_profile(innate_vector)
-    sw = saju_weight
-    qw = 1 - sw
+
+    if saju_weight is None:
+        base_weight = dynamic_saju_weight(innate_vector)
+    else:
+        base_weight = saju_weight
 
     profile = {}
     for dim in expected:
         saju_val = expected[dim]
         survey_val = survey.get(dim, 0.5)
-        profile[dim] = round(min(1.0, max(0.0, saju_val * sw + survey_val * qw)), 3)
+
+        # 차원별 가중치 조정: 예상값이 극단일수록 사주 가중치 ↑
+        confidence = _calc_dim_confidence(saju_val)
+        dim_weight = base_weight * (1 + confidence * 0.5)  # 최대 1.5배
+        dim_weight = min(0.6, dim_weight)  # 상한 60%
+
+        qw = 1 - dim_weight
+        profile[dim] = round(min(1.0, max(0.0, saju_val * dim_weight + survey_val * qw)), 3)
 
     return profile

@@ -10,24 +10,35 @@
 # 각 행: 오행(5) 또는 십신(5)이 9차원에 기여하는 가중치
 # 열 순서: social, adventurous, aesthetic, comfort, budget, maximalist, energetic, urban, bitter
 
-# 오행 → 9차원 (각 오행이 어떤 취향 성향을 자극하는가)
+# ──────────────────────────────────────────────
+# 베이스라인: 16명 설문 평균 (n이 늘면 업데이트)
+# 매핑 행렬은 이 베이스라인으로부터의 "편차"를 예측
+# ──────────────────────────────────────────────
+BASELINE = {
+    "social": 0.35, "adventurous": 0.49, "aesthetic": 0.40,
+    "comfort": 0.56, "budget": 0.52, "maximalist": 0.24,
+    "energetic": 0.37, "urban": 0.61, "bitter": 0.63,
+}
+
+# 오행 → 9차원 편차 (v3: v1 베이스 + 데이터 보정)
+# 양수 = 해당 오행이 많으면 차원값 ↑, 음수 = ↓
 ELEMENT_TO_DIM = [
     # social  adv    aes    comf   budg   maxi   ener   urban  bitter
-    [0.3,    0.4,   0.1,   0.0,   0.0,   0.2,   0.5,   0.0,   0.0],   # 목(Wood): 성장, 활동, 모험
-    [0.5,    0.3,   0.2,   0.0,   0.0,   0.4,   0.6,   0.3,   0.0],   # 화(Fire): 사교, 열정, 에너지
-    [0.1,    0.0,   0.1,   0.7,   0.3,   0.0,   0.0,   0.2,   0.0],   # 토(Earth): 안정, 편안, 중용
-    [0.0,    0.0,   0.6,   0.2,   0.5,   0.0,   0.0,   0.5,   0.3],   # 금(Metal): 미학, 도시, 정교
-    [0.0,    0.2,   0.3,   0.1,   0.0,   0.0,   0.0,   0.0,   0.7],   # 수(Water): 깊이, 쓴맛, 탐구
+    [+0.3,   +0.3,  +0.0,  -0.2,  -0.3,  +0.2,  +0.5,  +0.3,  +0.0],  # 목(Wood)
+    [+0.4,   +0.0,  +0.1,  -0.2,  +0.0,  +0.3,  +0.5,  +0.2,  +0.0],  # 화(Fire)
+    [+0.2,   +0.3,  +0.2,  +0.2,  +0.0,  +0.5,  +0.0,  +0.0,  -0.2],  # 토(Earth)
+    [-0.3,   +0.0,  +0.3,  +0.5,  +0.5,  +0.0,  -0.2,  +0.0,  +0.4],  # 금(Metal)
+    [+0.0,   +0.1,  +0.2,  +0.0,  +0.0,  -0.3,  +0.0,  +0.0,  +0.2],  # 수(Water)
 ]
 
-# 십신 → 9차원 (각 십신 그룹이 어떤 취향 성향에 영향)
+# 십신 → 9차원 편차 (v3: v1 베이스 + 데이터 보정)
 SIKSHIN_TO_DIM = [
     # social  adv    aes    comf   budg   maxi   ener   urban  bitter
-    [0.3,    0.2,   0.0,   0.3,   0.0,   0.1,   0.3,   0.0,   0.0],   # 비겁: 자아, 독립, 활동
-    [0.4,    0.5,   0.3,   0.0,   0.0,   0.5,   0.3,   0.2,   0.0],   # 식상: 표현, 모험, 맥시멀
-    [0.2,    0.1,   0.2,   0.1,   0.6,   0.2,   0.1,   0.4,   0.2],   # 재성: 실리, 예산, 도시
-    [0.1,    0.0,   0.1,   0.5,   0.3,   0.0,   0.0,   0.3,   0.3],   # 관성: 규율, 안정, 절제
-    [0.0,    0.1,   0.5,   0.2,   0.1,   0.0,   0.0,   0.1,   0.5],   # 인성: 학문, 미학, 깊이
+    [-0.1,   -0.3,  +0.0,  +0.4,  +0.5,  +0.0,  +0.0,  +0.0,  +0.0],  # 비겁
+    [+0.2,   +0.2,  +0.1,  +0.0,  -0.3,  +0.3,  +0.3,  +0.1,  +0.0],  # 식상
+    [+0.1,   +0.4,  +0.2,  +0.0,  +0.0,  +0.1,  +0.0,  +0.4,  +0.1],  # 재성
+    [+0.0,   +0.0,  +0.0,  +0.3,  +0.2,  -0.3,  +0.0,  -0.2,  +0.2],  # 관성
+    [+0.4,   +0.0,  +0.3,  -0.4,  +0.0,  +0.0,  +0.0,  +0.0,  -0.2],  # 인성
 ]
 
 DIM_NAMES = ["social", "adventurous", "aesthetic", "comfort",
@@ -37,38 +48,44 @@ DIM_NAMES = ["social", "adventurous", "aesthetic", "comfort",
 def innate_to_expected_profile(innate_vector: list) -> dict:
     """12D innate vector → 9차원 예상 프로필 (0~1)
 
-    innate_vector: [오행5D, 십신5D, 음양, 강약]
+    구조: baseline + 오행편차 + 십신편차 + 음양보정 + 강약보정
+    baseline = 인구 평균 (사주와 무관한 기본값)
+    편차 행렬 = 사주 특성이 baseline에서 얼마나 이동시키는가
     """
     el = innate_vector[0:5]   # 오행 비율 (합≈1)
     ss = innate_vector[5:10]  # 십신 비율 (합≈1)
     yy = innate_vector[10]    # 음양 비율
     strength = innate_vector[11]  # 신강도
 
-    expected = [0.0] * 9
+    # 베이스라인에서 시작
+    baseline_vals = [BASELINE[d] for d in DIM_NAMES]
+    expected = list(baseline_vals)
 
-    # 오행 기여
+    # 오행 편차: 각 오행 비율 × 편차 가중치 (균등분포=0.2이면 영향 없음)
     for i in range(5):
+        deviation = el[i] - 0.2  # 균등(0.2)에서의 편차
         for j in range(9):
-            expected[j] += el[i] * ELEMENT_TO_DIM[i][j]
+            expected[j] += deviation * ELEMENT_TO_DIM[i][j]
 
-    # 십신 기여 (오행과 동등 가중)
+    # 십신 편차: 각 십신 비율 × 편차 가중치 (균등=0.2이면 영향 없음)
     for i in range(5):
+        deviation = ss[i] - 0.2
         for j in range(9):
-            expected[j] += ss[i] * SIKSHIN_TO_DIM[i][j]
+            expected[j] += deviation * SIKSHIN_TO_DIM[i][j]
 
-    # 음양 보정: 양 ↑ → energetic, social ↑ / 음 ↑ → aesthetic, bitter ↑
-    yang_boost = (yy - 0.5) * 0.3  # -0.15 ~ +0.15
-    expected[0] += yang_boost   # social
+    # 음양 보정 (0.5 중립)
+    yang_boost = (yy - 0.5) * 0.15
+    expected[0] += yang_boost   # social (양→사교적)
+    expected[5] += yang_boost   # maximalist
     expected[6] += yang_boost   # energetic
-    expected[2] -= yang_boost   # aesthetic (음이면 ↑)
-    expected[8] -= yang_boost   # bitter (음이면 ↑)
+    expected[8] -= yang_boost   # bitter (음→깊은맛)
 
-    # 신강 보정: 강 → adventurous, maximalist ↑ / 약 → comfort, budget ↑
-    str_boost = (strength - 0.5) * 0.2  # -0.1 ~ +0.1
-    expected[1] += str_boost    # adventurous
-    expected[5] += str_boost    # maximalist
-    expected[3] -= str_boost    # comfort
-    expected[4] -= str_boost    # budget
+    # 강약 보정 (0.5 중립)
+    str_boost = (strength - 0.5) * 0.15
+    expected[3] += str_boost    # comfort (강→안정)
+    expected[4] += str_boost    # budget (강→투자)
+    expected[1] -= str_boost    # adventurous (약→모험)
+    expected[7] -= str_boost    # urban (약→도시)
 
     # 0~1 클램프
     expected = [round(max(0.0, min(1.0, v)), 3) for v in expected]
