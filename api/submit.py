@@ -8,10 +8,12 @@ from flask import Blueprint, request, jsonify
 
 from config import PROFILE_VERSION, CALIBRATION_THRESHOLDS, AGENT_COMM
 from engines.saju import calc_saju
+from engines.vector import saju_to_innate_vector
 from engines.survey import raw_to_survey
-from engines.blend import elements_to_profile
+from engines.blend import elements_to_profile, blend_profile
 from engines.personality import get_personality_type
 from engines.domains import run_all_domains
+from engines.gap import innate_to_expected_profile, compute_gap, interpret_gap
 from db.repository import (
     save_submission, save_feedback, get_recent_submissions,
     get_calibration_data, get_submission_count, check_and_record_milestone,
@@ -125,9 +127,24 @@ def submit():
             hour = int(birth_time)
 
         saju = calc_saju(year, month, day, hour)
-        profile = elements_to_profile(saju["elements"], gender, survey)
+        saju_detail = saju.get("saju_detail")
+
+        # Phase 2: 12D innate vector 기반 블렌딩 (saju_detail 있을 때)
+        if saju_detail:
+            innate_vec = saju_to_innate_vector(saju_detail)
+            profile = blend_profile(innate_vec, survey)
+            expected = innate_to_expected_profile(innate_vec)
+            gap_result = compute_gap(expected, survey)
+            gap_interp = interpret_gap(gap_result)
+        else:
+            # fallback: 기존 방식
+            profile = elements_to_profile(saju["elements"], gender, survey)
+            innate_vec = None
+            gap_result = None
+            gap_interp = None
+
         results = run_all_domains(profile)
-        personality = get_personality_type(profile)
+        personality = get_personality_type(profile, saju_detail)
 
         result_id = str(uuid.uuid4())[:8]
 
@@ -149,14 +166,29 @@ def submit():
         if milestone_hit:
             _notify_milestone(milestone_hit, total)
 
-        return jsonify({
+        response = {
             "status": "ok",
             "id": result_id,
             "name": name,
             "profile": profile,
             "results": results,
             "personality": personality,
-        })
+        }
+
+        # Phase 2 확장 필드 (있을 때만)
+        if saju_detail:
+            response["saju_detail"] = {
+                "day_master": saju_detail["day_master"],
+                "geokguk": saju_detail["geokguk"],
+                "strength": saju_detail["strength"],
+                "strength_label": saju_detail["strength_label"],
+                "type_code": saju_detail["type_code"],
+                "yin_yang_ratio": saju_detail["yin_yang_ratio"],
+            }
+            response["innate_vector"] = innate_vec
+            response["gap"] = gap_interp
+
+        return jsonify(response)
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400

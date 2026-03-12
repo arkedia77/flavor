@@ -1,13 +1,19 @@
-"""오행 보정 + 설문 블렌딩 → 취향 프로필"""
+"""오행 보정 + 설문 블렌딩 → 취향 프로필
+
+Phase 2: 12D innate vector 기반 사주 기여 (지장간 보정 오행 + 십신)
+기존 API: elements_to_profile(elements, gender, survey) — 하위호환 유지
+신규 API: blend_profile(innate_vector, survey) — Phase 2 권장
+"""
+
+from engines.gap import innate_to_expected_profile
 
 
 def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
-    """오행(내부 보정용) + 설문 → 취향 프로필
+    """오행(기본) + 설문 → 취향 프로필 (기존 호환 v1.x)
 
     [v1.1 수정]
-    - 사주 보정값을 [0,1] 전 범위로 정규화 (기존: 최대 0.5 → 사주 기여 1/8에 불과)
+    - 사주 보정값을 [0,1] 전 범위로 정규화
     - aesthetic 공식: 금 위주로 재조정 (금*0.7 + 수*0.3)
-    - 오행 합산 방식: wood+fire는 각 비율 합 → [0,1] 범위 보장
     """
     total = sum(elements.values()) or 1
 
@@ -18,7 +24,6 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
     water = elements.get("수", 0) / total
 
     def blend(saju_val, survey_val, w=0.25):
-        """사주 보정값 25%, 설문값 75% 블렌딩"""
         return round(min(1.0, max(0.0, saju_val * w + survey_val * (1 - w))), 3)
 
     saju_social      = min(1.0, wood + fire)
@@ -39,3 +44,23 @@ def elements_to_profile(elements: dict, gender: str, survey: dict) -> dict:
         "urban":       round(survey.get("urban", 0.5), 3),
         "bitter":      blend(saju_bitter,      survey.get("bitter", 0.5)),
     }
+
+
+def blend_profile(innate_vector: list, survey: dict, saju_weight: float = 0.25) -> dict:
+    """12D innate vector + 설문 → 취향 프로필 (Phase 2)
+
+    사주 기여: innate vector → 9차원 예상 프로필 (gap.py 매핑)
+    설문 기여: survey 9차원 그대로
+    블렌딩: saju_weight (기본 25%) / survey (75%)
+    """
+    expected = innate_to_expected_profile(innate_vector)
+    sw = saju_weight
+    qw = 1 - sw
+
+    profile = {}
+    for dim in expected:
+        saju_val = expected[dim]
+        survey_val = survey.get(dim, 0.5)
+        profile[dim] = round(min(1.0, max(0.0, saju_val * sw + survey_val * qw)), 3)
+
+    return profile

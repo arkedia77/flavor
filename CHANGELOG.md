@@ -4,6 +4,19 @@
 
 ## 2026-03-12
 
+### Phase 1: Deep Saju Engine
+- saju.py → v2.0: 4주(입춘/절기/JDN), 십신, 지장간 보정 오행, 격국, 신강/신약
+- saju_tables.py: 천간/지지/오행/지장간/절기/십신/격국/일간타입 정적 테이블
+- calendar.py: JDN, 절기 기반 월지, 시간→지지 변환
+- vector.py: saju_to_innate_vector() → 12D innate vector
+- 기존 API 호환 유지
+
+### Phase 2: 타입 + 갭 시스템
+- personality.py → L1(일간 10종) + L2(격국×강약 20종) + L3(9D 아키타입) 하이브리드
+- gap.py: innate vector → expected 9D 매핑, 선천-후천 갭 분석 + 해석
+- blend.py: blend_profile() 추가 (12D innate vector 기반, 기존 elements_to_profile 하위호환)
+- submit.py: Phase 2 파이프라인 통합 (saju_detail, innate_vector, gap 응답 포함)
+
 ### Phase 0: 모듈 분리
 - app.py 1187줄 → 34줄 (앱 팩토리 + Blueprint 등록)
 - engines/ 생성: saju.py, survey.py, blend.py, personality.py, domains.py
