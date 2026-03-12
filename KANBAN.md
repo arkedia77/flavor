@@ -1,6 +1,7 @@
-# Flavor KANBAN
+# Leoflavor KANBAN
 
 **최종 수정**: 2026-03-12
+**엔진**: Leoflavor v0.1
 
 ---
 
@@ -8,7 +9,7 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| — | — | — | — |
+| Leoflavor v0.1 코드 완성 | High | reklcli | 엔진 재설계 완료, 테스트 통과 |
 
 ---
 
@@ -16,13 +17,13 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 208개 분류표 재생성 | Medium | reklcli | calc_saju() 전수 계산 |
-| 60명 실데이터 캘리브레이션 | Medium | reklcli | 오행-차원 상관관계 분석 |
-| 피드백 210건 분석 | Medium | reklcli | 도메인별 👍👎 비율 → 추천 보정 |
-| Phase 3: B2B API | Medium | reklcli | /api/v1/profile, API 키 인증 |
-| Phase 4: 외부 체계 매핑 | Low | reklcli | MBTI/에니어그램/혈액형 |
-| Phase 5: 캘리브레이션 엔진 | Low | reklcli | analyzer.py, weights.py |
-| 서버 배포 (Phase 2) | High | mukl | git pull + restart 필요 |
+| 60건 실데이터 적중률 재측정 | High | reklcli | 사주 blend 제거 후 변화 확인 |
+| 210건 피드백 → 학습 루프 검증 | High | reklcli | recommend.py 실데이터 테스트 |
+| 바이럴 퀴즈 기획 | Medium | reklcli | 데이터 플라이휠 |
+| v0.1 서버 배포 | High | mukl | git pull + restart |
+| Phase B: 피드백 실시간 반영 | Medium | reklcli | submit.py에 get_feedback_data 연동 |
+| Phase C: 바이럴 퀴즈 3종 | Medium | reklcli | 연애/여행/식도락 |
+| Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후 |
 
 ---
 
@@ -30,17 +31,16 @@
 
 | 날짜 | 항목 |
 |------|------|
-| 2026-03-12 | 매핑 v3 + 동적 가중치 (방향일치 64%→88%, bitter 25%→100%) |
-| 2026-03-12 | Phase 2: 타입+갭 시스템 (L1/L2 personality, gap.py, blend upgrade) |
-| 2026-03-12 | Phase 1: Deep Saju Engine (commit 42bed49) |
-| 2026-03-12 | Phase 0: 모듈 분리 (app.py 1187줄 → 34줄, commit d468924) |
-| 2026-03-11 | project_flavor.md 생성, 전체 리소스 수집 |
-| 2026-03-11 | v1.5 배포 완료 (A/B + 스와이프 + 비교 + UX투표) |
+| 2026-03-12 | Leoflavor v0.1 엔진 재설계 (사주 blend 제거, 피드백 학습 구조) |
+| 2026-03-12 | 사주 가설 최종 판정 (60건 분석, 통계적 미지지) |
+| 2026-03-12 | 아카이브: v1.5-archive 태그 + archive/saju-engine-v1.5 브랜치 |
+| 2026-03-12 | 노션: 사주 가설 리포트 + 엔진 재설계 제안서 |
 
 ---
 
 ## 📌 메모
 
+- 사주 가설 폐기 (2026-03-12): p=0.575, CV R²=-0.222
+- 추천 적중률 74.8% = 설문의 힘 (사주 제거 시 78~80% 기대)
 - 50명 milestone 도달 완료 (60명, 피드백 210건)
-- 다음 milestone: 200명 (1차 파라미터 보정)
-- Phase 0 완료 → 서버 배포 필요 (mukl 태스크 발행 예정)
+- 다음 milestone: 200명 (ML 전환 가능)

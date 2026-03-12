@@ -131,6 +131,32 @@ def get_ux_vote_tally():
     return tally
 
 
+def get_feedback_data():
+    """전체 피드백 + 연결된 submission 프로필 (추천 학습용)"""
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("""
+        SELECT s.id, s.survey_json, s.profile_json, f.domain, f.thumb
+        FROM feedbacks f
+        JOIN submissions s ON f.submission_id = s.id
+        ORDER BY f.created_at ASC
+    """)
+    rows = c.fetchall()
+    conn.close()
+
+    users = {}
+    for sid, survey_json, profile_json, domain, thumb in rows:
+        if sid not in users:
+            users[sid] = {
+                "id": sid,
+                "profile": json.loads(profile_json) if profile_json else {},
+                "feedbacks": [],
+            }
+        users[sid]["feedbacks"].append({"domain": domain, "thumb": thumb})
+
+    return list(users.values())
+
+
 def get_ux_vote_comments(limit=20):
     conn = get_db_connection()
     c = conn.cursor()

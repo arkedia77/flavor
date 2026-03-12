@@ -1,75 +1,65 @@
-"""API Blueprint: /api/submit, /api/feedback, /api/results, /api/calibration-data, /api/ux-vote"""
+"""API Blueprint: /api/submit, /api/feedback, /api/results, /api/calibration-data, /api/ux-vote
 
-import os
+Leoflavor Engine v0.1
+- 설문 100% 기반 추천 (사주 blend 제거)
+- 사주는 페르소나(캐릭터명)만 생성
+- 피드백 학습 루프 준비
+"""
+
 import json
 import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 
-from config import PROFILE_VERSION, CALIBRATION_THRESHOLDS, AGENT_COMM
-from engines.saju import calc_saju
-from engines.vector import saju_to_innate_vector
+from config import ENGINE_VERSION
 from engines.survey import raw_to_survey
-from engines.blend import elements_to_profile, blend_profile
+from engines.persona import get_persona
 from engines.personality import get_personality_type
-from engines.domains import run_all_domains
-from engines.gap import innate_to_expected_profile, compute_gap, interpret_gap
+from engines.recommend import recommend
 from db.repository import (
     save_submission, save_feedback, get_recent_submissions,
     get_calibration_data, get_submission_count, check_and_record_milestone,
     save_ux_vote, get_ux_vote_tally, get_ux_vote_comments,
+    get_feedback_data,
 )
 
 submit_bp = Blueprint('submit', __name__)
 
 
-def _notify_milestone(milestone: int, total: int):
-    """임계점 도달 시 flavor/tasks/에 JSON push"""
-    try:
-        import subprocess
+def _parse_survey(data: dict) -> dict:
+    """요청 데이터에서 9차원 설문 추출"""
+    raw_answers   = data.get("raw_answers", {})
+    ab_answers    = data.get("ab_answers", [])
+    swipe_answers = data.get("swipe_answers", [])
 
-        tasks_dir = os.path.join(AGENT_COMM, "flavor", "tasks")
-        if not os.path.isdir(tasks_dir):
-            return
+    if raw_answers:
+        return raw_to_survey(raw_answers), raw_answers
 
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        fname = f"{ts}_flavor_reklvm_calibration_milestone_{milestone}.json"
-        payload = {
-            "id": f"{ts}_flavor_reklvm_calibration_milestone_{milestone}",
-            "from": "flavor",
-            "to": "reklvm",
-            "project": "flavor",
-            "task": "calibration_alert",
-            "status": "pending",
-            "created_at": datetime.now().isoformat(),
-            "message": f"설문 {milestone}명 도달! 레이어1-4 캘리브레이션 분석 요청",
-            "payload": {
-                "total_submissions": total,
-                "milestone": milestone,
-                "note": CALIBRATION_THRESHOLDS.get(milestone, ""),
-                "data_endpoint": "/api/calibration-data",
-            }
-        }
-        fpath = os.path.join(tasks_dir, fname)
-        with open(fpath, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
+    if swipe_answers or ab_answers:
+        survey_raw = data.get("survey", {})
+    else:
+        survey_raw = data
 
-        subprocess.run(
-            ["git", "-C", AGENT_COMM, "add", f"flavor/tasks/{fname}"],
-            capture_output=True
-        )
-        subprocess.run(
-            ["git", "-C", AGENT_COMM, "commit", "-m",
-             f"alert: flavor→reklvm 설문 {milestone}명 도달, 캘리브레이션 요청"],
-            capture_output=True
-        )
-        subprocess.run(
-            ["git", "-C", AGENT_COMM, "push", "origin", "main"],
-            capture_output=True
-        )
-    except Exception as e:
-        import logging
-        logging.warning(f"milestone notify failed: {e}")
+    survey = {
+        dim: float(survey_raw.get(dim, 0.5))
+        for dim in ["social", "aesthetic", "adventurous", "comfort",
+                     "budget", "maximalist", "energetic", "urban", "bitter"]
+    }
+    return survey, raw_answers or swipe_answers or ab_answers
+
+
+def _parse_birth(data: dict) -> tuple:
+    """생년월일 파싱"""
+    if data.get("birth_year"):
+        return (int(data["birth_year"]), int(data.get("birth_month", 6)),
+                int(data.get("birth_day", 15)))
+
+    birth_date = data.get("birth_date", "")
+    if birth_date and "-" in birth_date:
+        parts = birth_date.split("-")
+        return int(parts[0]), int(parts[1]), int(parts[2])
+
+    return 1990, 1, 1
 
 
 @submit_bp.route("/api/submit", methods=["POST"])
@@ -81,114 +71,50 @@ def submit():
         birth_date = data.get("birth_date", "")
         birth_time = data.get("birth_time", "12")
         gender     = data.get("gender", "unknown")
+        quiz_type  = data.get("quiz_type", "vol1_taste")
 
-        quiz_type   = data.get("quiz_type", "vol1_taste")
+        survey, raw_answers = _parse_survey(data)
+        year, month, day = _parse_birth(data)
 
-        raw_answers   = data.get("raw_answers", {})
-        ab_answers    = data.get("ab_answers", [])
-        swipe_answers = data.get("swipe_answers", [])
+        # 설문 = 프로필 (사주 blend 없음, 설문 100%)
+        profile = survey
 
-        if raw_answers:
-            survey = raw_to_survey(raw_answers)
-        elif swipe_answers or ab_answers:
-            survey_raw = data.get("survey", {})
-            survey = {
-                "social":      float(survey_raw.get("social", 0.5)),
-                "aesthetic":   float(survey_raw.get("aesthetic", 0.5)),
-                "adventurous": float(survey_raw.get("adventurous", 0.5)),
-                "comfort":     float(survey_raw.get("comfort", 0.5)),
-                "budget":      float(survey_raw.get("budget", 0.5)),
-                "maximalist":  float(survey_raw.get("maximalist", 0.5)),
-                "energetic":   float(survey_raw.get("energetic", 0.5)),
-                "urban":       float(survey_raw.get("urban", 0.5)),
-                "bitter":      float(survey_raw.get("bitter", 0.5)),
-            }
-        else:
-            survey = {
-                "social":      float(data.get("social", 0.5)),
-                "aesthetic":   float(data.get("aesthetic", 0.5)),
-                "adventurous": float(data.get("adventurous", 0.5)),
-                "comfort":     float(data.get("comfort", 0.5)),
-                "budget":      float(data.get("budget", 0.5)),
-                "maximalist":  float(data.get("maximalist", 0.5)),
-                "energetic":   float(data.get("energetic", 0.5)),
-                "urban":       float(data.get("urban", 0.5)),
-                "bitter":      float(data.get("bitter", 0.5)),
-            }
+        # 추천 (규칙 기반, 추후 피드백 학습 보정)
+        results = recommend(profile)
 
-        if data.get("birth_year"):
-            year  = int(data.get("birth_year", 1995))
-            month = int(data.get("birth_month", 6))
-            day   = int(data.get("birth_day", 15))
-            hour  = int(data.get("birth_hour", 12))
-        else:
-            parts = birth_date.split("-")
-            year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
-            hour = int(birth_time)
+        # 취향 아키타입 (9차원 기반)
+        personality = get_personality_type(profile)
 
-        saju = calc_saju(year, month, day, hour)
-        saju_detail = saju.get("saju_detail")
-
-        # Phase 2: 12D innate vector 기반 블렌딩 (saju_detail 있을 때)
-        if saju_detail:
-            innate_vec = saju_to_innate_vector(saju_detail)
-            profile = blend_profile(innate_vec, survey)
-            expected = innate_to_expected_profile(innate_vec)
-            gap_result = compute_gap(expected, survey)
-            gap_interp = interpret_gap(gap_result)
-        else:
-            # fallback: 기존 방식
-            profile = elements_to_profile(saju["elements"], gender, survey)
-            innate_vec = None
-            gap_result = None
-            gap_interp = None
-
-        results = run_all_domains(profile)
-        personality = get_personality_type(profile, saju_detail)
+        # 사주 페르소나 (마케팅 훅, 추천에 영향 없음)
+        persona = get_persona(year, month, day)
 
         result_id = str(uuid.uuid4())[:8]
 
+        # DB 저장 (elements_json에 persona 저장, 하위호환)
         save_submission(
             result_id, name, birth_date, birth_time, gender,
-            saju["elements"],
-            raw_answers or swipe_answers or ab_answers,
+            {"persona": persona["name"], "element": persona["element"],
+             "day_stem": persona["day_stem"]},
+            raw_answers,
             survey, profile, results,
-            f"{PROFILE_VERSION}_{quiz_type}",
+            f"{ENGINE_VERSION}_{quiz_type}",
             datetime.now().isoformat()
         )
 
         total = get_submission_count()
-        milestone_hit = None
         for m in [50, 200, 500]:
-            if total >= m and check_and_record_milestone(m):
-                milestone_hit = m
+            if total >= m:
+                check_and_record_milestone(m)
 
-        if milestone_hit:
-            _notify_milestone(milestone_hit, total)
-
-        response = {
+        return jsonify({
             "status": "ok",
             "id": result_id,
             "name": name,
             "profile": profile,
             "results": results,
             "personality": personality,
-        }
-
-        # Phase 2 확장 필드 (있을 때만)
-        if saju_detail:
-            response["saju_detail"] = {
-                "day_master": saju_detail["day_master"],
-                "geokguk": saju_detail["geokguk"],
-                "strength": saju_detail["strength"],
-                "strength_label": saju_detail["strength_label"],
-                "type_code": saju_detail["type_code"],
-                "yin_yang_ratio": saju_detail["yin_yang_ratio"],
-            }
-            response["innate_vector"] = innate_vec
-            response["gap"] = gap_interp
-
-        return jsonify(response)
+            "persona": persona,
+        })
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -223,9 +149,7 @@ def calibration_data():
     rows, total = get_calibration_data()
     return jsonify({
         "total": total,
-        "profile_version": PROFILE_VERSION,
-        "calibration_thresholds": CALIBRATION_THRESHOLDS,
-        "next_threshold": next((m for m in [50, 200, 500] if m > total), None),
+        "engine_version": ENGINE_VERSION,
         "data": [{
             "id": r[0],
             "birth_date": r[1],

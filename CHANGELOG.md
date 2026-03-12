@@ -1,53 +1,36 @@
-# Flavor CHANGELOG
+# Leoflavor CHANGELOG
 
 ---
 
-## 2026-03-12
+## 2026-03-12 — Leoflavor Engine v0.1 (엔진 재설계)
 
-### 매핑 v3 + 동적 가중치 (캘리브레이션 1차)
-- gap.py: baseline+편차 구조 도입 (방향 일치율 64%→88%, bitter 25%→100%)
-- blend.py: 편향도 기반 동적 사주 가중치 (15%~50%) + 차원별 확신도 보정
-- 8건 실데이터 기반 검증, 60건 도착 시 재보정 예정
+### Breaking Changes
+- 사주 blend 완전 제거 (설문 100% 기반 추천)
+- 사주 엔진 파일 삭제 (saju.py, blend.py, vector.py, gap.py, calendar.py, saju_tables.py)
+- `PROFILE_VERSION` → `ENGINE_VERSION`
+- `get_personality_type()` 시그니처 변경 (saju_detail 파라미터 제거)
 
-### Phase 1: Deep Saju Engine
-- saju.py → v2.0: 4주(입춘/절기/JDN), 십신, 지장간 보정 오행, 격국, 신강/신약
-- saju_tables.py: 천간/지지/오행/지장간/절기/십신/격국/일간타입 정적 테이블
-- calendar.py: JDN, 절기 기반 월지, 시간→지지 변환
-- vector.py: saju_to_innate_vector() → 12D innate vector
-- 기존 API 호환 유지
+### New
+- `engines/persona.py` — 사주 → 캐릭터명 (마케팅 훅 전용)
+- `engines/recommend.py` — 피드백 학습 기반 하이브리드 추천
+- `db/repository.py: get_feedback_data()` — 피드백 학습용 데이터 조회
 
-### Phase 2: 타입 + 갭 시스템
-- personality.py → L1(일간 10종) + L2(격국×강약 20종) + L3(9D 아키타입) 하이브리드
-- gap.py: innate vector → expected 9D 매핑, 선천-후천 갭 분석 + 해석
-- blend.py: blend_profile() 추가 (12D innate vector 기반, 기존 elements_to_profile 하위호환)
-- submit.py: Phase 2 파이프라인 통합 (saju_detail, innate_vector, gap 응답 포함)
+### Changed
+- `api/submit.py` — 파이프라인 단순화 (survey → profile → recommend → persona)
+- `config.py` — ENGINE_VERSION="0.1", DIMENSIONS 리스트 추가
+- `engines/personality.py` — L3(9차원) 전용으로 단순화
 
-### Phase 0: 모듈 분리
-- app.py 1187줄 → 34줄 (앱 팩토리 + Blueprint 등록)
-- engines/ 생성: saju.py, survey.py, blend.py, personality.py, domains.py
-- api/ 생성: public.py (페이지 라우트), submit.py (API 라우트)
-- db/ 생성: connection.py, repository.py
-- config.py 생성: 상수, 경계값, 임계점
-- .gitignore 추가 (__pycache__/)
-- 전체 11개 라우트 테스트 통과, 하위호환 유지
-- commit: d468924
-- CLAUDE.md, KANBAN.md, CHANGELOG.md 생성
+### Archive
+- 이전 사주 엔진: `v1.5-archive` 태그, `archive/saju-engine-v1.5` 브랜치
+- 사주 가설 판정: 60건 분석 결과 통계적 미지지 (p=0.575, CV R²=-0.222)
 
 ---
 
-## 2026-03-11
+## Archive (v1.0~v1.5)
 
-### 프로젝트 정비
-- project_flavor.md 생성 + MEMORY.md 등록
-- 전체 리소스 위치 수집 (GitHub, Google Drive, agent-comm)
-- mukl DB 현황 확인: submissions 60건, feedbacks 210건
-
----
-
-## 2026-03-09 ~ 2026-03-11
-
-### v1.5 시리즈
-- A/B 바이너리 퀴즈 (/ab)
-- 스와이프 카드 UI (/swipe) + z-index 수정
-- 3종 UX 비교 랜딩 (/compare) + /api/ux-vote
-- 브랜딩: '사주' → '생년월일/취향 유형'
+사주 기반 엔진 이력은 `archive/saju-engine-v1.5` 브랜치 참조.
+- Phase 0: 모듈 분리 (d468924)
+- Phase 1: Deep Saju Engine (42bed49)
+- Phase 2: 타입+갭 시스템 (730ba75)
+- 매핑 v3 (fdf530f)
+- v1.5: A/B + 스와이프 + 비교 + UX투표
