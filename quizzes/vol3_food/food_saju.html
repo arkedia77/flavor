@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>사주 식도락 테스트 — 타고난 입맛, 진짜 그래?</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+}
+body.no-scroll { overflow: hidden; position: fixed; width: 100%; }
+body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
+
+/* ── INTRO ── */
+#screen-intro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 24px 40px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* 배경 오브 */
+.intro-bg {
+  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(245,158,11,0.18) 0%, rgba(217,119,6,0.06) 40%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.intro-bg-ring {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  width: 260px; height: 260px;
+  border: 1px solid rgba(245,158,11,0.08);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+  animation: ring-rotate 30s linear infinite;
+}
+.intro-bg-ring::after {
+  content: ''; position: absolute; top: -3px; left: 50%;
+  width: 6px; height: 6px; background: rgba(245,158,11,0.4);
+  border-radius: 50%;
+}
+@keyframes ring-rotate { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+
+/* 상단 히어로 영역 */
+.intro-hero {
+  position: relative; z-index: 1;
+  padding-top: 60px; margin-bottom: 32px;
+}
+.intro-icon {
+  font-size: 3.5rem; margin-bottom: 16px; display: block;
+  filter: drop-shadow(0 0 20px rgba(245,158,11,0.4));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.intro-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.intro-title span {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.intro-sub {
+  font-size: 0.88rem;
+  color: #8888aa;
+  line-height: 1.7;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+/* 기능 칩 */
+.intro-chips {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 32px;
+  position: relative; z-index: 1;
+}
+.intro-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.12);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 0.72rem; font-weight: 600; color: #bbb;
+}
+.intro-chip .chip-icon { font-size: 0.82rem; }
+
+/* 폼 카드 */
+.form-card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 360px;
+  background: rgba(17,17,36,0.7);
+  border: 1px solid #1e1e38;
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 20px;
+}
+.form-title {
+  font-size: 0.7rem; font-weight: 700; color: #555577;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.field-group { margin-bottom: 14px; }
+.field-label {
+  font-size: 0.65rem; font-weight: 700; color: #f59e0b;
+  letter-spacing: 0.04em; margin-bottom: 6px; padding-left: 2px;
+}
+.info-row { display: flex; gap: 8px; }
+.info-row input, .info-row select {
+  flex: 1; height: 48px; background: rgba(20,20,40,0.8);
+  border: 1.5px solid #2a2a48; border-radius: 12px;
+  color: #e8e8f0; font-size: 0.92rem; font-family: inherit;
+  text-align: center; padding: 0 8px; outline: none;
+  transition: all 0.25s;
+}
+.info-row input:focus, .info-row select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+}
+.info-row input::placeholder { color: #444460; }
+.info-row select option { background: #111124; }
+.time-hint { font-size: 0.68rem; color: #444466; margin-top: 4px; margin-bottom: 0; text-align: center; }
+.gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gender-btn {
+  height: 48px; background: rgba(20,20,40,0.8);
+  border: 1.5px solid #2a2a48; border-radius: 12px;
+  color: #555577; font-size: 0.92rem; font-family: inherit;
+  cursor: pointer; transition: all 0.25s;
+}
+.gender-btn.selected {
+  border-color: #f59e0b; color: #f59e0b;
+  background: rgba(245,158,11,0.1);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+  animation: btn-pop 0.25s ease;
+}
+@keyframes btn-pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+
+.btn-start {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 360px; height: 56px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff; font-size: 1.02rem; font-weight: 900;
+  border: none; border-radius: 16px; cursor: pointer;
+  font-family: inherit; letter-spacing: -0.01em;
+  box-shadow: 0 8px 32px rgba(245,158,11,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.2s;
+}
+.btn-start:active:not(.disabled) { transform: scale(0.97); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+.btn-start.disabled {
+  background: #252540; color: #444466;
+  box-shadow: none; cursor: not-allowed;
+}
+.btn-start.ready {
+  animation: btn-glow 2s ease-in-out infinite;
+}
+@keyframes btn-glow {
+  0%,100% { box-shadow: 0 8px 32px rgba(245,158,11,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+  50% { box-shadow: 0 8px 40px rgba(245,158,11,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
+}
+
+.intro-footer {
+  position: relative; z-index: 1;
+  margin-top: 16px; font-size: 0.65rem; color: #333355;
+}
+.intro-footer a { color: #555577; text-decoration: none; }
+
+/* ── QUIZ ── */
+#screen-quiz { display: none; min-height: 100vh; flex-direction: column; }
+.quiz-top { padding: 20px 20px 0; display: flex; align-items: center; gap: 12px; }
+.progress-bar-wrap {
+  flex: 1; height: 4px; background: #1e1e38;
+  border-radius: 4px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706);
+  border-radius: 4px; transition: width 0.3s ease; width: 0%;
+}
+.progress-text { font-size: 0.78rem; color: #444466; font-weight: 700; white-space: nowrap; }
+
+.innate-banner {
+  text-align: center;
+  padding: 20px 24px 8px;
+}
+.innate-label {
+  font-size: 0.75rem; color: #f59e0b; font-weight: 700;
+  letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.innate-text {
+  font-size: 1.1rem; font-weight: 800; color: #e8e8f0;
+  line-height: 1.4;
+}
+
+.vs-label {
+  text-align: center; font-size: 0.7rem; font-weight: 700;
+  color: #333355; letter-spacing: 0.15em; padding: 12px 0 12px;
+}
+
+.ab-wrap { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 16px 40px; }
+.ab-option {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #111124; border: 2px solid #1e1e38; border-radius: 24px;
+  cursor: pointer; transition: all 0.15s; min-height: 30vh;
+  user-select: none; position: relative; overflow: hidden;
+}
+.ab-option:active { transform: scale(0.97); }
+.ab-option.selected-a { border-color: #f59e0b; background: rgba(245,158,11,0.12); animation: flash-a 0.25s ease; }
+.ab-option.selected-b { border-color: #f59e0b; background: rgba(245,158,11,0.12); animation: flash-b 0.25s ease; }
+@keyframes flash-a { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+@keyframes flash-b { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+.ab-emoji { font-size: 3.2rem; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); line-height: 1; }
+.ab-text { font-size: 1.05rem; font-weight: 800; color: #e8e8f0; letter-spacing: -0.02em; text-align: center; padding: 0 12px; }
+.ab-check {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #f59e0b; display: flex; align-items: center;
+  justify-content: center; font-size: 0.9rem; opacity: 0; transition: opacity 0.15s;
+}
+.ab-option.selected-a .ab-check, .ab-option.selected-b .ab-check { opacity: 1; }
+.vs-divider { text-align: center; font-size: 0.72rem; font-weight: 900; color: #2a2a45; letter-spacing: 0.1em; line-height: 1; }
+
+/* ── LOADING ── */
+#screen-loading {
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; text-align: center; padding: 40px;
+}
+.loading-emoji { font-size: 4rem; margin-bottom: 24px; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.7} }
+.loading-text { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.loading-sub { font-size: 0.85rem; color: #555577; }
+
+/* ── RESULT ── */
+#screen-result { display: none; min-height: 100vh; padding: 0 0 80px; overflow: auto; }
+
+.result-hero {
+  text-align: center; padding: 48px 24px 32px;
+  background: linear-gradient(180deg, #1a1508 0%, #080810 100%);
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: ''; position: absolute; top: -60px; left: 50%;
+  transform: translateX(-50%); width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* 사주 기둥 표시 */
+.pillar-display {
+  display: flex; justify-content: center; gap: 8px; margin-bottom: 24px;
+}
+.pillar {
+  background: rgba(255,255,255,0.03); border: 1px solid #2a2a45;
+  border-radius: 16px; padding: 10px 6px 12px; text-align: center; min-width: 60px;
+  position: relative; overflow: hidden;
+}
+.pillar::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  border-radius: 0 0 16px 16px;
+}
+.pillar.el-목::after { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.pillar.el-화::after { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.pillar.el-토::after { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.pillar.el-금::after { background: linear-gradient(90deg, #e2e8f0, #94a3b8); }
+.pillar.el-수::after { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.pillar.day-master { border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.1); }
+.pillar-label { font-size: 0.52rem; color: #666; margin-bottom: 6px; letter-spacing: 0.06em; font-weight: 600; }
+.pillar-stem { font-size: 1.2rem; font-weight: 900; line-height: 1; margin-bottom: 2px; }
+.pillar-divider { width: 20px; height: 1px; background: #2a2a45; margin: 4px auto; }
+.pillar-branch-row { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.pillar-branch { font-size: 1.1rem; font-weight: 900; line-height: 1; }
+.pillar-animal { font-size: 0.85rem; line-height: 1; }
+/* 오행별 천간 색상 */
+.el-c-목 { color: #4ade80; }
+.el-c-화 { color: #f87171; }
+.el-c-토 { color: #fbbf24; }
+.el-c-금 { color: #e2e8f0; }
+.el-c-수 { color: #60a5fa; }
+
+/* 이중 유형 카드 */
+.dual-type { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+.type-card {
+  flex: 1; max-width: 170px;
+  background: rgba(255,255,255,0.04); border: 1px solid #2a2a45;
+  border-radius: 20px; padding: 20px 12px; text-align: center;
+}
+.type-card.innate { border-color: rgba(245,158,11,0.3); }
+.type-card.actual { border-color: rgba(255,107,138,0.3); }
+.type-card-badge {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+  margin-bottom: 10px; text-transform: uppercase;
+}
+.type-card.innate .type-card-badge { color: #f59e0b; }
+.type-card.actual .type-card-badge { color: #ff6b8a; }
+.type-card-emoji { font-size: 2.8rem; display: block; margin-bottom: 8px; line-height: 1; }
+.type-card-name { font-size: 1.05rem; font-weight: 900; line-height: 1.2; }
+
+.result-persona {
+  font-size: 0.82rem; color: #f59e0b; margin-bottom: 12px; font-weight: 600;
+}
+
+.gap-banner {
+  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(255,107,138,0.12));
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 16px; padding: 16px 20px; margin: 0 16px 0;
+  text-align: center;
+}
+.gap-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; color: #e8e8f0; }
+.gap-detail { font-size: 0.82rem; color: #9999bb; line-height: 1.6; }
+
+.result-name-sub { font-size: 0.78rem; color: #333355; margin-top: 16px; }
+.result-name-sub strong { color: #666688; }
+
+.section-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  color: #333355; text-transform: uppercase; padding: 24px 20px 10px;
+}
+
+/* 트레이트 비교 차트 */
+.traits-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+.trait-row {
+  background: #111124; border: 1px solid #1e1e38; border-radius: 14px; padding: 16px 16px 14px;
+}
+.trait-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.trait-label { font-size: 0.78rem; color: #e8e8f0; font-weight: 800; letter-spacing: -0.01em; }
+.trait-change {
+  font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; letter-spacing: 0.02em;
+}
+.trait-change.up { color: #4ade80; background: rgba(74,222,128,0.1); }
+.trait-change.down { color: #f87171; background: rgba(248,113,113,0.1); }
+.trait-change.same { color: #555577; background: rgba(85,85,119,0.06); }
+
+/* 축 라벨 */
+.trait-axis-labels { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.trait-axis-labels span { font-size: 0.62rem; color: #555577; font-weight: 600; }
+
+/* 트랙: 하나의 축 위에 두 마커 */
+.trait-track {
+  position: relative; height: 32px; margin-bottom: 4px;
+}
+.trait-track-bg {
+  position: absolute; top: 14px; left: 0; right: 0; height: 4px;
+  background: #1e1e38; border-radius: 4px;
+}
+/* 사주→실제 변화 구간 하이라이트 */
+.trait-shift-zone {
+  position: absolute; top: 13px; height: 6px; border-radius: 3px;
+  background: rgba(245,158,11,0.15);
+  transition: all 0.6s ease;
+}
+/* 사주 마커 (금색 다이아몬드) */
+.trait-marker-innate {
+  position: absolute; top: 8px; width: 14px; height: 14px;
+  background: #f59e0b; border: 2px solid #080810;
+  border-radius: 3px; transform: rotate(45deg) translateX(-50%);
+  transition: left 0.6s ease; z-index: 2;
+  box-shadow: 0 0 8px rgba(245,158,11,0.4);
+}
+/* 실제 마커 (핑크 원) */
+.trait-marker-actual {
+  position: absolute; top: 7px; width: 18px; height: 18px;
+  background: #ff6b8a; border: 2.5px solid #080810;
+  border-radius: 50%; transform: translateX(-50%);
+  transition: left 0.6s ease; z-index: 3;
+  box-shadow: 0 0 10px rgba(255,107,138,0.4);
+}
+/* 화살표 연결선 */
+.trait-arrow {
+  position: absolute; top: 15px; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 3px, transparent 3px, transparent 6px);
+  z-index: 1; transition: all 0.6s ease;
+}
+
+/* 범례 */
+.trait-legend {
+  display: flex; gap: 14px; justify-content: center; margin-bottom: 4px; padding: 12px 16px 4px;
+}
+.trait-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; color: #777; font-weight: 600; }
+.legend-diamond {
+  width: 8px; height: 8px; background: #f59e0b; border-radius: 2px;
+  transform: rotate(45deg); flex-shrink: 0;
+}
+.legend-circle {
+  width: 10px; height: 10px; background: #ff6b8a; border-radius: 50%; flex-shrink: 0;
+}
+
+.domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; }
+.domain-card { background: #111124; border: 1px solid #1e1e38; border-radius: 16px; padding: 14px; }
+.d-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.d-icon { font-size: 1rem; }
+.d-label { font-size: 0.65rem; font-weight: 700; color: #444466; text-transform: uppercase; letter-spacing: 0.06em; }
+.d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
+.d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
+.d-desc { font-size: 0.7rem; color: rgba(245,158,11,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
+
+.cta-box {
+  margin: 20px 16px 0; background: #111124;
+  border: 1px solid #1e1e38; border-radius: 20px; padding: 24px 20px; text-align: center;
+}
+.cta-lead { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.cta-sub { font-size: 0.82rem; color: #555577; margin-bottom: 20px; line-height: 1.6; }
+.btn-primary {
+  display: block; width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff; font-weight: 900; font-size: 1rem;
+  border-radius: 14px; text-decoration: none; border: none;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 8px 24px rgba(245,158,11,0.3);
+}
+.btn-secondary {
+  display: block; width: 100%; padding: 14px;
+  background: transparent; color: #555577; font-size: 0.88rem;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  cursor: pointer; margin-top: 10px; font-family: inherit; font-weight: 600;
+}
+.btn-secondary.copied { color: #4ade80 !important; border-color: #4ade80 !important; }
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<script>document.body.classList.add('no-scroll');</script>
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🍽️</span>
+    <div class="intro-title">팔자가 아는 <span>내 입맛</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주팔자가 말해주는 너의 타고난 입맛,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 딱 2분</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자가 아는 입맛</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 현실 자각 타임</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">팔자 열람을 위한 정보</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+      <div class="time-hint">모르겠으면 '모름' 눌러도 돼, 어차피 잘 나와</div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 식도락 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 사주가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">근데 진짜?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🍳</div>
+  <div class="loading-text">사주쌤이 입맛 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px; font-size:0.85rem; color:#555577;">팔자에 적힌 입맛이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <!-- 사주 기둥 표시 -->
+    <div class="pillar-display" id="r-pillars"></div>
+    <!-- 이중 유형 카드 -->
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 입맛</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🍴 진짜 입맛</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 식도락 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 입맛 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 입맛</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 입맛</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 맛집 가보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 입맛도 까볼까? 🍽️</div>
+    <div class="cta-sub">보내서 상대방 식도락 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+/* ═══════════════════════════════════════════
+   사주 계산 (시주 포함 8글자)
+   ═══════════════════════════════════════════ */
+
+const STEMS = ["갑","을","병","정","무","기","경","신","임","계"];
+const BRANCHES = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
+
+const STEM_ELEMENT   = {갑:"목",을:"목",병:"화",정:"화",무:"토",기:"토",경:"금",신:"금",임:"수",계:"수"};
+const STEM_POLARITY  = {갑:"양",을:"음",병:"양",정:"음",무:"양",기:"음",경:"양",신:"음",임:"양",계:"음"};
+const BRANCH_ELEMENT  = {자:"수",축:"토",인:"목",묘:"목",진:"토",사:"화",오:"화",미:"토",신:"금",유:"금",술:"토",해:"수"};
+const BRANCH_POLARITY = {자:"양",축:"음",인:"양",묘:"음",진:"양",사:"음",오:"양",미:"음",신:"양",유:"음",술:"양",해:"음"};
+
+const PRODUCES = {목:"화",화:"토",토:"금",금:"수",수:"목"};
+const OVERCOMES = {목:"토",토:"수",수:"화",화:"금",금:"목"};
+
+function getSipsin(dayEl, dayPol, tEl, tPol) {
+  const samePol = dayPol === tPol;
+  if (tEl === dayEl) return samePol ? "비견" : "겁재";
+  if (tEl === PRODUCES[dayEl]) return samePol ? "식신" : "상관";
+  if (tEl === OVERCOMES[dayEl]) return samePol ? "편재" : "정재";
+  if (dayEl === PRODUCES[tEl]) return samePol ? "편인" : "정인";
+  if (dayEl === OVERCOMES[tEl]) return samePol ? "편관" : "정관";
+  return "비견";
+}
+
+function calcJDN(year, month, day) {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+/* 시간 → 지지 (12시진) */
+const HOUR_BRANCHES = [
+  // 23-01:자, 01-03:축, 03-05:인, 05-07:묘, 07-09:진, 09-11:사
+  // 11-13:오, 13-15:미, 15-17:신, 17-19:유, 19-21:술, 21-23:해
+  {start:23, end:1,  branch:"자"}, {start:1,  end:3,  branch:"축"},
+  {start:3,  end:5,  branch:"인"}, {start:5,  end:7,  branch:"묘"},
+  {start:7,  end:9,  branch:"진"}, {start:9,  end:11, branch:"사"},
+  {start:11, end:13, branch:"오"}, {start:13, end:15, branch:"미"},
+  {start:15, end:17, branch:"신"}, {start:17, end:19, branch:"유"},
+  {start:19, end:21, branch:"술"}, {start:21, end:23, branch:"해"},
+];
+
+function getHourBranch(hour) {
+  if (hour >= 23 || hour < 1) return "자";
+  if (hour < 3) return "축";
+  if (hour < 5) return "인";
+  if (hour < 7) return "묘";
+  if (hour < 9) return "진";
+  if (hour < 11) return "사";
+  if (hour < 13) return "오";
+  if (hour < 15) return "미";
+  if (hour < 17) return "신";
+  if (hour < 19) return "유";
+  if (hour < 21) return "술";
+  return "해";
+}
+
+function getHourStem(dayStem, hourBranch) {
+  // 일간 기준 시간 천간 (오자기법)
+  // 갑기일→갑자시, 을경일→병자시, 병신일→무자시, 정임일→경자시, 무계일→임자시
+  const dayStemIdx = STEMS.indexOf(dayStem);
+  const baseMap = [0, 2, 4, 6, 8, 0, 2, 4, 6, 8]; // 갑기→갑, 을경→병, ...
+  const branchIdx = BRANCHES.indexOf(hourBranch);
+  return STEMS[(baseMap[dayStemIdx] + branchIdx) % 10];
+}
+
+function calcPillars(year, month, day, hour) {
+  const ys = STEMS[(year - 4 + 1000) % 10];
+  const yb = BRANCHES[(year - 4 + 1200) % 12];
+  const ysIdx = ((year - 4) % 10 + 10) % 10;
+  const baseMap = [2,4,6,8,0,2,4,6,8,0];
+  const ms = STEMS[(baseMap[ysIdx] + month - 1) % 10];
+  const mb = BRANCHES[(month + 1) % 12];
+  const jdn = calcJDN(year, month, day);
+  const ds = STEMS[((jdn % 10) + 10) % 10];
+  const db = BRANCHES[((jdn % 12) + 12) % 12];
+
+  let hs = null, hb = null;
+  if (hour !== null) {
+    hb = getHourBranch(hour);
+    hs = getHourStem(ds, hb);
+  }
+
+  return { ys, yb, ms, mb, ds, db, hs, hb };
+}
+
+function calcSipsin(year, month, day, hour) {
+  const p = calcPillars(year, month, day, hour);
+  const dayEl = STEM_ELEMENT[p.ds];
+  const dayPol = STEM_POLARITY[p.ds];
+
+  // 일간 제외 나머지 글자들과의 관계
+  const targets = [
+    [p.ys, "stem"], [p.yb, "branch"],
+    [p.ms, "stem"], [p.mb, "branch"],
+    [p.db, "branch"]
+  ];
+  // 시주가 있으면 추가 (8글자)
+  if (p.hs && p.hb) {
+    targets.push([p.hs, "stem"], [p.hb, "branch"]);
+  }
+
+  const dist = {};
+  ["비견","겁재","식신","상관","편재","정재","편관","정관","편인","정인"].forEach(n => dist[n] = 0);
+
+  targets.forEach(([ch, type]) => {
+    const tEl = type === "stem" ? STEM_ELEMENT[ch] : BRANCH_ELEMENT[ch];
+    const tPol = type === "stem" ? STEM_POLARITY[ch] : BRANCH_POLARITY[ch];
+    const s = getSipsin(dayEl, dayPol, tEl, tPol);
+    dist[s]++;
+  });
+
+  let dominant = "비견", maxCount = 0;
+  Object.entries(dist).forEach(([k, v]) => { if (v > maxCount) { maxCount = v; dominant = k; } });
+
+  return { pillars: p, dayStem: p.ds, dayEl, dayPol, distribution: dist, dominant, hasHour: hour !== null };
+}
+
+/* ── 십신 → 9차원 innate 벡터 ── */
+const SIPSIN_FLAVOR_MAP = {
+  "비견": {adventurous:+0.06, energetic:+0.04, comfort:-0.04},
+  "겁재": {social:+0.08, energetic:+0.06, budget:+0.04},
+  "식신": {aesthetic:+0.08, comfort:+0.04, bitter:+0.04},
+  "상관": {maximalist:+0.08, adventurous:+0.06, aesthetic:+0.04},
+  "편재": {social:+0.06, budget:+0.08, urban:+0.04},
+  "정재": {comfort:+0.08, budget:-0.06, urban:+0.04},
+  "편관": {energetic:+0.08, urban:+0.06, maximalist:+0.04},
+  "정관": {comfort:+0.06, urban:+0.06, aesthetic:+0.04},
+  "편인": {adventurous:+0.08, aesthetic:+0.06, social:-0.04},
+  "정인": {comfort:+0.08, social:+0.04, aesthetic:+0.04},
+};
+
+const DIMENSIONS = ["social","adventurous","aesthetic","comfort","budget","maximalist","energetic","urban","bitter"];
+
+function sipsinToInnate(sipsinResult) {
+  const innate = {};
+  DIMENSIONS.forEach(d => innate[d] = 0.5);
+
+  const dist = sipsinResult.distribution;
+  const total = Object.values(dist).reduce((a, b) => a + b, 0);
+  if (total === 0) return innate;
+
+  Object.entries(dist).forEach(([name, count]) => {
+    if (count === 0) return;
+    const weight = count / total;
+    const map = SIPSIN_FLAVOR_MAP[name] || {};
+    Object.entries(map).forEach(([dim, val]) => {
+      innate[dim] += val * weight;
+    });
+  });
+
+  // 8글자면 5x, 6글자면 4x (시주 있으면 더 정밀하므로 증폭 높임)
+  const amp = sipsinResult.hasHour ? 5 : 4;
+  DIMENSIONS.forEach(d => {
+    const delta = innate[d] - 0.5;
+    innate[d] = Math.max(0.1, Math.min(0.9, 0.5 + delta * amp));
+  });
+
+  return innate;
+}
+
+/* ── 일간 페르소나 ── */
+const DAY_MASTER_PERSONA = {
+  "갑": {name:"큰 나무의 개척자", emoji:"🌲", element:"목", vibe:"새로운 길을 만드는 사람"},
+  "을": {name:"덩굴의 적응가", emoji:"🌿", element:"목", vibe:"어디서든 자리를 잡는 유연한 감각"},
+  "병": {name:"태양의 무대인", emoji:"☀️", element:"화", vibe:"주목받을 때 빛나는 에너지"},
+  "정": {name:"촛불의 감성가", emoji:"🕯️", element:"화", vibe:"은은하지만 깊은 감각의 소유자"},
+  "무": {name:"대지의 중심축", emoji:"🏔️", element:"토", vibe:"흔들리지 않는 안정감"},
+  "기": {name:"정원의 큐레이터", emoji:"🌾", element:"토", vibe:"사소한 것도 아름답게 가꾸는 손길"},
+  "경": {name:"강철의 완벽주의자", emoji:"⚔️", element:"금", vibe:"타협 없는 기준, 날카로운 취향"},
+  "신": {name:"보석의 감식가", emoji:"💎", element:"금", vibe:"정제된 아름다움을 알아보는 눈"},
+  "임": {name:"바다의 탐험가", emoji:"🌊", element:"수", vibe:"끝없이 새로운 것을 향해 흐르는 호기심"},
+  "계": {name:"이슬의 관찰자", emoji:"💧", element:"수", vibe:"조용히 스며들어 본질을 꿰뚫는 직관"},
+};
+
+/* ═══════════════════════════════════════════
+   15문항
+   ═══════════════════════════════════════════ */
+
+const QUESTIONS = [
+  { id:'f1', dimension:'social',
+    highText:'같이 먹어야 맛있는', lowText:'혼밥이 편한',
+    A:{emoji:'👥', label:'맞아, 밥은 같이 먹어야 밥이지', val:0.85},
+    B:{emoji:'🎧', label:'아닌데? 혼밥이 세상에서 제일 편해', val:0.15} },
+  { id:'f2', dimension:'social',
+    highText:'맛집은 공유해야 하는', lowText:'나만 알고 싶은',
+    A:{emoji:'📢', label:'맞아, 맛집은 바로 단톡방에 공유', val:0.8},
+    B:{emoji:'🤫', label:'아닌데? 사람 몰리면 내가 못 가잖아', val:0.2} },
+  { id:'f3', dimension:'adventurous',
+    highText:'새 메뉴 도전하는', lowText:'단골 메뉴만 시키는',
+    A:{emoji:'🆕', label:'맞아, 안 먹어본 거 무조건 도전', val:0.85},
+    B:{emoji:'🔁', label:'아닌데? 실패하면 한 끼 날리잖아', val:0.15} },
+  { id:'f4', dimension:'adventurous',
+    highText:'해외 음식 좋아하는', lowText:'한식이 최고인',
+    A:{emoji:'🌮', label:'맞아, 타코 쌀국수 케밥 다 좋아', val:0.9},
+    B:{emoji:'🍚', label:'아닌데? 결국 김치찌개가 답이야', val:0.1} },
+  { id:'f5', dimension:'aesthetic',
+    highText:'분위기 맛집 필수인', lowText:'맛만 좋으면 되는',
+    A:{emoji:'✨', label:'맞아, 인테리어가 반이다', val:0.85},
+    B:{emoji:'🥘', label:'아닌데? 허름해도 맛있으면 장땡', val:0.2} },
+  { id:'f6', dimension:'aesthetic',
+    highText:'플레이팅이 중요한', lowText:'양이 중요한',
+    A:{emoji:'🎨', label:'맞아, 눈으로 먼저 먹는다', val:0.8},
+    B:{emoji:'🍖', label:'아닌데? 양 많은 게 최고야', val:0.2} },
+  { id:'f7', dimension:'comfort',
+    highText:'집밥이 최고인', lowText:'외식이 최고인',
+    A:{emoji:'🏠', label:'맞아, 집밥 앞에 장사 없다', val:0.85},
+    B:{emoji:'🍽️', label:'아닌데? 밖에서 먹어야 맛있어', val:0.15} },
+  { id:'f8', dimension:'comfort',
+    highText:'익숙한 맛이 좋은', lowText:'새로운 맛이 좋은',
+    A:{emoji:'🤗', label:'맞아, 어릴 때 먹던 그 맛이 최고', val:0.85},
+    B:{emoji:'🧪', label:'아닌데? 처음 먹어보는 맛이 설레', val:0.15} },
+  { id:'f9', dimension:'budget',
+    highText:'맛있으면 가격 상관없는', lowText:'가성비가 진리인',
+    A:{emoji:'💳', label:'맞아, 맛집이면 지갑 열린다', val:0.85},
+    B:{emoji:'💰', label:'아닌데? 가성비 맛집이 진짜 맛집', val:0.15} },
+  { id:'f10', dimension:'maximalist',
+    highText:'먹스타그램 하는', lowText:'먹기 바쁜',
+    A:{emoji:'📸', label:'맞아, 일단 사진부터 찍어야지', val:0.85},
+    B:{emoji:'😋', label:'아닌데? 사진 찍을 시간에 한입 더', val:0.15} },
+  { id:'f11', dimension:'maximalist',
+    highText:'풀코스로 즐기는', lowText:'간단하게 먹는',
+    A:{emoji:'🍷', label:'맞아, 에피타이저부터 디저트까지', val:0.8},
+    B:{emoji:'🥪', label:'아닌데? 한 그릇이면 충분해', val:0.2} },
+  { id:'f12', dimension:'energetic',
+    highText:'직접 요리하는', lowText:'시켜먹는',
+    A:{emoji:'👨‍🍳', label:'맞아, 요리가 힐링이지', val:0.85},
+    B:{emoji:'📱', label:'아닌데? 배달앱이 최고의 발명', val:0.15} },
+  { id:'f13', dimension:'energetic',
+    highText:'아침 꼭 챙기는', lowText:'아침은 패스하는',
+    A:{emoji:'🌅', label:'맞아, 아침 안 먹으면 하루가 안 돼', val:0.8},
+    B:{emoji:'😴', label:'아닌데? 점심이 첫 끼야', val:0.2} },
+  { id:'f14', dimension:'urban',
+    highText:'핫플 맛집 순례하는', lowText:'동네 맛집파',
+    A:{emoji:'🏙️', label:'맞아, SNS 핫플은 오픈런이다', val:0.85},
+    B:{emoji:'🏘️', label:'아닌데? 동네 사장님이 알아봐주는 맛', val:0.15} },
+  { id:'f15', dimension:'bitter',
+    highText:'깊은 맛을 아는', lowText:'자극적인 맛을 좋아하는',
+    A:{emoji:'🍵', label:'맞아, 은은한 감칠맛이 진짜지', val:0.85},
+    B:{emoji:'🌶️', label:'아닌데? 맵고 짜고 달아야 맛이지', val:0.15} },
+];
+
+const FOOD_TYPES = [
+  { cond: p => p.adventurous>0.6 && p.aesthetic>0.6 && p.budget>0.6,
+    type: '미식 탐험가', emoji: '🗺️', tagline: '새로운 맛 앞에 지갑이 열린다',
+    detail: '안 가본 맛집, 안 먹어본 메뉴가 있으면 참을 수 없는 타입. 먹방 유튜브가 여행 가이드.' },
+  { cond: p => p.aesthetic>0.6 && p.comfort>0.6 && p.social>0.5,
+    type: '분위기 미식가', emoji: '🌹', tagline: '맛도 중요하지만 분위기가 반이다',
+    detail: '조명 좋고, 플레이팅 예쁘고, 음악 좋은 곳. 인스타 감성 맛집 큐레이터.' },
+  { cond: p => p.social<0.4 && p.comfort>0.6,
+    type: '혼밥 장인', emoji: '🎧', tagline: '혼자 먹는 밥이 세상에서 제일 편하다',
+    detail: '이어폰 꽂고 혼밥하는 게 최고의 힐링. 혼밥 맛집 리스트가 따로 있는 타입.' },
+  { cond: p => p.social>0.6 && p.maximalist>0.6,
+    type: '먹방 소셜러', emoji: '📱', tagline: '맛집은 같이 가야 맛있고 찍어야 완성',
+    detail: '단톡방 맛집 공유왕. 사진 먼저 찍고, 후기 남기고, 다음 모임 장소도 예약.' },
+  { cond: p => p.budget<0.4 && p.adventurous>0.5,
+    type: '가성비 사냥꾼', emoji: '💰', tagline: '만원의 행복을 아는 진짜 미식가',
+    detail: '가격 대비 최고의 맛을 찾아 삼만리. 숨은 가성비 맛집 리스트가 보물지도.' },
+  { cond: p => p.comfort>0.6 && p.energetic>0.6,
+    type: '집밥 마스터', emoji: '👨‍🍳', tagline: '냉장고 털기의 달인, 집밥이 최고',
+    detail: '직접 해먹는 게 제일 맛있다고 믿는 타입. 레시피 영상 저장만 500개.' },
+  { cond: p => p.bitter>0.6 && p.adventurous>0.5,
+    type: '매운맛 전사', emoji: '🌶️', tagline: '맵찔이는 이해 못 하는 인생관',
+    detail: '불닭볶음면은 기본, 엽떡은 극한으로. 매운맛 도전 영상 보면서 공감하는 타입.' },
+  { cond: p => p.aesthetic>0.6 && p.comfort>0.5 && p.bitter<0.5,
+    type: '디저트 수집가', emoji: '🍰', tagline: '밥은 건너뛰어도 디저트는 못 참아',
+    detail: '카페 신메뉴는 당일 체크, 마카롱/크로플/케이크 다 섭렵. 위는 따로 있다고 믿는 타입.' },
+  { cond: p => p.energetic>0.6 && p.bitter<0.4,
+    type: '건강식 신봉자', emoji: '🥗', tagline: '몸이 좋아하는 음식이 진짜 맛있는 거다',
+    detail: '샐러드, 프로틴, 그릭요거트. 영양성분표 확인은 기본이고 식단 관리가 취미인 타입.' },
+  { cond: p => p.comfort>0.5 && p.urban>0.6,
+    type: '야식의 왕', emoji: '🌙', tagline: '밤 10시부터가 진짜 식사 시간',
+    detail: '치킨, 족발, 라면 삼대장. 새벽 배달앱 서핑이 일상인 진정한 야행성 미식가.' },
+  { cond: p => p.aesthetic>0.5 && p.budget>0.6 && p.adventurous<0.5,
+    type: '오마카세 러버', emoji: '🍣', tagline: '셰프한테 맡기세요, 내 입맛 믿어요',
+    detail: '오마카세, 코스요리, 페어링. 좋은 재료를 잘 다룬 한 접시에 감동받는 타입.' },
+  { cond: () => true,
+    type: '밸런스 미식가', emoji: '⚖️', tagline: '가리는 거 없이 다 잘 먹는 팔방미인',
+    detail: '한식도 양식도 분식도 다 좋아. 뭐 먹을지 고민이 적은 축복받은 타입.' },
+];
+
+const DOMAIN_EMOJI = { '커피':'☕','향수':'🌸','음악':'🎵','식당':'🍽️','운동':'🏃','여행':'✈️','패션':'👗','인테리어':'🏠' };
+
+let currentQ = 0;
+let answers = [];
+let qStartTime = 0;
+let userData = {};
+let innateProfile = {};
+let sipsinData = {};
+let resultShareUrl = '';
+
+/* ── 초기화 ── */
+(function() {
+  const yearSel = document.getElementById('birth_year');
+  for (let y = 2010; y >= 1940; y--) {
+    const o = document.createElement('option');
+    o.value = y;
+    o.textContent = y + '년';
+    yearSel.appendChild(o);
+  }
+  const monthSel = document.getElementById('birth_month');
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2, '0');
+    o.textContent = m + '월';
+    monthSel.appendChild(o);
+  }
+  const daySel = document.getElementById('birth_day');
+  for (let d = 1; d <= 31; d++) {
+    const o = document.createElement('option');
+    o.value = String(d).padStart(2, '0');
+    o.textContent = d + '일';
+    daySel.appendChild(o);
+  }
+  // 시간 선택 (2시간 단위 시진 + 모름)
+  const hourSel = document.getElementById('birth_hour');
+  const hourOptions = [
+    {val:'unknown', text:'모름'},
+    {val:'0',  text:'자시 (23:00~01:00)'},
+    {val:'2',  text:'축시 (01:00~03:00)'},
+    {val:'4',  text:'인시 (03:00~05:00)'},
+    {val:'6',  text:'묘시 (05:00~07:00)'},
+    {val:'8',  text:'진시 (07:00~09:00)'},
+    {val:'10', text:'사시 (09:00~11:00)'},
+    {val:'12', text:'오시 (11:00~13:00)'},
+    {val:'14', text:'미시 (13:00~15:00)'},
+    {val:'16', text:'신시 (15:00~17:00)'},
+    {val:'18', text:'유시 (17:00~19:00)'},
+    {val:'20', text:'술시 (19:00~21:00)'},
+    {val:'22', text:'해시 (21:00~23:00)'},
+  ];
+  hourOptions.forEach(h => {
+    const o = document.createElement('option');
+    o.value = h.val;
+    o.textContent = h.text;
+    hourSel.appendChild(o);
+  });
+})();
+
+function checkFormReady() {
+  const name = document.getElementById('name').value.trim();
+  const year = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day = document.getElementById('birth_day').value;
+  const gender = document.querySelector('.gender-btn.selected');
+  const btn = document.getElementById('btn-start');
+  if (name && year && month && day && gender) {
+    btn.disabled = false;
+    btn.classList.remove('disabled');
+    btn.classList.add('ready');
+  } else {
+    btn.disabled = true;
+    btn.classList.add('disabled');
+    btn.classList.remove('ready');
+  }
+}
+
+function selectGender(btn) {
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  checkFormReady();
+}
+
+function startQuiz() {
+  const name = document.getElementById('name').value.trim();
+  const year = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day = document.getElementById('birth_day').value;
+  const hourVal = document.getElementById('birth_hour').value;
+  const genderBtn = document.querySelector('.gender-btn.selected');
+
+  if (!name || !year || !month || !day || !genderBtn) return;
+
+  const hour = (hourVal && hourVal !== 'unknown') ? parseInt(hourVal) : null;
+  userData = { name, birth_date: `${year}-${month}-${day}`, birth_time: hour !== null ? String(hour) : 'unknown', gender: genderBtn.dataset.gender };
+
+  // 사주 계산 (시주 포함)
+  sipsinData = calcSipsin(parseInt(year), parseInt(month), parseInt(day), hour);
+  innateProfile = sipsinToInnate(sipsinData);
+
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  showQuestion(0);
+}
+
+function showQuestion(idx) {
+  const q = QUESTIONS[idx];
+  const innateVal = innateProfile[q.dimension] || 0.5;
+  const isHigh = innateVal >= 0.5;
+
+  document.getElementById('innate-text').textContent =
+    `넌 "${isHigh ? q.highText : q.lowText}" 타입이야`;
+
+  if (isHigh) {
+    document.getElementById('emoji-a').textContent = q.A.emoji;
+    document.getElementById('text-a').textContent  = q.A.label;
+    document.getElementById('emoji-b').textContent = q.B.emoji;
+    document.getElementById('text-b').textContent  = q.B.label;
+  } else {
+    document.getElementById('emoji-a').textContent = q.B.emoji;
+    document.getElementById('text-a').textContent  = q.B.label.replace('아닌데?', '맞아,');
+    document.getElementById('emoji-b').textContent = q.A.emoji;
+    document.getElementById('text-b').textContent  = q.A.label.replace('맞아,', '아닌데?');
+  }
+
+  document.getElementById('opt-a').className = 'ab-option';
+  document.getElementById('opt-b').className = 'ab-option';
+  document.getElementById('progress-fill').style.width = (idx / QUESTIONS.length * 100) + '%';
+  document.getElementById('progress-text').textContent = `${idx + 1} / ${QUESTIONS.length}`;
+  qStartTime = Date.now();
+}
+
+function choose(side) {
+  if (currentQ >= QUESTIONS.length) return;
+  const q = QUESTIONS[currentQ];
+  const responseMs = Date.now() - qStartTime;
+  const innateVal = innateProfile[q.dimension] || 0.5;
+  const isHigh = innateVal >= 0.5;
+
+  document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
+
+  let chosenVal;
+  if (side === 'A') {
+    chosenVal = isHigh ? q.A.val : q.B.val;
+  } else {
+    chosenVal = isHigh ? q.B.val : q.A.val;
+  }
+
+  answers.push({
+    id: q.id,
+    dimension: q.dimension,
+    choice: side,
+    value: chosenVal,
+    innate_value: innateVal,
+    agreed_with_innate: side === 'A',
+    response_ms: responseMs
+  });
+
+  currentQ++;
+
+  if (currentQ < QUESTIONS.length) {
+    setTimeout(() => showQuestion(currentQ), 220);
+  } else {
+    setTimeout(submitAnswers, 300);
+  }
+}
+
+function buildProfile() {
+  const dims = {};
+  const counts = {};
+  answers.forEach(a => {
+    dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
+    counts[a.dimension] = (counts[a.dimension] || 0) + 1;
+  });
+  const profile = {};
+  Object.keys(dims).forEach(d => { profile[d] = dims[d] / counts[d]; });
+  DIMENSIONS.forEach(d => { if (profile[d] === undefined) profile[d] = 0.5; });
+  return profile;
+}
+
+function getFoodType(profile) {
+  for (const rt of FOOD_TYPES) {
+    if (rt.cond(profile)) return rt;
+  }
+  return FOOD_TYPES[FOOD_TYPES.length - 1];
+}
+
+function analyzeGap(innate, actual) {
+  let totalGap = 0;
+  const gaps = [];
+  const dimLabels = {
+    social:'소통', adventurous:'모험', aesthetic:'감성',
+    comfort:'안정', budget:'소비', maximalist:'표현',
+    energetic:'활동', urban:'도시', bitter:'깊이'
+  };
+
+  DIMENSIONS.forEach(d => {
+    const gap = Math.abs(innate[d] - actual[d]);
+    totalGap += gap;
+    if (gap > 0.15) {
+      gaps.push({ dim: d, label: dimLabels[d], gap });
+    }
+  });
+
+  const avgGap = totalGap / DIMENSIONS.length;
+  gaps.sort((a, b) => b.gap - a.gap);
+
+  let title, detail;
+  if (avgGap < 0.08) {
+    title = "🎯 팔자대로 먹는 중! 운명 순응형 입맛";
+    detail = "하늘이 정해준 입맛 그대로 살고 계시네요. 사주쟁이가 울고 갈 정직한 미식가!";
+  } else if (avgGap < 0.18) {
+    title = "🔄 팔자를 살짝 비튼 입맛 진화형";
+    const top = gaps[0];
+    detail = top
+      ? `${top.label} 쪽에서 팔자랑 좀 달라졌어요. 세상 맛집들이 당신을 바꿔놨군요 ㅋㅋ`
+      : "미세하게 입맛을 커스텀하신 분이시군요.";
+  } else {
+    title = "🌀 팔자 반항아! 입맛 뒤집기 장인";
+    const topTwo = gaps.slice(0, 2).map(g => g.label).join(', ');
+    detail = `특히 ${topTwo}에서 팔자랑 정반대 입맛이에요. 하늘도 예상 못 한 식도락 반전!`;
+  }
+
+  return { title, detail, avgGap, gaps };
+}
+
+function getTraits(innate, actual) {
+  const traits = [
+    { dim:'social', label:'식사 스타일', low:'혼밥 마스터', high:'같이 먹자파' },
+    { dim:'adventurous', label:'메뉴 모험도', low:'단골 메뉴만', high:'오늘도 신메뉴' },
+    { dim:'aesthetic', label:'분위기 감성', low:'맛이면 됐지', high:'인테리어도 맛이다' },
+    { dim:'comfort', label:'집밥 vs 외식', low:'밖에서 먹자', high:'집밥이 최고' },
+    { dim:'maximalist', label:'먹방 표현력', low:'조용히 먹는 파', high:'먹스타그램 필수' },
+    { dim:'energetic', label:'요리 에너지', low:'배달이 답', high:'직접 해먹는 파' },
+    { dim:'bitter', label:'맛 깊이', low:'자극적인 맛파', high:'깊은 맛 감별사' },
+  ];
+  return traits.map(t => {
+    const iVal = innate[t.dim] || 0.5;
+    const aVal = actual[t.dim] || 0.5;
+    const gap = Math.abs(iVal - aVal);
+    let gapText = '';
+    if (gap > 0.15) {
+      gapText = aVal > iVal ? `팔자보다 ${t.high} 쪽으로!` : `팔자보다 ${t.low} 쪽으로!`;
+    }
+    const desc = aVal > 0.55 ? t.high : aVal < 0.45 ? t.low : `${t.low} ↔ ${t.high}`;
+    return { ...t, innateVal: iVal, actualVal: aVal, desc, gapText };
+  });
+}
+
+async function submitAnswers() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-loading').style.display = 'flex';
+
+  const actualProfile = buildProfile();
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...userData,
+        quiz_type: 'vol3_food_saju',
+        ab_answers: answers,
+        survey: actualProfile,
+        innate_profile: innateProfile,
+        sipsin_data: {
+          dominant: sipsinData.dominant,
+          distribution: sipsinData.distribution,
+          day_stem: sipsinData.dayStem,
+          has_hour: sipsinData.hasHour,
+          pillars: sipsinData.pillars
+        }
+      })
+    });
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      showResult(data, actualProfile);
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (e) {
+    showResultLocal(actualProfile);
+  }
+}
+
+const BRANCH_ANIMAL = {
+  자:'🐀', 축:'🐂', 인:'🐅', 묘:'🐇', 진:'🐉', 사:'🐍',
+  오:'🐴', 미:'🐏', 신:'🐒', 유:'🐓', 술:'🐕', 해:'🐖'
+};
+
+function renderPillars() {
+  const p = sipsinData.pillars;
+  const pillarsDiv = document.getElementById('r-pillars');
+  const cols = [
+    { label: '시주', stem: p.hs, branch: p.hb },
+    { label: '일주', stem: p.ds, branch: p.db, isDayMaster: true },
+    { label: '월주', stem: p.ms, branch: p.mb },
+    { label: '년주', stem: p.ys, branch: p.yb },
+  ];
+  pillarsDiv.innerHTML = cols.map(c => {
+    if (!c.stem) return '';
+    const stemEl = STEM_ELEMENT[c.stem] || '토';
+    const branchEl = BRANCH_ELEMENT[c.branch] || '토';
+    const animal = BRANCH_ANIMAL[c.branch] || '';
+    return `<div class="pillar el-${branchEl}${c.isDayMaster ? ' day-master' : ''}">
+      <div class="pillar-label">${c.label}</div>
+      <div class="pillar-stem el-c-${stemEl}">${c.stem}</div>
+      <div class="pillar-divider"></div>
+      <div class="pillar-branch-row">
+        <span class="pillar-branch el-c-${branchEl}">${c.branch}</span>
+        <span class="pillar-animal">${animal}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showResult(data, actualProfile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  document.body.classList.remove('no-scroll');
+  document.body.classList.add('scrollable');
+
+  renderPillars();
+
+  const innateType = getFoodType(innateProfile);
+  const actualType = getFoodType(actualProfile);
+
+  document.getElementById('r-innate-emoji').textContent = innateType.emoji;
+  document.getElementById('r-innate-type').textContent  = innateType.type;
+  document.getElementById('r-actual-emoji').textContent = actualType.emoji;
+  document.getElementById('r-actual-type').textContent  = actualType.type;
+  document.getElementById('r-name').textContent = data.name || '';
+
+  if (data.persona && data.persona.name) {
+    document.getElementById('r-persona').textContent = `${data.persona.emoji || ''} 일간 ${data.persona.day_stem || sipsinData.dayStem} — ${data.persona.name}`;
+  }
+
+  const gap = analyzeGap(innateProfile, actualProfile);
+  document.getElementById('r-gap-title').textContent = gap.title;
+  document.getElementById('r-gap-detail').textContent = gap.detail;
+
+  renderTraits(innateProfile, actualProfile);
+  renderDomains(data.results || {});
+
+  if (data.id) {
+    resultShareUrl = `${API_BASE}/result/${data.id}`;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showResultLocal(actualProfile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  document.body.classList.remove('no-scroll');
+  document.body.classList.add('scrollable');
+
+  renderPillars();
+
+  const innateType = getFoodType(innateProfile);
+  const actualType = getFoodType(actualProfile);
+
+  document.getElementById('r-innate-emoji').textContent = innateType.emoji;
+  document.getElementById('r-innate-type').textContent  = innateType.type;
+  document.getElementById('r-actual-emoji').textContent = actualType.emoji;
+  document.getElementById('r-actual-type').textContent  = actualType.type;
+  document.getElementById('r-name').textContent = userData.name || '';
+
+  const persona = DAY_MASTER_PERSONA[sipsinData.dayStem];
+  if (persona) {
+    document.getElementById('r-persona').textContent = `${persona.emoji} 일간 ${sipsinData.dayStem} — ${persona.name}`;
+  }
+
+  const gap = analyzeGap(innateProfile, actualProfile);
+  document.getElementById('r-gap-title').textContent = gap.title;
+  document.getElementById('r-gap-detail').textContent = gap.detail;
+
+  renderTraits(innateProfile, actualProfile);
+}
+
+function renderTraits(innate, actual) {
+  const traitsDiv = document.getElementById('r-traits');
+  traitsDiv.innerHTML = '';
+  getTraits(innate, actual).forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'trait-row';
+
+    const iPct = Math.round(t.innateVal * 100);
+    const aPct = Math.round(t.actualVal * 100);
+    const diff = aPct - iPct;
+    const absDiff = Math.abs(diff);
+
+    // 변화 뱃지
+    let changeClass, changeText;
+    if (absDiff <= 5) {
+      changeClass = 'same'; changeText = '= 동일';
+    } else if (diff > 0) {
+      changeClass = 'up'; changeText = `↑ +${absDiff}`;
+    } else {
+      changeClass = 'down'; changeText = `↓ -${absDiff}`;
+    }
+
+    // 화살표 위치 계산 (% → 트랙 내 위치, 10~90% 범위로 클램프)
+    const iPos = Math.max(8, Math.min(92, iPct));
+    const aPos = Math.max(8, Math.min(92, aPct));
+    const shiftLeft = Math.min(iPos, aPos);
+    const shiftWidth = Math.abs(aPos - iPos);
+
+    row.innerHTML = `
+      <div class="trait-header">
+        <span class="trait-label">${t.label}</span>
+        <span class="trait-change ${changeClass}">${changeText}</span>
+      </div>
+      <div class="trait-axis-labels">
+        <span>${t.low}</span>
+        <span>${t.high}</span>
+      </div>
+      <div class="trait-track">
+        <div class="trait-track-bg"></div>
+        ${shiftWidth > 3 ? `<div class="trait-shift-zone" style="left:${shiftLeft}%;width:${shiftWidth}%"></div>` : ''}
+        ${shiftWidth > 3 ? `<div class="trait-arrow" style="left:${shiftLeft}%;width:${shiftWidth}%"></div>` : ''}
+        <div class="trait-marker-innate" style="left:${iPos}%"></div>
+        <div class="trait-marker-actual" style="left:${aPos}%"></div>
+      </div>`;
+    traitsDiv.appendChild(row);
+  });
+}
+
+function renderDomains(results) {
+  const grid = document.getElementById('r-domains');
+  grid.innerHTML = '';
+  Object.entries(results).forEach(([domain, rec]) => {
+    const card = document.createElement('div');
+    card.className = 'domain-card';
+    const descHtml = rec.description ? `<div class="d-desc">"${rec.description}"</div>` : '';
+    card.innerHTML = `
+      <div class="d-head">
+        <span class="d-icon">${DOMAIN_EMOJI[domain]||'✨'}</span>
+        <span class="d-label">${domain}</span>
+      </div>
+      <div class="d-item">${rec.item||''}</div>
+      <div class="d-reason">${rec.reason||''}</div>
+      ${descHtml}`;
+    grid.appendChild(card);
+  });
+}
+
+function copyResult() {
+  const shareUrl = `${API_BASE}/food-saju`;
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = '✅ 복사 완료! 어디 한번 보내봐 🔮';
+    setTimeout(() => { btn.textContent = '🔗 결과 보내서 도발하기'; }, 2500);
+  }).catch(() => { prompt('아래 링크를 복사하세요', shareUrl); });
+}
+</script>
+</body>
+</html>
