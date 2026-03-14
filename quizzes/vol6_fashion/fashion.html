@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>패션 DNA 테스트 — 타고난 스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">👗</span>
+    <div class="intro-title">타고난 패션 감각은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 패션 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">👗</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 스타일 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 패션 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">👗 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">👔</div>
+  <div class="loading-text">패션 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 스타일이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">👗 DNA 패션</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">👕 진짜 패션</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 패션 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 패션 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 패션</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 패션</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 스타일 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 패션 DNA도 까볼까? 👗</div>
+    <div class="cta-sub">보내서 상대방 패션 DNA도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol6_fashion',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '👔', text: '패션 DNA vs 현실 대조 중...', sub: '타고난 스타일이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/fashion',
+    shareConfirm: '✅ 복사 완료! 보내서 패션 스타일 비교해봐 👗',
+  },
+
+  questions: [
+    // social
+    { id:'fs1', dimension:'social',
+      highText:'트렌드 따라가는', lowText:'나만의 스타일인',
+      A:{emoji:'📱', label:'맞아, 유행하는 건 일단 입어봐야지', val:0.85},
+      B:{emoji:'🎭', label:'아닌데? 남들 다 입는 건 싫어', val:0.15} },
+    { id:'fs2', dimension:'social',
+      highText:'커플룩 좋아하는', lowText:'각자 스타일인',
+      A:{emoji:'👫', label:'맞아, 맞춰 입으면 귀엽잖아', val:0.8},
+      B:{emoji:'🙅', label:'아닌데? 각자 입고 싶은 거 입자', val:0.2} },
+
+    // adventurous
+    { id:'fs3', dimension:'adventurous',
+      highText:'새로운 스타일 도전하는', lowText:'검증된 스타일만 입는',
+      A:{emoji:'🦄', label:'맞아, 안 입어본 스타일 도전이 재밌어', val:0.85},
+      B:{emoji:'👔', label:'아닌데? 나한테 맞는 건 정해져 있어', val:0.15} },
+    { id:'fs4', dimension:'adventurous',
+      highText:'빈티지/유니크 좋아하는', lowText:'깔끔한 기본템 좋아하는',
+      A:{emoji:'🧥', label:'맞아, 구제샵 뒤지는 게 재밌어', val:0.9},
+      B:{emoji:'🤍', label:'아닌데? 무난한 기본템이 제일이야', val:0.1} },
+
+    // aesthetic
+    { id:'fs5', dimension:'aesthetic',
+      highText:'코디에 진심인', lowText:'대충 입어도 되는',
+      A:{emoji:'💅', label:'맞아, 오늘 뭐 입지가 아침의 시작이야', val:0.85},
+      B:{emoji:'😎', label:'아닌데? 입을 수 있으면 다 괜찮아', val:0.2} },
+    { id:'fs6', dimension:'aesthetic',
+      highText:'색감/컬러 중시하는', lowText:'무채색이 편한',
+      A:{emoji:'🌈', label:'맞아, 색감 맞추는 게 코디의 핵심이지', val:0.8},
+      B:{emoji:'🖤', label:'아닌데? 검정 흰색이면 다 해결돼', val:0.2} },
+
+    // comfort
+    { id:'fs7', dimension:'comfort',
+      highText:'편한 옷이 최고인', lowText:'불편해도 멋진 게 좋은',
+      A:{emoji:'🧸', label:'맞아, 트레이닝복이 인류 최고 발명품', val:0.85},
+      B:{emoji:'👠', label:'아닌데? 좀 불편해도 멋이 우선이야', val:0.15} },
+    { id:'fs8', dimension:'comfort',
+      highText:'티셔츠 청바지 편', lowText:'셔츠 슬랙스 좋은',
+      A:{emoji:'👕', label:'맞아, 티청이 정답이야', val:0.85},
+      B:{emoji:'👔', label:'아닌데? 깔끔하게 입어야 기분이 좋아', val:0.15} },
+
+    // budget
+    { id:'fs9', dimension:'budget',
+      highText:'옷에 투자하는', lowText:'가성비 패션인',
+      A:{emoji:'💳', label:'맞아, 좋은 옷은 투자할 가치가 있어', val:0.85},
+      B:{emoji:'💰', label:'아닌데? SPA 브랜드면 충분해', val:0.15} },
+
+    // maximalist
+    { id:'fs10', dimension:'maximalist',
+      highText:'악세서리 풀세팅하는', lowText:'심플한 게 최고인',
+      A:{emoji:'💍', label:'맞아, 반지 목걸이 모자까지 풀세팅', val:0.85},
+      B:{emoji:'✨', label:'아닌데? 심플 이즈 베스트', val:0.15} },
+    { id:'fs11', dimension:'maximalist',
+      highText:'옷장이 터지는', lowText:'미니멀 옷장인',
+      A:{emoji:'🗄️', label:'맞아, 옷장이 항상 부족해', val:0.8},
+      B:{emoji:'📦', label:'아닌데? 10벌이면 충분해', val:0.2} },
+
+    // energetic
+    { id:'fs12', dimension:'energetic',
+      highText:'운동복도 예뻐야 하는', lowText:'운동할 때는 아무거나',
+      A:{emoji:'🏃', label:'맞아, 애슬레저도 코디 해야지', val:0.85},
+      B:{emoji:'🩳', label:'아닌데? 편하면 되지 뭘 따져', val:0.15} },
+    { id:'fs13', dimension:'energetic',
+      highText:'쇼핑이 취미인', lowText:'쇼핑이 귀찮은',
+      A:{emoji:'🛍️', label:'맞아, 쇼핑몰 돌아다니는 게 힐링이야', val:0.8},
+      B:{emoji:'😫', label:'아닌데? 필요할 때만 온라인으로 끝내', val:0.2} },
+
+    // urban
+    { id:'fs14', dimension:'urban',
+      highText:'명품/하이엔드 끌리는', lowText:'스트릿/캐주얼이 좋은',
+      A:{emoji:'🏙️', label:'맞아, 명품 하나쯤은 있어야지', val:0.85},
+      B:{emoji:'🛹', label:'아닌데? 스트릿이 제일 멋있어', val:0.15} },
+
+    // bitter
+    { id:'fs15', dimension:'bitter',
+      highText:'소재/원단에 까다로운', lowText:'디자인만 보는',
+      A:{emoji:'🧶', label:'맞아, 소재가 옷의 품격이야', val:0.85},
+      B:{emoji:'👀', label:'아닌데? 예뻐 보이면 장땡이지', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.aesthetic>0.6 && p.budget>0.6 && p.maximalist>0.6,
+      type: '패션 인플루언서', emoji: '📸', tagline: 'OOTD가 일상이다',
+      detail: '매일 코디가 다르고, 악세서리까지 풀세팅. 인스타 피드가 곧 패션 매거진인 타입.' },
+    { cond: p => p.comfort>0.6 && p.social<0.5,
+      type: '편한 게 최고 장인', emoji: '🧸', tagline: '트레이닝복이 인류 최고 발명품',
+      detail: '집에서나 밖에서나 편한 옷이 최고. 후드티+조거팬츠 조합은 정답이라고 믿는 타입.' },
+    { cond: p => p.adventurous>0.6 && p.aesthetic>0.5,
+      type: '스타일 실험자', emoji: '🎨', tagline: '패션에 정답은 없다, 나만의 길',
+      detail: '남들이 안 입는 걸 입어야 직성이 풀려. 빈티지, 아방가르드, 믹스매치 다 좋아하는 타입.' },
+    { cond: p => p.budget>0.6 && p.urban>0.6,
+      type: '럭셔리 클래식', emoji: '💎', tagline: '좋은 옷 하나가 열 벌보다 낫다',
+      detail: '명품 로고보다 소재와 핏에 집중. 코트, 가방, 시계는 투자라고 생각하는 타입.' },
+    { cond: p => p.urban<0.4 && p.comfort>0.5,
+      type: '캐주얼 프리', emoji: '🛹', tagline: '스트릿이 내 놀이터',
+      detail: '후드, 스니커즈, 볼캡이 기본 세트. 브랜드보다 바이브가 중요한 자유로운 영혼.' },
+    { cond: p => p.aesthetic>0.6 && p.bitter>0.6,
+      type: '소재 감별사', emoji: '🧶', tagline: '만져보면 원단이 보인다',
+      detail: '울, 캐시미어, 리넨. 소재에 까다로운 안목의 소유자. 옷 사기 전에 택부터 보는 타입.' },
+    { cond: p => p.maximalist<0.4 && p.aesthetic>0.5,
+      type: '미니멀리스트', emoji: '⬜', tagline: '옷장에 10벌이면 1년 산다',
+      detail: '기본템 위주로 심플하게. "적게 갖고 잘 입는다"가 패션 철학인 타입.' },
+    { cond: p => p.social>0.6 && p.adventurous>0.5,
+      type: '트렌드세터', emoji: '🦋', tagline: '다음 시즌 트렌드를 이미 알고 있다',
+      detail: '패션위크 소식 체크, 신상 알림 설정. 남들보다 한 발 앞서 입는 게 기분 좋은 타입.' },
+    { cond: p => p.energetic>0.6 && p.comfort>0.5,
+      type: '애슬레저 마니아', emoji: '🏃', tagline: '운동복이 곧 일상복',
+      detail: '요가복으로 카페도 가고, 런닝화가 구두보다 많은 타입. 기능성이 곧 패션.' },
+    { cond: p => p.comfort>0.6 && p.budget<0.4,
+      type: '가성비 코디왕', emoji: '👑', tagline: '만원으로 코디 완성하는 천재',
+      detail: 'SPA 브랜드 세일은 절대 안 놓치는 타입. 싸게 잘 입는 게 진짜 패션 고수.' },
+    { cond: () => true,
+      type: '밸런스 드레서', emoji: '⚖️', tagline: '상황에 맞게 척척 입는 팔방미인',
+      detail: '출근복, 데이트룩, 캐주얼 다 적절히 갖추고 있는 균형 잡힌 패셔니스타.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'트렌드 감도', low:'나만의 스타일', high:'트렌드 팔로워' },
+    { dim:'adventurous', label:'스타일 모험', low:'검증된 것만', high:'새 스타일 도전' },
+    { dim:'aesthetic', label:'코디 정성', low:'대충 입어도 OK', high:'매일 코디 진심' },
+    { dim:'comfort', label:'편안함 vs 멋', low:'불편해도 멋있게', high:'편한 게 최고' },
+    { dim:'maximalist', label:'아이템 수', low:'미니멀', high:'풀세팅' },
+    { dim:'energetic', label:'쇼핑 열정', low:'필요할 때만', high:'쇼핑이 취미' },
+    { dim:'bitter', label:'소재 감각', low:'디자인만 봄', high:'소재 감별사' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

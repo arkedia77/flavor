@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>여행 DNA 테스트 — 타고난 여행 스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">✈️</span>
+    <div class="intro-title">타고난 여행 스타일은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 여행 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">✈️</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 여행 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 여행 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">✈️ DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🧳</div>
+  <div class="loading-text">여행 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 여행 스타일이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">✈️ DNA 여행</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🗺️ 진짜 여행</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 여행 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 여행 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 여행</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 여행</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 여행 가보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 여행 스타일도 까볼까? ✈️</div>
+    <div class="cta-sub">보내서 상대방 여행 DNA도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol4_travel',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🧳', text: '여행 DNA vs 현실 대조 중...', sub: '타고난 여행 스타일이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/travel',
+    shareConfirm: '✅ 복사 완료! 보내서 여행 스타일 비교해봐 ✈️',
+  },
+
+  questions: [
+    // social
+    { id:'t1', dimension:'social',
+      highText:'같이 가야 여행인', lowText:'혼행이 최고인',
+      A:{emoji:'👫', label:'맞아, 여행은 같이 가야 추억이지', val:0.85},
+      B:{emoji:'🎒', label:'아닌데? 혼자 가야 진짜 여행이야', val:0.15} },
+    { id:'t2', dimension:'social',
+      highText:'현지인이랑 어울리는', lowText:'사람 피해 다니는',
+      A:{emoji:'🤝', label:'맞아, 현지인 추천 맛집이 진짜지', val:0.8},
+      B:{emoji:'🏔️', label:'아닌데? 사람 없는 데가 천국이야', val:0.2} },
+
+    // adventurous
+    { id:'t3', dimension:'adventurous',
+      highText:'계획 없이 떠나는', lowText:'계획 세우고 가는',
+      A:{emoji:'🎲', label:'맞아, 무계획이 최고의 계획이다', val:0.85},
+      B:{emoji:'📋', label:'아닌데? 동선 짜는 게 여행의 반이야', val:0.15} },
+    { id:'t4', dimension:'adventurous',
+      highText:'오지 탐험하는', lowText:'유명 관광지 가는',
+      A:{emoji:'🌋', label:'맞아, 아무도 안 가본 데가 땡겨', val:0.9},
+      B:{emoji:'🗼', label:'아닌데? 에펠탑은 가봐야 하는 거잖아', val:0.1} },
+
+    // aesthetic
+    { id:'t5', dimension:'aesthetic',
+      highText:'인생샷 필수인', lowText:'눈으로 보면 되는',
+      A:{emoji:'📸', label:'맞아, 사진 안 찍으면 안 간 거야', val:0.85},
+      B:{emoji:'👀', label:'아닌데? 눈에 담는 게 진짜야', val:0.2} },
+    { id:'t6', dimension:'aesthetic',
+      highText:'숙소에 진심인', lowText:'잠만 자면 되는',
+      A:{emoji:'🏨', label:'맞아, 숙소가 여행의 반이다', val:0.8},
+      B:{emoji:'⛺', label:'아닌데? 잠만 자는데 뭘 따져', val:0.2} },
+
+    // comfort
+    { id:'t7', dimension:'comfort',
+      highText:'올인클루시브 좋아하는', lowText:'백패킹 스타일인',
+      A:{emoji:'🏖️', label:'맞아, 리조트에서 뒹굴뒹굴이 최고', val:0.85},
+      B:{emoji:'🥾', label:'아닌데? 걸어다녀야 진짜 여행이지', val:0.15} },
+    { id:'t8', dimension:'comfort',
+      highText:'편한 게 최고인', lowText:'고생해야 추억인',
+      A:{emoji:'😌', label:'맞아, 여행은 쉬러 가는 거야', val:0.85},
+      B:{emoji:'💪', label:'아닌데? 고생 끝에 낙이 온다고', val:0.15} },
+
+    // budget
+    { id:'t9', dimension:'budget',
+      highText:'여행엔 돈 아끼지 않는', lowText:'가성비 여행파',
+      A:{emoji:'💳', label:'맞아, 여행 경비는 성역이다', val:0.85},
+      B:{emoji:'💰', label:'아닌데? 싸게 오래 돌아다니는 게 남는 거', val:0.15} },
+
+    // maximalist
+    { id:'t10', dimension:'maximalist',
+      highText:'하루에 다 넣는', lowText:'느긋하게 다니는',
+      A:{emoji:'📍', label:'맞아, 일정 풀로 채워야 직성이 풀려', val:0.85},
+      B:{emoji:'☕', label:'아닌데? 카페에서 멍때리기가 여행이지', val:0.15} },
+    { id:'t11', dimension:'maximalist',
+      highText:'기념품 쇼핑 필수인', lowText:'짐 가벼운 게 좋은',
+      A:{emoji:'🛍️', label:'맞아, 기념품이 추억의 증거잖아', val:0.8},
+      B:{emoji:'🧳', label:'아닌데? 캐리어 가벼운 게 최고야', val:0.2} },
+
+    // energetic
+    { id:'t12', dimension:'energetic',
+      highText:'액티비티 러버', lowText:'힐링 여행파',
+      A:{emoji:'🏄', label:'맞아, 스노클링 번지점프 다 해봐야지', val:0.85},
+      B:{emoji:'🛀', label:'아닌데? 온천에 누워있는 게 여행이야', val:0.15} },
+    { id:'t13', dimension:'energetic',
+      highText:'새벽부터 움직이는', lowText:'늦잠이 여행인',
+      A:{emoji:'🌅', label:'맞아, 일출 보고 하루 시작해야지', val:0.8},
+      B:{emoji:'😴', label:'아닌데? 여행 와서까지 일찍 일어나?', val:0.2} },
+
+    // urban
+    { id:'t14', dimension:'urban',
+      highText:'도시 여행파', lowText:'자연 속 여행파',
+      A:{emoji:'🏙️', label:'맞아, 도쿄 뉴욕 파리 이런 데가 좋아', val:0.85},
+      B:{emoji:'🌿', label:'아닌데? 산 바다 시골이 진짜 힐링이야', val:0.15} },
+
+    // bitter
+    { id:'t15', dimension:'bitter',
+      highText:'문화/역사 탐방하는', lowText:'놀고먹는 게 최고인',
+      A:{emoji:'🏛️', label:'맞아, 박물관이랑 유적지는 빼놓을 수 없지', val:0.85},
+      B:{emoji:'🎉', label:'아닌데? 여행은 놀러 가는 거잖아', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.adventurous>0.6 && p.budget>0.6 && p.energetic>0.5,
+      type: '자유영혼 백패커', emoji: '🎒', tagline: '계획은 없지만 여권은 있다',
+      detail: '편도 티켓 하나 들고 떠나는 타입. 게스트하우스에서 친구 사귀고, 현지 로컬 버스 타고 다니는 게 인생 최고의 순간.' },
+    { cond: p => p.aesthetic>0.6 && p.comfort>0.6 && p.budget>0.5,
+      type: '럭셔리 힐링러', emoji: '🏖️', tagline: '호캉스가 여행의 정석이다',
+      detail: '인피니티 풀에서 칵테일 한 잔, 스파에서 마사지 한 판. 여행은 쉬러 가는 거라는 철학의 소유자.' },
+    { cond: p => p.social>0.6 && p.maximalist>0.6,
+      type: '인싸 여행러', emoji: '📸', tagline: '여행은 같이! 사진은 필수!',
+      detail: '단체 여행의 총무, 일정 기획의 달인. 모든 순간을 기록하고 공유하는 SNS 여행 크리에이터.' },
+    { cond: p => p.social<0.4 && p.comfort>0.5,
+      type: '혼행 마스터', emoji: '🎧', tagline: '혼자여서 더 완벽한 여행',
+      detail: '이어폰 꽂고 혼자 공항 가는 순간이 제일 설레는 타입. 내 페이스, 내 동선, 내 맘대로.' },
+    { cond: p => p.adventurous>0.6 && p.bitter>0.6,
+      type: '문화 탐험가', emoji: '🏛️', tagline: '유적지 앞에서 감동받는 사람',
+      detail: '박물관, 고성, 유적지가 여행의 핵심. 역사 다큐 보다가 여행 결심하는 타입.' },
+    { cond: p => p.budget<0.4 && p.adventurous>0.5,
+      type: '가성비 여행 고수', emoji: '💰', tagline: '10만원으로 3박 4일 가능',
+      detail: '항공권 특가 알림 설정 완료, 숙소는 에어비앤비, 밥은 현지 시장. 싸게 오래 다니는 게 진짜 여행 고수.' },
+    { cond: p => p.energetic>0.6 && p.adventurous>0.5,
+      type: '액티비티 정복자', emoji: '🏄', tagline: '여행지마다 도전 목록이 있다',
+      detail: '스카이다이빙, 스노클링, 번지점프. 여행은 도전이고, 아드레날린이 곧 힐링인 타입.' },
+    { cond: p => p.comfort>0.6 && p.energetic<0.4,
+      type: '느긋한 카페 여행러', emoji: '☕', tagline: '현지 카페에서 멍때리기가 여행이다',
+      detail: '오전에 카페, 오후에 산책, 저녁에 맥주. 일정 빼곡한 거 절대 안 하는 타입. 여유가 곧 럭셔리.' },
+    { cond: p => p.urban>0.6 && p.aesthetic>0.5,
+      type: '시티 감성러', emoji: '🌃', tagline: '도시의 밤거리가 여행의 하이라이트',
+      detail: '도쿄 골목길, 파리 카페, 뉴욕 루프탑. 도시만의 감성을 사랑하는 어반 트래블러.' },
+    { cond: p => p.urban<0.4 && p.aesthetic>0.5,
+      type: '자연 힐링러', emoji: '🌿', tagline: '산과 바다가 있으면 충분하다',
+      detail: '제주 올레길, 스위스 알프스, 발리 논밭. 자연 앞에서 마음이 정화되는 타입.' },
+    { cond: p => p.maximalist>0.6 && p.budget>0.6,
+      type: '풀코스 여행가', emoji: '🗺️', tagline: '놓치는 건 절대 용납 못 한다',
+      detail: '관광지, 맛집, 쇼핑, 액티비티 전부 다 넣는 빡센 일정. 체력이 곧 여행력.' },
+    { cond: () => true,
+      type: '밸런스 여행러', emoji: '⚖️', tagline: '가리는 거 없이 다 좋아하는 팔방미인',
+      detail: '도시도 좋고 자연도 좋고, 혼행도 좋고 같이도 좋고. 어디든 가면 즐기는 축복받은 타입.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'여행 동행', low:'혼행 마스터', high:'같이 가야 여행' },
+    { dim:'adventurous', label:'모험 레벨', low:'계획형 관광', high:'무계획 탐험' },
+    { dim:'aesthetic', label:'감성 지수', low:'실용이 최고', high:'인생샷 필수' },
+    { dim:'comfort', label:'여행 체력', low:'걸어다니자', high:'편하게 가자' },
+    { dim:'maximalist', label:'일정 빡빡함', low:'느긋하게', high:'풀로 채우기' },
+    { dim:'energetic', label:'활동 에너지', low:'힐링 모드', high:'액티비티 풀가동' },
+    { dim:'bitter', label:'문화 깊이', low:'놀고먹자', high:'역사 탐방 필수' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

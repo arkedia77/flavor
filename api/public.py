@@ -86,6 +86,48 @@ def food_saju_quiz():
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
+@public.route("/travel")
+def travel_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol4_travel", "travel.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/travel-saju")
+def travel_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol4_travel", "travel_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/work")
+def work_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol5_work", "work.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/work-saju")
+def work_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol5_work", "work_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/fashion")
+def fashion_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol6_fashion", "fashion.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/fashion-saju")
+def fashion_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol6_fashion", "fashion_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 @public.route("/compare")
 def compare():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "compare", "compare.html")

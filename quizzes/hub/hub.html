@@ -195,6 +195,21 @@ body {
       <div class="card-title">식도락 DNA</div>
       <div class="card-desc">타고난 입맛 vs<br>진짜 내 먹성</div>
     </a>
+    <a class="quiz-card" href="/travel" id="card-travel">
+      <span class="card-icon">✈️</span>
+      <div class="card-title">여행 DNA</div>
+      <div class="card-desc">타고난 여행 스타일 vs<br>진짜 내 여행법</div>
+    </a>
+    <a class="quiz-card" href="/work" id="card-work">
+      <span class="card-icon">💼</span>
+      <div class="card-title">직장 DNA</div>
+      <div class="card-desc">타고난 워크스타일 vs<br>진짜 내 일머리</div>
+    </a>
+    <a class="quiz-card" href="/fashion" id="card-fashion">
+      <span class="card-icon">👗</span>
+      <div class="card-title">패션 DNA</div>
+      <div class="card-desc">타고난 패션 감각 vs<br>진짜 내 스타일</div>
+    </a>
   </div>
 
   <div class="section-title">종합 분석</div>
@@ -316,7 +331,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2': 'card-romance', 'vol3_food': 'card-food', 'survey': 'card-survey' };
+  const map = { 'vol2_romance_v2': 'card-romance', 'vol3_food': 'card-food', 'vol4_travel': 'card-travel', 'vol5_work': 'card-work', 'vol6_fashion': 'card-fashion', 'survey': 'card-survey' };
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;

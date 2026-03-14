@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>직장 DNA 테스트 — 타고난 워크스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">💼</span>
+    <div class="intro-title">타고난 일머리는 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 워크스타일 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">💼</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 직장 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 워크스타일 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">💼 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🔍</div>
+  <div class="loading-text">워크스타일 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 일머리랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">💼 DNA 워크</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🏢 진짜 워크</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 직장 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 워크스타일 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 워크</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 워크</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 직업/환경이 맞을 수도</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">동료 워크스타일도 까볼까? 💼</div>
+    <div class="cta-sub">보내서 동료 워크스타일도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol5_work',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🔍', text: '워크스타일 DNA vs 현실 대조 중...', sub: '타고난 일머리랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/work',
+    shareConfirm: '✅ 복사 완료! 보내서 워크스타일 비교해봐 💼',
+  },
+
+  questions: [
+    // social
+    { id:'w1', dimension:'social',
+      highText:'팀플레이 좋아하는', lowText:'혼자 일하는 게 좋은',
+      A:{emoji:'👥', label:'맞아, 같이 해야 시너지가 나지', val:0.85},
+      B:{emoji:'🎧', label:'아닌데? 혼자 집중해야 일이 되잖아', val:0.15} },
+    { id:'w2', dimension:'social',
+      highText:'회의 좋아하는', lowText:'회의 싫어하는',
+      A:{emoji:'🗣️', label:'맞아, 브레인스토밍이 제일 재밌어', val:0.8},
+      B:{emoji:'📝', label:'아닌데? 회의할 시간에 일하자', val:0.2} },
+
+    // adventurous
+    { id:'w3', dimension:'adventurous',
+      highText:'새 프로젝트 좋아하는', lowText:'안정적인 업무가 좋은',
+      A:{emoji:'🚀', label:'맞아, 새로운 거 시작할 때가 제일 설레', val:0.85},
+      B:{emoji:'📊', label:'아닌데? 익숙한 업무가 효율적이야', val:0.15} },
+    { id:'w4', dimension:'adventurous',
+      highText:'이직/전직 도전하는', lowText:'한 회사에 오래 있는',
+      A:{emoji:'🦋', label:'맞아, 새 환경에서 성장하는 거지', val:0.9},
+      B:{emoji:'🌳', label:'아닌데? 한 곳에서 뿌리내리는 게 진짜야', val:0.1} },
+
+    // aesthetic
+    { id:'w5', dimension:'aesthetic',
+      highText:'PPT 예쁘게 만드는', lowText:'내용만 좋으면 되는',
+      A:{emoji:'🎨', label:'맞아, 비주얼이 설득력의 반이다', val:0.85},
+      B:{emoji:'📄', label:'아닌데? 내용이 좋으면 메모장이어도 돼', val:0.2} },
+    { id:'w6', dimension:'aesthetic',
+      highText:'사무실 분위기 중시하는', lowText:'어디서든 일할 수 있는',
+      A:{emoji:'🪴', label:'맞아, 공간이 좋아야 일이 잘 돼', val:0.8},
+      B:{emoji:'💻', label:'아닌데? 카페든 침대든 노트북만 있으면 돼', val:0.2} },
+
+    // comfort
+    { id:'w7', dimension:'comfort',
+      highText:'워라밸 중시하는', lowText:'일에 몰입하는',
+      A:{emoji:'⚖️', label:'맞아, 6시 땡 하면 퇴근이지', val:0.85},
+      B:{emoji:'🔥', label:'아닌데? 재밌으면 시간 가는 줄 몰라', val:0.15} },
+    { id:'w8', dimension:'comfort',
+      highText:'재택이 좋은', lowText:'출근이 좋은',
+      A:{emoji:'🏠', label:'맞아, 집이 최고의 사무실이야', val:0.85},
+      B:{emoji:'🏢', label:'아닌데? 출근해야 일하는 모드가 되지', val:0.15} },
+
+    // budget
+    { id:'w9', dimension:'budget',
+      highText:'연봉이 중요한', lowText:'보람이 중요한',
+      A:{emoji:'💰', label:'맞아, 돈이 곧 동기부여다', val:0.85},
+      B:{emoji:'❤️', label:'아닌데? 의미 있는 일이면 돈은 좀 적어도', val:0.15} },
+
+    // maximalist
+    { id:'w10', dimension:'maximalist',
+      highText:'멀티태스킹 하는', lowText:'한 가지에 집중하는',
+      A:{emoji:'🤹', label:'맞아, 여러 개 동시에 해야 짜릿해', val:0.85},
+      B:{emoji:'🎯', label:'아닌데? 하나를 제대로 끝내는 게 중요해', val:0.15} },
+    { id:'w11', dimension:'maximalist',
+      highText:'완벽주의인', lowText:'적당히 해도 되는',
+      A:{emoji:'💎', label:'맞아, 디테일에 신이 깃든다', val:0.8},
+      B:{emoji:'✅', label:'아닌데? 80%면 충분해, 속도가 중요하지', val:0.2} },
+
+    // energetic
+    { id:'w12', dimension:'energetic',
+      highText:'아침형 인간', lowText:'야행성 인간',
+      A:{emoji:'🌅', label:'맞아, 오전에 일이 제일 잘 돼', val:0.85},
+      B:{emoji:'🌙', label:'아닌데? 밤 10시부터가 골든타임이야', val:0.15} },
+    { id:'w13', dimension:'energetic',
+      highText:'움직이면서 일하는', lowText:'앉아서 일하는',
+      A:{emoji:'🚶', label:'맞아, 걸으면서 생각하면 아이디어가 와', val:0.8},
+      B:{emoji:'💺', label:'아닌데? 자리에 앉아야 집중이 되지', val:0.2} },
+
+    // urban
+    { id:'w14', dimension:'urban',
+      highText:'대기업/체계적 조직 좋아하는', lowText:'스타트업/자유로운 조직 좋아하는',
+      A:{emoji:'🏙️', label:'맞아, 체계 잡힌 데서 배울 게 많아', val:0.85},
+      B:{emoji:'🛸', label:'아닌데? 자유롭게 치고 나가는 게 맞아', val:0.15} },
+
+    // bitter
+    { id:'w15', dimension:'bitter',
+      highText:'전문가 지향인', lowText:'제너럴리스트인',
+      A:{emoji:'🔬', label:'맞아, 한 분야 깊이 파는 게 맞아', val:0.85},
+      B:{emoji:'🌈', label:'아닌데? 이것저것 다 할 줄 아는 게 강점이야', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.adventurous>0.6 && p.energetic>0.6 && p.social>0.5,
+      type: '파이어 스타터', emoji: '🚀', tagline: '새 프로젝트 킥오프가 제일 설레는 사람',
+      detail: '기획서 쓰는 날이 가장 행복한 타입. 0에서 1 만드는 게 특기인데, 유지보수는 좀...' },
+    { cond: p => p.social>0.6 && p.aesthetic>0.5 && p.maximalist>0.5,
+      type: '협업의 달인', emoji: '🤝', tagline: '팀플은 내가 잘하지',
+      detail: '회의록 정리, 일정 조율, PPT까지 다 하는 팀의 중심. 혼자 하면 오히려 효율이 떨어지는 타입.' },
+    { cond: p => p.social<0.4 && p.bitter>0.6,
+      type: '딥워크 장인', emoji: '🎧', tagline: '이어폰 꽂으면 다른 세계로',
+      detail: '조용히 집중해서 몇 시간 빠져드는 게 최고의 생산성. 슬랙 알림은 꺼두는 타입.' },
+    { cond: p => p.comfort>0.6 && p.budget>0.5,
+      type: '워라밸 수호자', emoji: '⚖️', tagline: '6시 칼퇴가 인생의 철학',
+      detail: '연봉도 중요하지만 내 시간이 더 중요해. 야근은 비상시에만, 주말은 절대 사수.' },
+    { cond: p => p.adventurous>0.6 && p.budget<0.4,
+      type: '소셜 임팩터', emoji: '🌍', tagline: '세상을 바꾸는 일이 하고 싶다',
+      detail: '연봉보다 미션. 의미 있는 일에 열정 불태우는 타입. NGO, 소셜벤처 적성 만점.' },
+    { cond: p => p.maximalist>0.6 && p.energetic>0.6,
+      type: '멀티태스커', emoji: '🤹', tagline: '동시에 5개 프로젝트? 해볼게요',
+      detail: '이메일 쓰면서 회의하고 코드 리뷰하는 타입. 바빠야 오히려 효율이 나는 신기한 인간.' },
+    { cond: p => p.aesthetic>0.6 && p.bitter>0.5,
+      type: '크리에이터', emoji: '🎨', tagline: '뭔가를 만들어야 직성이 풀린다',
+      detail: '디자인이든 코드든 글이든, 창작물을 만들 때 가장 행복한 타입. 루틴 업무는 질려.' },
+    { cond: p => p.urban>0.6 && p.comfort<0.5,
+      type: '조직 플레이어', emoji: '🏢', tagline: '체계 안에서 빛나는 프로',
+      detail: '프로세스, 매뉴얼, 보고 체계. 체계가 잡혀있어야 마음이 편한 타입. 대기업 DNA.' },
+    { cond: p => p.urban<0.4 && p.adventurous>0.5,
+      type: '프리랜서 영혼', emoji: '🏄', tagline: '남 밑에서 일 못 하는 자유영혼',
+      detail: '출퇴근 시간도, 보고 라인도 필요 없는 타입. 재택 프리랜서 or 1인 창업이 천직.' },
+    { cond: p => p.comfort>0.6 && p.social>0.5 && p.aesthetic<0.5,
+      type: '안정형 실무자', emoji: '📋', tagline: '시키는 일 정확하게, 정시퇴근',
+      detail: '정해진 업무를 정확하게 처리하는 게 특기. 불확실성보다 안정감을 중시하는 타입.' },
+    { cond: p => p.budget>0.6 && p.maximalist>0.6 && p.adventurous>0.5,
+      type: '야망형 커리어리스트', emoji: '📈', tagline: '다음 직급이 보인다',
+      detail: '승진, 연봉, 커리어 플랜이 명확한 타입. 자기계발에 투자 아끼지 않는 프로.' },
+    { cond: () => true,
+      type: '밸런스 워커', emoji: '⚖️', tagline: '적당히 잘하고 적당히 쉬는 현실주의자',
+      detail: '모든 면에서 균형 잡힌 워크스타일. 극단 없이 상황에 맞게 조절하는 팔방미인.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'협업 스타일', low:'혼자 집중파', high:'같이 해야 시너지파' },
+    { dim:'adventurous', label:'도전 성향', low:'안정 추구', high:'새로운 거 도전' },
+    { dim:'aesthetic', label:'디테일 감각', low:'내용이 전부', high:'비주얼도 중요' },
+    { dim:'comfort', label:'워라밸', low:'일에 몰입', high:'칼퇴 사수' },
+    { dim:'maximalist', label:'업무 스타일', low:'하나에 집중', high:'멀티태스킹' },
+    { dim:'energetic', label:'생산성 시간', low:'야행성', high:'아침형' },
+    { dim:'bitter', label:'전문성', low:'제너럴리스트', high:'스페셜리스트' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

@@ -195,6 +195,21 @@ body {
       <div class="card-title">식도락 사주</div>
       <div class="card-desc">사주가 아는 네 입맛,<br>맞나 까보자</div>
     </a>
+    <a class="quiz-card" href="/travel-saju" id="card-travel-saju">
+      <span class="card-icon">✈️</span>
+      <div class="card-title">여행 사주</div>
+      <div class="card-desc">팔자가 아는 네 여행법,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/work-saju" id="card-work-saju">
+      <span class="card-icon">💼</span>
+      <div class="card-title">직장 사주</div>
+      <div class="card-desc">팔자가 아는 네 일머리,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/fashion-saju" id="card-fashion-saju">
+      <span class="card-icon">👗</span>
+      <div class="card-title">패션 사주</div>
+      <div class="card-desc">팔자가 아는 네 스타일,<br>맞나 까보자</div>
+    </a>
   </div>
 
   <a class="dna-link" href="/">🧬 DNA 버전으로 보고 싶으면 여기</a>
@@ -331,7 +346,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju' };
+  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju' };
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;
