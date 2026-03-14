@@ -13,7 +13,8 @@ body {
   font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
 }
-body.no-scroll { overflow: hidden; }
+body.no-scroll { overflow: hidden; position: fixed; width: 100%; }
+body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
 
 /* ── INTRO ── */
 #screen-intro {
@@ -1174,6 +1175,7 @@ function showResult(data, actualProfile) {
   document.getElementById('screen-loading').style.display = 'none';
   document.getElementById('screen-result').style.display = 'block';
   document.body.classList.remove('no-scroll');
+  document.body.classList.add('scrollable');
 
   renderPillars();
 
@@ -1207,6 +1209,7 @@ function showResultLocal(actualProfile) {
   document.getElementById('screen-loading').style.display = 'none';
   document.getElementById('screen-result').style.display = 'block';
   document.body.classList.remove('no-scroll');
+  document.body.classList.add('scrollable');
 
   renderPillars();
 
