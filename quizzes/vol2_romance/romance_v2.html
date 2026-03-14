@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연애 DNA 테스트 — 타고난 건 이런데, 진짜 그래?</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+}
+body.no-scroll { overflow: hidden; }
+
+/* ── INTRO ── */
+#screen-intro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 24px 40px;
+  text-align: center;
+  overflow: hidden;
+}
+.intro-bg {
+  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(192,132,252,0.18) 0%, rgba(168,85,247,0.06) 40%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.intro-bg-ring {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  width: 260px; height: 260px;
+  border: 1px solid rgba(192,132,252,0.08);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+  animation: ring-rotate 30s linear infinite;
+}
+.intro-bg-ring::after {
+  content: ''; position: absolute; top: -3px; left: 50%;
+  width: 6px; height: 6px; background: rgba(192,132,252,0.4);
+  border-radius: 50%;
+}
+@keyframes ring-rotate { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+
+.intro-hero {
+  position: relative; z-index: 1;
+  padding-top: 60px; margin-bottom: 32px;
+}
+.intro-icon {
+  font-size: 3.5rem; margin-bottom: 16px; display: block;
+  filter: drop-shadow(0 0 20px rgba(192,132,252,0.4));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.intro-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.intro-title span {
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.intro-sub {
+  font-size: 0.88rem;
+  color: #8888aa;
+  line-height: 1.7;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.intro-chips {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 32px;
+  position: relative; z-index: 1;
+}
+.intro-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(192,132,252,0.06);
+  border: 1px solid rgba(192,132,252,0.12);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 0.72rem; font-weight: 600; color: #bbb;
+}
+.intro-chip .chip-icon { font-size: 0.82rem; }
+.form-card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 360px;
+  background: rgba(17,17,36,0.7);
+  border: 1px solid #1e1e38;
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 20px;
+}
+.form-title {
+  font-size: 0.7rem; font-weight: 700; color: #555577;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.field-group { margin-bottom: 14px; }
+.field-label {
+  font-size: 0.65rem; font-weight: 700; color: #c084fc;
+  letter-spacing: 0.04em; margin-bottom: 6px; padding-left: 2px;
+}
+.info-row { display: flex; gap: 8px; }
+.info-row input, .info-row select {
+  flex: 1; height: 48px; background: rgba(20,20,40,0.8);
+  border: 1.5px solid #2a2a48; border-radius: 12px;
+  color: #e8e8f0; font-size: 0.92rem; font-family: inherit;
+  text-align: center; padding: 0 8px; outline: none;
+  transition: all 0.25s;
+}
+.info-row input:focus, .info-row select:focus {
+  border-color: #c084fc;
+  box-shadow: 0 0 0 3px rgba(192,132,252,0.12);
+}
+.info-row input::placeholder { color: #444460; }
+.info-row select option { background: #111124; }
+.gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gender-btn {
+  height: 48px; background: rgba(20,20,40,0.8);
+  border: 1.5px solid #2a2a48; border-radius: 12px;
+  color: #555577; font-size: 0.92rem; font-family: inherit;
+  cursor: pointer; transition: all 0.25s;
+}
+.gender-btn.selected {
+  border-color: #c084fc; color: #c084fc;
+  background: rgba(192,132,252,0.1);
+  box-shadow: 0 0 0 3px rgba(192,132,252,0.1);
+  animation: btn-pop 0.25s ease;
+}
+@keyframes btn-pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+.btn-start {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 360px; height: 56px;
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+  color: #fff; font-size: 1.02rem; font-weight: 900;
+  border: none; border-radius: 16px; cursor: pointer;
+  font-family: inherit; letter-spacing: -0.01em;
+  box-shadow: 0 8px 32px rgba(192,132,252,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.2s;
+}
+.btn-start:active:not(.disabled) { transform: scale(0.97); box-shadow: 0 4px 16px rgba(192,132,252,0.3); }
+.btn-start.disabled {
+  background: #252540; color: #444466;
+  box-shadow: none; cursor: not-allowed;
+}
+.btn-start.ready {
+  animation: btn-glow 2s ease-in-out infinite;
+}
+@keyframes btn-glow {
+  0%,100% { box-shadow: 0 8px 32px rgba(192,132,252,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+  50% { box-shadow: 0 8px 40px rgba(192,132,252,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
+}
+.intro-footer {
+  position: relative; z-index: 1;
+  margin-top: 16px; font-size: 0.65rem; color: #333355;
+}
+
+/* ── QUIZ ── */
+#screen-quiz { display: none; min-height: 100vh; flex-direction: column; }
+.quiz-top { padding: 20px 20px 0; display: flex; align-items: center; gap: 12px; }
+.progress-bar-wrap {
+  flex: 1; height: 4px; background: #1e1e38;
+  border-radius: 4px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, #c084fc, #a855f7);
+  border-radius: 4px; transition: width 0.3s ease; width: 0%;
+}
+.progress-text { font-size: 0.78rem; color: #444466; font-weight: 700; white-space: nowrap; }
+
+/* 선천 성향 배너 */
+.innate-banner {
+  text-align: center;
+  padding: 20px 24px 8px;
+}
+.innate-label {
+  font-size: 0.75rem; color: #c084fc; font-weight: 700;
+  letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.innate-text {
+  font-size: 1.1rem; font-weight: 800; color: #e8e8f0;
+  line-height: 1.4;
+}
+
+.vs-label {
+  text-align: center; font-size: 0.7rem; font-weight: 700;
+  color: #333355; letter-spacing: 0.15em; padding: 12px 0 12px;
+}
+
+.ab-wrap { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 16px 40px; }
+.ab-option {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #111124; border: 2px solid #1e1e38; border-radius: 24px;
+  cursor: pointer; transition: all 0.15s; min-height: 30vh;
+  user-select: none; position: relative; overflow: hidden;
+}
+.ab-option:active { transform: scale(0.97); }
+.ab-option.selected-a { border-color: #c084fc; background: rgba(192,132,252,0.12); animation: flash-a 0.25s ease; }
+.ab-option.selected-b { border-color: #c084fc; background: rgba(192,132,252,0.12); animation: flash-b 0.25s ease; }
+@keyframes flash-a { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+@keyframes flash-b { 0%{transform:scale(1)} 50%{transform:scale(0.96)} 100%{transform:scale(1)} }
+.ab-emoji { font-size: 3.2rem; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); line-height: 1; }
+.ab-text { font-size: 1.05rem; font-weight: 800; color: #e8e8f0; letter-spacing: -0.02em; text-align: center; padding: 0 12px; }
+.ab-check {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #c084fc; display: flex; align-items: center;
+  justify-content: center; font-size: 0.9rem; opacity: 0; transition: opacity 0.15s;
+}
+.ab-option.selected-a .ab-check, .ab-option.selected-b .ab-check { opacity: 1; }
+.vs-divider { text-align: center; font-size: 0.72rem; font-weight: 900; color: #2a2a45; letter-spacing: 0.1em; line-height: 1; }
+
+/* ── LOADING ── */
+#screen-loading {
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; text-align: center; padding: 40px;
+}
+.loading-emoji { font-size: 4rem; margin-bottom: 24px; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.7} }
+.loading-text { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.loading-sub { font-size: 0.85rem; color: #555577; }
+
+/* ── RESULT ── */
+#screen-result { display: none; min-height: 100vh; padding: 0 0 80px; overflow: auto; }
+
+.result-hero {
+  text-align: center; padding: 48px 24px 32px;
+  background: linear-gradient(180deg, #1b0f2a 0%, #080810 100%);
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: ''; position: absolute; top: -60px; left: 50%;
+  transform: translateX(-50%); width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(192,132,252,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* 이중 유형 카드 */
+.dual-type { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+.type-card {
+  flex: 1; max-width: 170px;
+  background: rgba(255,255,255,0.04); border: 1px solid #2a2a45;
+  border-radius: 20px; padding: 20px 12px; text-align: center;
+}
+.type-card.innate { border-color: rgba(192,132,252,0.3); }
+.type-card.actual { border-color: rgba(255,107,138,0.3); }
+.type-card-badge {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+  margin-bottom: 10px; text-transform: uppercase;
+}
+.type-card.innate .type-card-badge { color: #c084fc; }
+.type-card.actual .type-card-badge { color: #ff6b8a; }
+.type-card-emoji { font-size: 2.8rem; display: block; margin-bottom: 8px; line-height: 1; }
+.type-card-name { font-size: 1.05rem; font-weight: 900; line-height: 1.2; }
+
+.result-persona {
+  font-size: 0.82rem; color: #c084fc; margin-bottom: 12px; font-weight: 600;
+}
+
+.gap-banner {
+  background: linear-gradient(135deg, rgba(192,132,252,0.12), rgba(255,107,138,0.12));
+  border: 1px solid rgba(192,132,252,0.2);
+  border-radius: 16px; padding: 16px 20px; margin: 0 16px 0;
+  text-align: center;
+}
+.gap-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; color: #e8e8f0; }
+.gap-detail { font-size: 0.82rem; color: #9999bb; line-height: 1.6; }
+
+.result-name-sub { font-size: 0.78rem; color: #333355; margin-top: 16px; }
+.result-name-sub strong { color: #666688; }
+
+.section-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  color: #333355; text-transform: uppercase; padding: 24px 20px 10px;
+}
+
+/* 트레이트 비교 차트 */
+.traits-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+.trait-row {
+  background: #111124; border: 1px solid #1e1e38; border-radius: 14px; padding: 16px 16px 14px;
+}
+.trait-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.trait-label { font-size: 0.78rem; color: #e8e8f0; font-weight: 800; letter-spacing: -0.01em; }
+.trait-change {
+  font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; letter-spacing: 0.02em;
+}
+.trait-change.up { color: #4ade80; background: rgba(74,222,128,0.1); }
+.trait-change.down { color: #f87171; background: rgba(248,113,113,0.1); }
+.trait-change.same { color: #555577; background: rgba(85,85,119,0.06); }
+.trait-axis-labels { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.trait-axis-labels span { font-size: 0.62rem; color: #555577; font-weight: 600; }
+.trait-track {
+  position: relative; height: 32px; margin-bottom: 4px;
+}
+.trait-track-bg {
+  position: absolute; top: 14px; left: 0; right: 0; height: 4px;
+  background: #1e1e38; border-radius: 4px;
+}
+.trait-shift-zone {
+  position: absolute; top: 13px; height: 6px; border-radius: 3px;
+  background: rgba(192,132,252,0.15);
+  transition: all 0.6s ease;
+}
+.trait-marker-innate {
+  position: absolute; top: 8px; width: 14px; height: 14px;
+  background: #c084fc; border: 2px solid #080810;
+  border-radius: 3px; transform: rotate(45deg) translateX(-50%);
+  transition: left 0.6s ease; z-index: 2;
+  box-shadow: 0 0 8px rgba(192,132,252,0.4);
+}
+.trait-marker-actual {
+  position: absolute; top: 7px; width: 18px; height: 18px;
+  background: #ff6b8a; border: 2.5px solid #080810;
+  border-radius: 50%; transform: translateX(-50%);
+  transition: left 0.6s ease; z-index: 3;
+  box-shadow: 0 0 10px rgba(255,107,138,0.4);
+}
+.trait-arrow {
+  position: absolute; top: 15px; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 3px, transparent 3px, transparent 6px);
+  z-index: 1; transition: all 0.6s ease;
+}
+.trait-legend {
+  display: flex; gap: 14px; justify-content: center; margin-bottom: 4px; padding: 12px 16px 4px;
+}
+.trait-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; color: #777; font-weight: 600; }
+.legend-diamond {
+  width: 8px; height: 8px; background: #c084fc; border-radius: 2px;
+  transform: rotate(45deg); flex-shrink: 0;
+}
+.legend-circle {
+  width: 10px; height: 10px; background: #ff6b8a; border-radius: 50%; flex-shrink: 0;
+}
+
+.domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; }
+.domain-card { background: #111124; border: 1px solid #1e1e38; border-radius: 16px; padding: 14px; }
+.d-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.d-icon { font-size: 1rem; }
+.d-label { font-size: 0.65rem; font-weight: 700; color: #444466; text-transform: uppercase; letter-spacing: 0.06em; }
+.d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
+.d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
+.d-desc { font-size: 0.7rem; color: rgba(192,132,252,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
+
+.cta-box {
+  margin: 20px 16px 0; background: #111124;
+  border: 1px solid #1e1e38; border-radius: 20px; padding: 24px 20px; text-align: center;
+}
+.cta-lead { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.cta-sub { font-size: 0.82rem; color: #555577; margin-bottom: 20px; line-height: 1.6; }
+.btn-primary {
+  display: block; width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  color: #fff; font-weight: 900; font-size: 1rem;
+  border-radius: 14px; text-decoration: none; border: none;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 8px 24px rgba(192,132,252,0.3);
+}
+.btn-secondary {
+  display: block; width: 100%; padding: 14px;
+  background: transparent; color: #555577; font-size: 0.88rem;
+  border: 1.5px solid #1e1e38; border-radius: 12px;
+  cursor: pointer; margin-top: 10px; font-family: inherit; font-weight: 600;
+}
+.btn-secondary.copied { color: #4ade80 !important; border-color: #4ade80 !important; }
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<script>document.body.classList.add('no-scroll');</script>
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🧬</span>
+    <div class="intro-title">타고난 건 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 연애 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🧬</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 갭 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 연애 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🧬 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🧬</div>
+  <div class="loading-text">DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px; font-size:0.85rem; color:#555577;">타고난 거랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <!-- 이중 유형 카드 -->
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🧬 DNA 유형</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">💕 진짜 유형</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 연애 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 성향 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 성향</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 성향</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 데이트 해보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 DNA도 까볼까? 💫</div>
+    <div class="cta-sub">보내서 상대방 DNA vs 현실도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <button class="btn-secondary" onclick="location.href='/romance'">💕 일반 연애 테스트도 해보기</button>
+    <button class="btn-secondary" onclick="location.href='/survey'">📋 전체 취향 분석도 해보기</button>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+/* ═══════════════════════════════════════════
+   십신 계산 (sipsin.py → JS 포팅)
+   ═══════════════════════════════════════════ */
+
+const STEMS = ["갑","을","병","정","무","기","경","신","임","계"];
+const BRANCHES = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
+
+const STEM_ELEMENT   = {갑:"목",을:"목",병:"화",정:"화",무:"토",기:"토",경:"금",신:"금",임:"수",계:"수"};
+const STEM_POLARITY  = {갑:"양",을:"음",병:"양",정:"음",무:"양",기:"음",경:"양",신:"음",임:"양",계:"음"};
+const BRANCH_ELEMENT  = {자:"수",축:"토",인:"목",묘:"목",진:"토",사:"화",오:"화",미:"토",신:"금",유:"금",술:"토",해:"수"};
+const BRANCH_POLARITY = {자:"양",축:"음",인:"양",묘:"음",진:"양",사:"음",오:"양",미:"음",신:"양",유:"음",술:"양",해:"음"};
+
+const PRODUCES = {목:"화",화:"토",토:"금",금:"수",수:"목"};
+const OVERCOMES = {목:"토",토:"수",수:"화",화:"금",금:"목"};
+
+function getSipsin(dayEl, dayPol, tEl, tPol) {
+  const samePol = dayPol === tPol;
+  if (tEl === dayEl) return samePol ? "비견" : "겁재";
+  if (tEl === PRODUCES[dayEl]) return samePol ? "식신" : "상관";
+  if (tEl === OVERCOMES[dayEl]) return samePol ? "편재" : "정재";
+  if (dayEl === PRODUCES[tEl]) return samePol ? "편인" : "정인";
+  if (dayEl === OVERCOMES[tEl]) return samePol ? "편관" : "정관";
+  return "비견";
+}
+
+function calcJDN(year, month, day) {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+function calcPillars(year, month, day) {
+  const ys = STEMS[(year - 4 + 1000) % 10];  // +1000 to avoid negative mod
+  const yb = BRANCHES[(year - 4 + 1200) % 12];
+  const ysIdx = ((year - 4) % 10 + 10) % 10;
+  const baseMap = [2,4,6,8,0,2,4,6,8,0];
+  const ms = STEMS[(baseMap[ysIdx] + month - 1) % 10];
+  const mb = BRANCHES[(month + 1) % 12];
+  const jdn = calcJDN(year, month, day);
+  const ds = STEMS[((jdn % 10) + 10) % 10];
+  const db = BRANCHES[((jdn % 12) + 12) % 12];
+  return { ys, yb, ms, mb, ds, db };
+}
+
+function calcSipsin(year, month, day) {
+  const p = calcPillars(year, month, day);
+  const dayEl = STEM_ELEMENT[p.ds];
+  const dayPol = STEM_POLARITY[p.ds];
+
+  const targets = [
+    [p.ys, "stem"], [p.yb, "branch"],
+    [p.ms, "stem"], [p.mb, "branch"],
+    [p.db, "branch"]
+  ];
+
+  const dist = {};
+  ["비견","겁재","식신","상관","편재","정재","편관","정관","편인","정인"].forEach(n => dist[n] = 0);
+
+  targets.forEach(([ch, type]) => {
+    const tEl = type === "stem" ? STEM_ELEMENT[ch] : BRANCH_ELEMENT[ch];
+    const tPol = type === "stem" ? STEM_POLARITY[ch] : BRANCH_POLARITY[ch];
+    const s = getSipsin(dayEl, dayPol, tEl, tPol);
+    dist[s]++;
+  });
+
+  let dominant = "비견", maxCount = 0;
+  Object.entries(dist).forEach(([k, v]) => { if (v > maxCount) { maxCount = v; dominant = k; } });
+
+  return { dayStem: p.ds, dayEl, dayPol, distribution: dist, dominant };
+}
+
+/* ── 십신 → 9차원 innate 벡터 ── */
+const SIPSIN_FLAVOR_MAP = {
+  "비견": {adventurous:+0.06, energetic:+0.04, comfort:-0.04},
+  "겁재": {social:+0.08, energetic:+0.06, budget:+0.04},
+  "식신": {aesthetic:+0.08, comfort:+0.04, bitter:+0.04},
+  "상관": {maximalist:+0.08, adventurous:+0.06, aesthetic:+0.04},
+  "편재": {social:+0.06, budget:+0.08, urban:+0.04},
+  "정재": {comfort:+0.08, budget:-0.06, urban:+0.04},
+  "편관": {energetic:+0.08, urban:+0.06, maximalist:+0.04},
+  "정관": {comfort:+0.06, urban:+0.06, aesthetic:+0.04},
+  "편인": {adventurous:+0.08, aesthetic:+0.06, social:-0.04},
+  "정인": {comfort:+0.08, social:+0.04, aesthetic:+0.04},
+};
+
+const DIMENSIONS = ["social","adventurous","aesthetic","comfort","budget","maximalist","energetic","urban","bitter"];
+
+function sipsinToInnate(sipsinResult) {
+  // Start at 0.5, apply weighted deltas, then amplify for more distinct profiles
+  const innate = {};
+  DIMENSIONS.forEach(d => innate[d] = 0.5);
+
+  const dist = sipsinResult.distribution;
+  const total = Object.values(dist).reduce((a, b) => a + b, 0);
+  if (total === 0) return innate;
+
+  Object.entries(dist).forEach(([name, count]) => {
+    if (count === 0) return;
+    const weight = count / total;
+    const map = SIPSIN_FLAVOR_MAP[name] || {};
+    Object.entries(map).forEach(([dim, val]) => {
+      innate[dim] += val * weight;
+    });
+  });
+
+  // Amplify: scale deltas by 5x to make innate profile more distinct (0.5 ± delta*5)
+  // This gives meaningful differentiation per person
+  DIMENSIONS.forEach(d => {
+    const delta = innate[d] - 0.5;
+    innate[d] = Math.max(0.1, Math.min(0.9, 0.5 + delta * 5));
+  });
+
+  return innate;
+}
+
+/* ── 일간 페르소나 ── */
+const DAY_MASTER_PERSONA = {
+  "갑": {name:"큰 나무의 개척자", emoji:"🌲", element:"목", vibe:"새로운 길을 만드는 사람"},
+  "을": {name:"덩굴의 적응가", emoji:"🌿", element:"목", vibe:"어디서든 자리를 잡는 유연한 감각"},
+  "병": {name:"태양의 무대인", emoji:"☀️", element:"화", vibe:"주목받을 때 빛나는 에너지"},
+  "정": {name:"촛불의 감성가", emoji:"🕯️", element:"화", vibe:"은은하지만 깊은 감각의 소유자"},
+  "무": {name:"대지의 중심축", emoji:"🏔️", element:"토", vibe:"흔들리지 않는 안정감"},
+  "기": {name:"정원의 큐레이터", emoji:"🌾", element:"토", vibe:"사소한 것도 아름답게 가꾸는 손길"},
+  "경": {name:"강철의 완벽주의자", emoji:"⚔️", element:"금", vibe:"타협 없는 기준, 날카로운 취향"},
+  "신": {name:"보석의 감식가", emoji:"💎", element:"금", vibe:"정제된 아름다움을 알아보는 눈"},
+  "임": {name:"바다의 탐험가", emoji:"🌊", element:"수", vibe:"끝없이 새로운 것을 향해 흐르는 호기심"},
+  "계": {name:"이슬의 관찰자", emoji:"💧", element:"수", vibe:"조용히 스며들어 본질을 꿰뚫는 직관"},
+};
+
+/* ═══════════════════════════════════════════
+   15문항 — dimension별 선천 성향 텍스트 포함
+   ═══════════════════════════════════════════ */
+
+const QUESTIONS = [
+  // social
+  { id:'r1', dimension:'social',
+    highText:'안 보면 보고 싶은', lowText:'혼자 시간이 필요한',
+    A:{emoji:'💬', label:'맞아, 답장 안 오면 불안해', val:0.85},
+    B:{emoji:'🌙', label:'아닌데? 읽씹도 애정 표현이야', val:0.15} },
+  { id:'r2', dimension:'social',
+    highText:'단체 데이트도 환영', lowText:'제발 둘만 있자',
+    A:{emoji:'👫', label:'맞아, 친구들 데리고 놀자', val:0.8},
+    B:{emoji:'🕯️', label:'아닌데? 셋부터는 회의야', val:0.2} },
+
+  // adventurous
+  { id:'r3', dimension:'adventurous',
+    highText:'맨날 새로운 데서 만나는', lowText:'단골만 고집하는',
+    A:{emoji:'🗺️', label:'맞아, 오늘도 신규 맛집이다', val:0.85},
+    B:{emoji:'🏡', label:'아닌데? 단골 사장님이 반겨줌', val:0.15} },
+  { id:'r4', dimension:'adventurous',
+    highText:'즉흥으로 떠나는', lowText:'계획표 짜는 게 더 설레는',
+    A:{emoji:'🎢', label:'맞아, 지금 당장 가자', val:0.9},
+    B:{emoji:'📖', label:'아닌데? 엑셀 일정표가 국룰', val:0.1} },
+
+  // aesthetic
+  { id:'r5', dimension:'aesthetic',
+    highText:'분위기 맛집 필수인', lowText:'맛이면 됐지 뭐',
+    A:{emoji:'🌹', label:'맞아, 조명이 반은 한다', val:0.85},
+    B:{emoji:'🍜', label:'아닌데? 맛 앞에 장사 없음', val:0.2} },
+  { id:'r6', dimension:'aesthetic',
+    highText:'기념일 꼬박꼬박 챙기는', lowText:'매일이 기념일인',
+    A:{emoji:'💌', label:'맞아, 100일도 당연히 챙겨', val:0.8},
+    B:{emoji:'😎', label:'아닌데? 오늘도 기념일이지 뭐', val:0.2} },
+
+  // comfort
+  { id:'r7', dimension:'comfort',
+    highText:'집이 세상에서 제일 좋은', lowText:'밖에 나가야 사는',
+    A:{emoji:'🤗', label:'맞아, 이불 밖은 위험해', val:0.85},
+    B:{emoji:'✈️', label:'아닌데? 집에만 있으면 답답해', val:0.15} },
+  { id:'r8', dimension:'comfort',
+    highText:'서로 닮아가는 게 좋은', lowText:'다른 게 매력인',
+    A:{emoji:'🧸', label:'맞아, 커플티도 좋아', val:0.85},
+    B:{emoji:'⚡', label:'아닌데? 다른 점이 끌려', val:0.15} },
+
+  // budget
+  { id:'r9', dimension:'budget',
+    highText:'쓸 때 확 쓰는', lowText:'알뜰하게 오래가는',
+    A:{emoji:'🎁', label:'맞아, 기념일엔 풀코스다', val:0.85},
+    B:{emoji:'💰', label:'아닌데? 편의점도 데이트야', val:0.15} },
+
+  // maximalist
+  { id:'r10', dimension:'maximalist',
+    highText:'SNS에 도배하는', lowText:'비밀연애 감성인',
+    A:{emoji:'📱', label:'맞아, 자랑 안 하면 손해지', val:0.85},
+    B:{emoji:'🤫', label:'아닌데? 우리만 알면 돼', val:0.15} },
+  { id:'r11', dimension:'maximalist',
+    highText:'매일 꾸미고 다니는', lowText:'편한 게 패션인',
+    A:{emoji:'🎀', label:'맞아, 데이트날은 풀셋업', val:0.8},
+    B:{emoji:'🧢', label:'아닌데? 츄리닝이 정장임', val:0.2} },
+
+  // energetic
+  { id:'r12', dimension:'energetic',
+    highText:'같이 운동하는', lowText:'같이 눕는',
+    A:{emoji:'🏃', label:'맞아, 커플 러닝 가자', val:0.85},
+    B:{emoji:'🎬', label:'아닌데? 넷플 정주행이 운동임', val:0.15} },
+  { id:'r13', dimension:'energetic',
+    highText:'아침부터 만나는', lowText:'해 지고 나서 만나는',
+    A:{emoji:'🌅', label:'맞아, 브런치가 로망이야', val:0.8},
+    B:{emoji:'🌃', label:'아닌데? 밤이 진짜 시작이지', val:0.2} },
+
+  // urban
+  { id:'r14', dimension:'urban',
+    highText:'핫플 순례하는', lowText:'자연인 감성인',
+    A:{emoji:'🏙️', label:'맞아, 팝업은 오픈런이다', val:0.85},
+    B:{emoji:'🌲', label:'아닌데? 산이 답이야', val:0.15} },
+
+  // bitter
+  { id:'r15', dimension:'bitter',
+    highText:'한번 만나면 끝까지인', lowText:'설렘이 우선인',
+    A:{emoji:'💍', label:'맞아, 결혼까지 보는 중', val:0.85},
+    B:{emoji:'🦋', label:'아닌데? 심장 뛰는 게 먼저', val:0.15} },
+];
+
+/* ── 연애 유형 (romance.html과 동일) ── */
+const ROMANCE_TYPES = [
+  { cond: p => p.social>0.6 && p.adventurous>0.6 && p.aesthetic>0.6,
+    type: '설렘 헌터', emoji: '🎯', tagline: '새로운 경험이 곧 사랑의 연료',
+    detail: '매번 다른 데이트, 매번 새로운 설렘. 루틴은 죽음이고 즉흥이 로맨스인 타입.' },
+  { cond: p => p.social>0.6 && p.comfort>0.6 && p.aesthetic>0.6,
+    type: '로맨스 큐레이터', emoji: '🌹', tagline: '기념일마다 완벽한 서프라이즈',
+    detail: '분위기 좋은 레스토랑, 깜짝 편지, 기념일 알림 10개. 연애도 예술이라 믿는 타입.' },
+  { cond: p => p.social<0.4 && p.comfort>0.6 && p.aesthetic>0.6,
+    type: '감성 은둔자', emoji: '🕯️', tagline: '둘만의 세계가 제일 아름다운 법',
+    detail: '조용한 카페, 손편지, 좋아하는 영화 같이 보기. 작은 것에서 깊은 감동을 찾는 타입.' },
+  { cond: p => p.social>0.6 && p.energetic>0.6 && p.adventurous>0.6,
+    type: '액티브 소울메이트', emoji: '⚡', tagline: '함께라면 뭐든 재밌어지는 마법',
+    detail: '같이 클라이밍, 같이 여행, 같이 새벽 라면. 에너지가 넘치는 활동파 연인.' },
+  { cond: p => p.comfort>0.65 && p.social>0.5,
+    type: '포근한 동반자', emoji: '🧸', tagline: '변하지 않는 따뜻함이 최고의 고백',
+    detail: '집 데이트, 단골 식당, 매일 같은 시간 전화. 안정감이 가장 큰 사랑의 증거인 타입.' },
+  { cond: p => p.adventurous>0.6 && p.budget>0.6,
+    type: '럭셔리 모험가', emoji: '✨', tagline: '최고의 경험엔 투자를 아끼지 않는',
+    detail: '비즈니스석 여행, 오마카세 데이트, 기념일엔 호텔 스위트. 연애에 올인하는 타입.' },
+  { cond: p => p.maximalist>0.6 && p.aesthetic>0.5,
+    type: '사랑 표현왕', emoji: '💌', tagline: 'SNS 공개부터 매일 "사랑해"까지',
+    detail: '커플 사진, 매칭룩, 매일 애정 표현. 사랑은 보여줘야 진짜라고 믿는 타입.' },
+  { cond: p => p.social<0.4 && p.adventurous<0.4 && p.comfort>0.5,
+    type: '조용한 신뢰자', emoji: '🌙', tagline: '말하지 않아도 알아주는 사이',
+    detail: '각자의 시간을 존중하면서 필요할 때 곁에 있는. 묵묵한 신뢰가 사랑의 기초인 타입.' },
+  { cond: p => p.energetic>0.6 && p.urban>0.6,
+    type: '시티 데이터', emoji: '🏙️', tagline: '핫플은 내가 섭외할게',
+    detail: '팝업스토어, 전시회, 새로 오픈한 카페. 도시의 모든 즐길 거리를 섭렵하는 데이트 고수.' },
+  { cond: p => p.bitter>0.6 && p.comfort>0.5,
+    type: '진심 올인러', emoji: '💍', tagline: '한 번 사귀면 끝까지 간다',
+    detail: '가볍게 만나는 건 체질이 아니다. 깊고 진지하게, 서로의 일상까지 공유하는 타입.' },
+  { cond: p => p.aesthetic<0.4 && p.energetic>0.5 && p.budget<0.5,
+    type: '실속 파트너', emoji: '🤝', tagline: '겉치레보다 진짜 알찬 데이트',
+    detail: '맛집 줄 서기, 공원 산책, 편의점 데이트도 행복. 함께하는 게 중요하지 어디가 중요한 게 아닌 타입.' },
+  { cond: p => p.adventurous<0.4 && p.aesthetic>0.5 && p.comfort>0.5,
+    type: '일상 낭만가', emoji: '☕', tagline: '매일 반복되는 일상이 가장 로맨틱',
+    detail: '아침 커피 한 잔, 퇴근 후 산책, 주말 브런치. 소소한 일상이 최고의 데이트인 타입.' },
+  { cond: () => true,
+    type: '밸런스 연인', emoji: '💫', tagline: '어떤 상황에서든 맞춰가는 유연함',
+    detail: '상대에 따라, 기분에 따라 유연하게 변하는 연애 스타일. 적응력이 최고 매력인 타입.' },
+];
+
+const DOMAIN_EMOJI = { '커피':'☕','향수':'🌸','음악':'🎵','식당':'🍽️','운동':'🏃','여행':'✈️','패션':'👗','인테리어':'🏠' };
+
+let currentQ = 0;
+let answers = [];
+let qStartTime = 0;
+let userData = {};
+let innateProfile = {};
+let sipsinData = {};
+let resultShareUrl = '';
+
+/* ── 초기화 ── */
+(function() {
+  const yearSel = document.getElementById('birth_year');
+  for (let y = 2010; y >= 1940; y--) {
+    const o = document.createElement('option');
+    o.value = y;
+    o.textContent = y + '년';
+    yearSel.appendChild(o);
+  }
+  const monthSel = document.getElementById('birth_month');
+  for (let m = 1; m <= 12; m++) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2, '0');
+    o.textContent = m + '월';
+    monthSel.appendChild(o);
+  }
+  const daySel = document.getElementById('birth_day');
+  for (let d = 1; d <= 31; d++) {
+    const o = document.createElement('option');
+    o.value = String(d).padStart(2, '0');
+    o.textContent = d + '일';
+    daySel.appendChild(o);
+  }
+})();
+
+function checkFormReady() {
+  const name = document.getElementById('name').value.trim();
+  const year = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day = document.getElementById('birth_day').value;
+  const gender = document.querySelector('.gender-btn.selected');
+  const btn = document.getElementById('btn-start');
+  if (name && year && month && day && gender) {
+    btn.disabled = false;
+    btn.classList.remove('disabled');
+    btn.classList.add('ready');
+  } else {
+    btn.disabled = true;
+    btn.classList.add('disabled');
+    btn.classList.remove('ready');
+  }
+}
+
+function selectGender(btn) {
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  checkFormReady();
+}
+
+function startQuiz() {
+  const name = document.getElementById('name').value.trim();
+  const year = document.getElementById('birth_year').value;
+  const month = document.getElementById('birth_month').value;
+  const day = document.getElementById('birth_day').value;
+  const genderBtn = document.querySelector('.gender-btn.selected');
+
+  if (!name || !year || !month || !day || !genderBtn) return;
+
+  userData = { name, birth_date: `${year}-${month}-${day}`, birth_time: '12', gender: genderBtn.dataset.gender };
+
+  // 십신 계산 → innate 벡터 생성
+  sipsinData = calcSipsin(parseInt(year), parseInt(month), parseInt(day));
+  innateProfile = sipsinToInnate(sipsinData);
+
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  showQuestion(0);
+}
+
+function getInnateText(q) {
+  const val = innateProfile[q.dimension] || 0.5;
+  // 선천이 높으면 highText, 낮으면 lowText
+  if (val > 0.55) return q.highText;
+  if (val < 0.45) return q.lowText;
+  // 중간이면 둘 다 조금씩
+  return `${q.highText}과 ${q.lowText} 사이`;
+}
+
+function showQuestion(idx) {
+  const q = QUESTIONS[idx];
+  const innateVal = innateProfile[q.dimension] || 0.5;
+  const isHigh = innateVal >= 0.5;
+
+  // 선천 성향 배너 업데이트
+  document.getElementById('innate-text').textContent =
+    `넌 "${isHigh ? q.highText : q.lowText}" 타입이야`;
+
+  // A/B 순서: 선천이 높으면 A가 "맞아", B가 "아닌데"
+  // 선천이 낮으면 A/B를 뒤집어서 A가 "맞아(low)" B가 "아닌데(high)"
+  if (isHigh) {
+    document.getElementById('emoji-a').textContent = q.A.emoji;
+    document.getElementById('text-a').textContent  = q.A.label;
+    document.getElementById('emoji-b').textContent = q.B.emoji;
+    document.getElementById('text-b').textContent  = q.B.label;
+  } else {
+    // 선천이 낮은 쪽이므로, "맞아" = 낮은 값
+    document.getElementById('emoji-a').textContent = q.B.emoji;
+    document.getElementById('text-a').textContent  = q.B.label.replace('아닌데?', '맞아,');
+    document.getElementById('emoji-b').textContent = q.A.emoji;
+    document.getElementById('text-b').textContent  = q.A.label.replace('맞아,', '아닌데?');
+  }
+
+  document.getElementById('opt-a').className = 'ab-option';
+  document.getElementById('opt-b').className = 'ab-option';
+  document.getElementById('progress-fill').style.width = (idx / QUESTIONS.length * 100) + '%';
+  document.getElementById('progress-text').textContent = `${idx + 1} / ${QUESTIONS.length}`;
+  qStartTime = Date.now();
+}
+
+function choose(side) {
+  if (currentQ >= QUESTIONS.length) return;
+  const q = QUESTIONS[currentQ];
+  const responseMs = Date.now() - qStartTime;
+  const innateVal = innateProfile[q.dimension] || 0.5;
+  const isHigh = innateVal >= 0.5;
+
+  document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
+
+  // A = "맞아" (innate 유지), B = "아닌데" (반대 값)
+  let chosenVal;
+  if (side === 'A') {
+    // 맞아 → innate 값 쪽에 동조
+    chosenVal = isHigh ? q.A.val : q.B.val;
+  } else {
+    // 아닌데 → 반대 값
+    chosenVal = isHigh ? q.B.val : q.A.val;
+  }
+
+  answers.push({
+    id: q.id,
+    dimension: q.dimension,
+    choice: side,
+    value: chosenVal,
+    innate_value: innateVal,
+    agreed_with_innate: side === 'A',
+    response_ms: responseMs
+  });
+
+  currentQ++;
+
+  if (currentQ < QUESTIONS.length) {
+    setTimeout(() => showQuestion(currentQ), 220);
+  } else {
+    setTimeout(submitAnswers, 300);
+  }
+}
+
+function buildProfile() {
+  const dims = {};
+  const counts = {};
+  answers.forEach(a => {
+    dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
+    counts[a.dimension] = (counts[a.dimension] || 0) + 1;
+  });
+  const profile = {};
+  Object.keys(dims).forEach(d => { profile[d] = dims[d] / counts[d]; });
+  DIMENSIONS.forEach(d => { if (profile[d] === undefined) profile[d] = 0.5; });
+  return profile;
+}
+
+function getRomanceType(profile) {
+  for (const rt of ROMANCE_TYPES) {
+    if (rt.cond(profile)) return rt;
+  }
+  return ROMANCE_TYPES[ROMANCE_TYPES.length - 1];
+}
+
+/* ── 갭 분석 ── */
+function analyzeGap(innate, actual) {
+  let totalGap = 0;
+  const gaps = [];
+  const dimLabels = {
+    social:'소통', adventurous:'모험', aesthetic:'감성',
+    comfort:'안정', budget:'소비', maximalist:'표현',
+    energetic:'활동', urban:'도시', bitter:'깊이'
+  };
+
+  DIMENSIONS.forEach(d => {
+    const gap = Math.abs(innate[d] - actual[d]);
+    totalGap += gap;
+    if (gap > 0.15) {
+      const dir = actual[d] > innate[d] ? '↑' : '↓';
+      gaps.push({ dim: d, label: dimLabels[d], gap, dir });
+    }
+  });
+
+  const avgGap = totalGap / DIMENSIONS.length;
+  gaps.sort((a, b) => b.gap - a.gap);
+
+  let title, detail;
+  if (avgGap < 0.08) {
+    title = "🎯 DNA 그대로! 유전자 순응형";
+    detail = "타고난 연애 스타일 그대로 사는 중이시네요. DNA 말 잘 듣는 모범생!";
+  } else if (avgGap < 0.18) {
+    title = "🔄 DNA를 살짝 비튼 진화형";
+    const top = gaps[0];
+    detail = top
+      ? `${top.label} 쪽에서 DNA랑 좀 달라졌어요. 세상이 당신을 살짝 바꿔놨군요 ㅋㅋ`
+      : "미세하게 DNA를 커스텀하신 분이시네요.";
+  } else {
+    title = "🌀 DNA 반항아! 유전자 뒤집기 장인";
+    const topTwo = gaps.slice(0, 2).map(g => g.label).join(', ');
+    detail = `특히 ${topTwo}에서 DNA랑 정반대로 가고 있어요. 유전자도 예상 못 한 반전!`;
+  }
+
+  return { title, detail, avgGap, gaps };
+}
+
+/* ── 트레이트 (이중 바) ── */
+function getTraits(innate, actual) {
+  const traits = [
+    { dim:'social', label:'연락 집착도', low:'읽씹도 애정표현', high:'1분 안에 답장' },
+    { dim:'adventurous', label:'데이트 모험도', low:'단골만 감 ㅋ', high:'오늘도 신규 맛집' },
+    { dim:'aesthetic', label:'분위기 감성', low:'맛이면 됐지', high:'조명 맛집 필수' },
+    { dim:'comfort', label:'안정 vs 자극', low:'심장아 뛰어라', high:'이불 밖은 위험해' },
+    { dim:'maximalist', label:'표현 스타일', low:'은근슬쩍파', high:'SNS 도배파' },
+    { dim:'energetic', label:'활동 에너지', low:'넷플 정주행', high:'새벽 러닝 가자' },
+    { dim:'bitter', label:'연애 무게감', low:'가볍게 즐기자', high:'결혼까지 보는 중' },
+  ];
+  return traits.map(t => {
+    const iVal = innate[t.dim] || 0.5;
+    const aVal = actual[t.dim] || 0.5;
+    const gap = Math.abs(iVal - aVal);
+    let gapText = '';
+    if (gap > 0.15) {
+      gapText = aVal > iVal ? `DNA보다 ${t.high} 쪽으로!` : `DNA보다 ${t.low} 쪽으로!`;
+    }
+    const desc = aVal > 0.55 ? t.high : aVal < 0.45 ? t.low : `${t.low} ↔ ${t.high}`;
+    return { ...t, innateVal: iVal, actualVal: aVal, desc, gapText };
+  });
+}
+
+async function submitAnswers() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-loading').style.display = 'flex';
+
+  const actualProfile = buildProfile();
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...userData,
+        quiz_type: 'vol2_romance_v2',
+        ab_answers: answers,
+        survey: actualProfile,
+        innate_profile: innateProfile,
+        sipsin_data: { dominant: sipsinData.dominant, distribution: sipsinData.distribution, day_stem: sipsinData.dayStem }
+      })
+    });
+    const data = await resp.json();
+    if (data.status === 'ok') {
+      showResult(data, actualProfile);
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (e) {
+    showResultLocal(actualProfile);
+  }
+}
+
+function showResult(data, actualProfile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  document.body.classList.remove('no-scroll');
+
+  const innateType = getRomanceType(innateProfile);
+  const actualType = getRomanceType(actualProfile);
+
+  // 이중 유형 카드
+  document.getElementById('r-innate-emoji').textContent = innateType.emoji;
+  document.getElementById('r-innate-type').textContent  = innateType.type;
+  document.getElementById('r-actual-emoji').textContent = actualType.emoji;
+  document.getElementById('r-actual-type').textContent  = actualType.type;
+  document.getElementById('r-name').textContent = data.name || '';
+
+  // 페르소나
+  if (data.persona && data.persona.name) {
+    document.getElementById('r-persona').textContent = `${data.persona.emoji || ''} ${data.persona.name} — ${data.persona.vibe || ''}`;
+  }
+
+  // 갭 분석
+  const gap = analyzeGap(innateProfile, actualProfile);
+  document.getElementById('r-gap-title').textContent = gap.title;
+  document.getElementById('r-gap-detail').textContent = gap.detail;
+
+  // 이중 트레이트 바
+  renderTraits(innateProfile, actualProfile);
+
+  // 도메인 추천
+  renderDomains(data.results || {});
+
+  if (data.id) {
+    resultShareUrl = `${API_BASE}/result/${data.id}`;
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showResultLocal(actualProfile) {
+  document.getElementById('screen-loading').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  document.body.classList.remove('no-scroll');
+
+  const innateType = getRomanceType(innateProfile);
+  const actualType = getRomanceType(actualProfile);
+
+  document.getElementById('r-innate-emoji').textContent = innateType.emoji;
+  document.getElementById('r-innate-type').textContent  = innateType.type;
+  document.getElementById('r-actual-emoji').textContent = actualType.emoji;
+  document.getElementById('r-actual-type').textContent  = actualType.type;
+  document.getElementById('r-name').textContent = userData.name || '';
+
+  // 페르소나 (로컬)
+  const persona = DAY_MASTER_PERSONA[sipsinData.dayStem];
+  if (persona) {
+    document.getElementById('r-persona').textContent = `${persona.emoji} ${persona.name} — ${persona.vibe}`;
+  }
+
+  const gap = analyzeGap(innateProfile, actualProfile);
+  document.getElementById('r-gap-title').textContent = gap.title;
+  document.getElementById('r-gap-detail').textContent = gap.detail;
+
+  renderTraits(innateProfile, actualProfile);
+}
+
+function renderTraits(innate, actual) {
+  const traitsDiv = document.getElementById('r-traits');
+  traitsDiv.innerHTML = '';
+  getTraits(innate, actual).forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'trait-row';
+
+    const iPct = Math.round(t.innateVal * 100);
+    const aPct = Math.round(t.actualVal * 100);
+    const diff = aPct - iPct;
+    const absDiff = Math.abs(diff);
+
+    let changeClass, changeText;
+    if (absDiff <= 5) {
+      changeClass = 'same'; changeText = '= 동일';
+    } else if (diff > 0) {
+      changeClass = 'up'; changeText = `↑ +${absDiff}`;
+    } else {
+      changeClass = 'down'; changeText = `↓ -${absDiff}`;
+    }
+
+    const iPos = Math.max(8, Math.min(92, iPct));
+    const aPos = Math.max(8, Math.min(92, aPct));
+    const shiftLeft = Math.min(iPos, aPos);
+    const shiftWidth = Math.abs(aPos - iPos);
+
+    row.innerHTML = `
+      <div class="trait-header">
+        <span class="trait-label">${t.label}</span>
+        <span class="trait-change ${changeClass}">${changeText}</span>
+      </div>
+      <div class="trait-axis-labels">
+        <span>${t.low}</span>
+        <span>${t.high}</span>
+      </div>
+      <div class="trait-track">
+        <div class="trait-track-bg"></div>
+        ${shiftWidth > 3 ? `<div class="trait-shift-zone" style="left:${shiftLeft}%;width:${shiftWidth}%"></div>` : ''}
+        ${shiftWidth > 3 ? `<div class="trait-arrow" style="left:${shiftLeft}%;width:${shiftWidth}%"></div>` : ''}
+        <div class="trait-marker-innate" style="left:${iPos}%"></div>
+        <div class="trait-marker-actual" style="left:${aPos}%"></div>
+      </div>`;
+    traitsDiv.appendChild(row);
+  });
+}
+
+function renderDomains(results) {
+  const grid = document.getElementById('r-domains');
+  grid.innerHTML = '';
+  Object.entries(results).forEach(([domain, rec]) => {
+    const card = document.createElement('div');
+    card.className = 'domain-card';
+    const descHtml = rec.description ? `<div class="d-desc">"${rec.description}"</div>` : '';
+    card.innerHTML = `
+      <div class="d-head">
+        <span class="d-icon">${DOMAIN_EMOJI[domain]||'✨'}</span>
+        <span class="d-label">${domain}</span>
+      </div>
+      <div class="d-item">${rec.item||''}</div>
+      <div class="d-reason">${rec.reason||''}</div>
+      ${descHtml}`;
+    grid.appendChild(card);
+  });
+}
+
+function copyResult() {
+  if (!resultShareUrl) { alert('공유 링크를 불러오지 못했어요.'); return; }
+  navigator.clipboard.writeText(resultShareUrl).then(() => {
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = '✅ 복사 완료! 어디 한번 보내봐 🧬';
+    setTimeout(() => { btn.textContent = '🔗 이 결과 공유하기'; }, 2500);
+  }).catch(() => { prompt('아래 링크를 복사하세요', resultShareUrl); });
+}
+</script>
+</body>
+</html>
