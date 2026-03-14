@@ -25,7 +25,8 @@ body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling
   min-height: 100vh;
   padding: 0 24px 40px;
   text-align: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* 배경 오브 */
@@ -432,7 +433,7 @@ body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling
 <body>
 
 <!-- ── INTRO ── -->
-<script>document.body.classList.add('no-scroll');</script>
+<script>/* intro는 스크롤 허용 — 사주 폼이 길어서 */</script>
 <div id="screen-intro">
   <div class="intro-bg"></div>
   <div class="intro-bg-ring"></div>
@@ -953,6 +954,7 @@ function startQuiz() {
 
   document.getElementById('screen-intro').style.display = 'none';
   document.getElementById('screen-quiz').style.display = 'flex';
+  document.body.classList.add('no-scroll');
   showQuestion(0);
 }
 
