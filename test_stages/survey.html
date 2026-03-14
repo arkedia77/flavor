@@ -190,22 +190,22 @@
   <!-- 설문 -->
   <div id="survey">
     <div class="hero">
-      <h1>나의 취향을<br><span>정확하게</span> 찾아드려요</h1>
-      <p>27개 질문 · 약 3분</p>
+      <h1>야 너 <span>취향</span>이 뭐야<br>내가 맞춰볼게ㅋㅋ</h1>
+      <p>딱 27개만 · 3분이면 끝남 (진짜임)</p>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
 
     <!-- 기본 정보 -->
     <div class="section">
-      <div class="section-label">기본 정보</div>
+      <div class="section-label">일단 너 누구야</div>
 
       <div class="field">
-        <label>이름 또는 닉네임</label>
-        <input type="text" id="name" placeholder="어떻게 불러드릴까요?" autocomplete="off" enterkeyhint="next" />
+        <label>이름 or 닉네임 (아무거나 ㄱ)</label>
+        <input type="text" id="name" placeholder="뭐라고 부르면 돼?" autocomplete="off" enterkeyhint="next" />
       </div>
 
       <div class="field">
-        <label>생년월일</label>
+        <label>생년월일 (안 팔아요ㅋㅋ)</label>
         <div class="birth-selects">
           <select id="birth_year">
             <option value="">출생년도</option>
@@ -234,355 +234,355 @@
       <div class="field">
         <label>성별</label>
         <select id="gender">
-          <option value="female">여성</option>
-          <option value="male">남성</option>
+          <option value="female">여자</option>
+          <option value="male">남자</option>
         </select>
       </div>
     </div>
 
     <!-- 라이프스타일 -->
     <div class="section">
-      <div class="section-label">라이프스타일</div>
+      <div class="section-label">니 일상 좀 까봐</div>
 
       <div class="question">
         <div class="question-num">Q1</div>
-        <p>계획 없는 주말 오전, 나는?</p>
+        <p>아무 약속 없는 주말 아침, 넌?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q1" id="q1a" value="0.1"><label for="q1a">최대한 늦게까지 잠</label></div>
-          <div class="option-item"><input type="radio" name="q1" id="q1b" value="0.35"><label for="q1b">혼자 카페나 산책</label></div>
-          <div class="option-item"><input type="radio" name="q1" id="q1c" value="0.7"><label for="q1c">친구에게 먼저 연락</label></div>
-          <div class="option-item"><input type="radio" name="q1" id="q1d" value="0.95"><label for="q1d">모임이나 브런치 계획</label></div>
+          <div class="option-item"><input type="radio" name="q1" id="q1a" value="0.1"><label for="q1a">알람? 그게 뭔데ㅋ 계속 잠</label></div>
+          <div class="option-item"><input type="radio" name="q1" id="q1b" value="0.35"><label for="q1b">혼자 슬리퍼 끌고 카페</label></div>
+          <div class="option-item"><input type="radio" name="q1" id="q1c" value="0.7"><label for="q1c">단톡방에 "뭐해?" 던짐</label></div>
+          <div class="option-item"><input type="radio" name="q1" id="q1d" value="0.95"><label for="q1d">이미 브런치 예약함ㅋ</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q2</div>
-        <p>혼자 있는 시간이 나에게는?</p>
+        <p>혼자 있는 시간, 솔직히?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q2" id="q2a" value="0.9"><label for="q2a">너무 심심해서 힘들어요</label></div>
-          <div class="option-item"><input type="radio" name="q2" id="q2b" value="0.6"><label for="q2b">가끔은 필요해요</label></div>
-          <div class="option-item"><input type="radio" name="q2" id="q2c" value="0.3"><label for="q2c">자주 즐기는 편이에요</label></div>
-          <div class="option-item"><input type="radio" name="q2" id="q2d" value="0.05"><label for="q2d">혼자가 제일 편해요</label></div>
+          <div class="option-item"><input type="radio" name="q2" id="q2a" value="0.9"><label for="q2a">30분도 못 버텨 미침</label></div>
+          <div class="option-item"><input type="radio" name="q2" id="q2b" value="0.6"><label for="q2b">가끔은 괜찮은데..</label></div>
+          <div class="option-item"><input type="radio" name="q2" id="q2c" value="0.3"><label for="q2c">오히려 좋아 나 혼자</label></div>
+          <div class="option-item"><input type="radio" name="q2" id="q2d" value="0.05"><label for="q2d">혼자 = 천국임 건들지마</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q3</div>
-        <p>스트레스 해소는 주로?</p>
+        <p>스트레스 터지면 제일 먼저?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q3" id="q3a" value="0.1"><label for="q3a">자거나 쉬기</label></div>
-          <div class="option-item"><input type="radio" name="q3" id="q3b" value="0.4"><label for="q3b">맛있는 것 먹기</label></div>
-          <div class="option-item"><input type="radio" name="q3" id="q3c" value="0.75"><label for="q3c">운동하기</label></div>
-          <div class="option-item"><input type="radio" name="q3" id="q3d" value="0.9"><label for="q3d">친구 만나거나 놀기</label></div>
+          <div class="option-item"><input type="radio" name="q3" id="q3a" value="0.1"><label for="q3a">이불킥 후 기절ㅋ</label></div>
+          <div class="option-item"><input type="radio" name="q3" id="q3b" value="0.4"><label for="q3b">배민 켜고 폭식</label></div>
+          <div class="option-item"><input type="radio" name="q3" id="q3c" value="0.75"><label for="q3c">헬스가서 철봉 부수기</label></div>
+          <div class="option-item"><input type="radio" name="q3" id="q3d" value="0.9"><label for="q3d">친구 불러서 수다 폭발</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q4</div>
-        <p>하루 페이스는?</p>
+        <p>하루 템포가 어때?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q4" id="q4a" value="0.05"><label for="q4a">느긋하게 천천히</label></div>
-          <div class="option-item"><input type="radio" name="q4" id="q4b" value="0.4"><label for="q4b">여유 있게</label></div>
-          <div class="option-item"><input type="radio" name="q4" id="q4c" value="0.7"><label for="q4c">적당히 바쁘게</label></div>
-          <div class="option-item"><input type="radio" name="q4" id="q4d" value="0.95"><label for="q4d">바쁘게 치열하게</label></div>
+          <div class="option-item"><input type="radio" name="q4" id="q4a" value="0.05"><label for="q4a">나무늘보가 롤모델</label></div>
+          <div class="option-item"><input type="radio" name="q4" id="q4b" value="0.4"><label for="q4b">적당히 느긋~ 여유~</label></div>
+          <div class="option-item"><input type="radio" name="q4" id="q4c" value="0.7"><label for="q4c">할 건 해야지 바쁘게</label></div>
+          <div class="option-item"><input type="radio" name="q4" id="q4d" value="0.95"><label for="q4d">쉬면 불안한 워커홀릭</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q5</div>
-        <p>결정할 때 나는?</p>
+        <p>뭔가 결정해야 할 때 넌?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q5" id="q5a" value="0.1"><label for="q5a">꼼꼼히 비교 분석</label></div>
-          <div class="option-item"><input type="radio" name="q5" id="q5b" value="0.4"><label for="q5b">대략 비교 후 결정</label></div>
-          <div class="option-item"><input type="radio" name="q5" id="q5c" value="0.75"><label for="q5c">감이 먼저</label></div>
-          <div class="option-item"><input type="radio" name="q5" id="q5d" value="0.95"><label for="q5d">느낌 오면 바로</label></div>
+          <div class="option-item"><input type="radio" name="q5" id="q5a" value="0.1"><label for="q5a">엑셀 펴고 비교표 작성</label></div>
+          <div class="option-item"><input type="radio" name="q5" id="q5b" value="0.4"><label for="q5b">후기 좀 보고 결정</label></div>
+          <div class="option-item"><input type="radio" name="q5" id="q5c" value="0.75"><label for="q5c">감으로 ㄱㄱ 대충 맞음</label></div>
+          <div class="option-item"><input type="radio" name="q5" id="q5d" value="0.95"><label for="q5d">생각은 사치, 바로 질러</label></div>
         </div>
       </div>
     </div>
 
     <!-- 공간 & 감성 -->
     <div class="section">
-      <div class="section-label">공간 &amp; 감성</div>
+      <div class="section-label">네 방 상태 고백해</div>
 
       <div class="question">
         <div class="question-num">Q6</div>
-        <p>내 이상적인 공간은?</p>
+        <p>니 이상적인 방은 어떤 방?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q6" id="q6a" value="0.05"><label for="q6a">아무것도 없는 깔끔한 방</label></div>
-          <div class="option-item"><input type="radio" name="q6" id="q6b" value="0.4"><label for="q6b">필요한 것만 있는 방</label></div>
-          <div class="option-item"><input type="radio" name="q6" id="q6c" value="0.7"><label for="q6c">아늑하고 소품 많은 방</label></div>
-          <div class="option-item"><input type="radio" name="q6" id="q6d" value="0.95"><label for="q6d">개성 넘치게 가득한 방</label></div>
+          <div class="option-item"><input type="radio" name="q6" id="q6a" value="0.05"><label for="q6a">바닥만 있음 됨 깔끔</label></div>
+          <div class="option-item"><input type="radio" name="q6" id="q6b" value="0.4"><label for="q6b">필요한 것만 딱딱</label></div>
+          <div class="option-item"><input type="radio" name="q6" id="q6c" value="0.7"><label for="q6c">쿠션 소품 캔들 가득</label></div>
+          <div class="option-item"><input type="radio" name="q6" id="q6d" value="0.95"><label for="q6d">전시회인지 방인지 모름</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q7</div>
-        <p>선호하는 컬러 톤은?</p>
+        <p>좋아하는 색감은?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q7" id="q7a" value="0.05"><label for="q7a">화이트·그레이 무채색</label></div>
-          <div class="option-item"><input type="radio" name="q7" id="q7b" value="0.35"><label for="q7b">베이지·우드 어스톤</label></div>
-          <div class="option-item"><input type="radio" name="q7" id="q7c" value="0.65"><label for="q7c">블루·그린 시원한 톤</label></div>
-          <div class="option-item"><input type="radio" name="q7" id="q7d" value="0.95"><label for="q7d">컬러풀·다양한 색</label></div>
+          <div class="option-item"><input type="radio" name="q7" id="q7a" value="0.05"><label for="q7a">흑백이 진리 무채색</label></div>
+          <div class="option-item"><input type="radio" name="q7" id="q7b" value="0.35"><label for="q7b">베이지 우드 자연톤</label></div>
+          <div class="option-item"><input type="radio" name="q7" id="q7c" value="0.65"><label for="q7c">블루 그린 시원하게</label></div>
+          <div class="option-item"><input type="radio" name="q7" id="q7d" value="0.95"><label for="q7d">무지개 다 때려넣기</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q8</div>
-        <p>자연 vs 도시, 나는?</p>
+        <p>숲속 vs 강남, 넌 어디파?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q8" id="q8a" value="0.05"><label for="q8a">완전 자연파 🌿</label></div>
-          <div class="option-item"><input type="radio" name="q8" id="q8b" value="0.4"><label for="q8b">자연을 조금 더 선호</label></div>
-          <div class="option-item"><input type="radio" name="q8" id="q8c" value="0.7"><label for="q8c">도시를 조금 더 선호</label></div>
-          <div class="option-item"><input type="radio" name="q8" id="q8d" value="0.95"><label for="q8d">완전 도시파 🏙️</label></div>
+          <div class="option-item"><input type="radio" name="q8" id="q8a" value="0.05"><label for="q8a">산에서 살래 진심 🌿</label></div>
+          <div class="option-item"><input type="radio" name="q8" id="q8b" value="0.4"><label for="q8b">자연 쪽이 좀 더 끌려</label></div>
+          <div class="option-item"><input type="radio" name="q8" id="q8c" value="0.7"><label for="q8c">그래도 도시가 편해</label></div>
+          <div class="option-item"><input type="radio" name="q8" id="q8d" value="0.95"><label for="q8d">강남역 안 떠나 🏙️</label></div>
         </div>
       </div>
     </div>
 
     <!-- 패션 & 스타일 -->
     <div class="section">
-      <div class="section-label">패션 &amp; 스타일</div>
+      <div class="section-label">옷장 털기 시작</div>
 
       <div class="question">
         <div class="question-num">Q9</div>
-        <p>옷 살 때 최우선은?</p>
+        <p>옷 살 때 제일 중요한 거?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q9" id="q9a" value="0.1"><label for="q9a">편안함·실용성</label></div>
-          <div class="option-item"><input type="radio" name="q9" id="q9b" value="0.4"><label for="q9b">무난하고 깔끔한 핏</label></div>
-          <div class="option-item"><input type="radio" name="q9" id="q9c" value="0.75"><label for="q9c">나만의 개성</label></div>
-          <div class="option-item"><input type="radio" name="q9" id="q9d" value="0.95"><label for="q9d">트렌디·눈에 띄는</label></div>
+          <div class="option-item"><input type="radio" name="q9" id="q9a" value="0.1"><label for="q9a">편하면 장땡 실용파</label></div>
+          <div class="option-item"><input type="radio" name="q9" id="q9b" value="0.4"><label for="q9b">무난하게 깔끔 무난핏</label></div>
+          <div class="option-item"><input type="radio" name="q9" id="q9c" value="0.75"><label for="q9c">남들이랑 같으면 싫어</label></div>
+          <div class="option-item"><input type="radio" name="q9" id="q9d" value="0.95"><label for="q9d">시선강탈이 목표임</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q10</div>
-        <p>평소 패션 스타일에 가까운 건?</p>
+        <p>니 패션 스타일 솔직히?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q10" id="q10a" value="0.05"><label for="q10a">미니멀·클린</label></div>
-          <div class="option-item"><input type="radio" name="q10" id="q10b" value="0.35"><label for="q10b">캐주얼·베이직</label></div>
-          <div class="option-item"><input type="radio" name="q10" id="q10c" value="0.7"><label for="q10c">스트리트·빈티지</label></div>
-          <div class="option-item"><input type="radio" name="q10" id="q10d" value="0.95"><label for="q10d">유니크·실험적</label></div>
+          <div class="option-item"><input type="radio" name="q10" id="q10a" value="0.05"><label for="q10a">미니멀 클린 심플</label></div>
+          <div class="option-item"><input type="radio" name="q10" id="q10b" value="0.35"><label for="q10b">캐주얼 베이직 편한놈</label></div>
+          <div class="option-item"><input type="radio" name="q10" id="q10c" value="0.7"><label for="q10c">스트릿 빈티지 감성</label></div>
+          <div class="option-item"><input type="radio" name="q10" id="q10d" value="0.95"><label for="q10d">유니크 실험적 걸어다니는 예술</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q11</div>
-        <p>패션에서 색상은?</p>
+        <p>옷 색깔 보면 너 알 수 있대ㅋ</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q11" id="q11a" value="0.05"><label for="q11a">블랙·화이트 무채색</label></div>
-          <div class="option-item"><input type="radio" name="q11" id="q11b" value="0.35"><label for="q11b">뉴트럴·파스텔</label></div>
-          <div class="option-item"><input type="radio" name="q11" id="q11c" value="0.7"><label for="q11c">포인트 컬러 하나</label></div>
-          <div class="option-item"><input type="radio" name="q11" id="q11d" value="0.95"><label for="q11d">다양한 색상 믹스</label></div>
+          <div class="option-item"><input type="radio" name="q11" id="q11a" value="0.05"><label for="q11a">검정 흰색 이면 충분</label></div>
+          <div class="option-item"><input type="radio" name="q11" id="q11b" value="0.35"><label for="q11b">뉴트럴 파스텔 은은</label></div>
+          <div class="option-item"><input type="radio" name="q11" id="q11c" value="0.7"><label for="q11c">포인트 컬러 하나씩</label></div>
+          <div class="option-item"><input type="radio" name="q11" id="q11d" value="0.95"><label for="q11d">여러 색 믹스 앤 매치</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q12</div>
-        <p>쇼핑할 때 나는?</p>
+        <p>쇼핑할 때 너 어떤 유형?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q12" id="q12a" value="0.1"><label for="q12a">철저히 비교 후 구매</label></div>
-          <div class="option-item"><input type="radio" name="q12" id="q12b" value="0.4"><label for="q12b">어느 정도 비교 후</label></div>
-          <div class="option-item"><input type="radio" name="q12" id="q12c" value="0.75"><label for="q12c">마음에 들면 바로</label></div>
-          <div class="option-item"><input type="radio" name="q12" id="q12d" value="0.95"><label for="q12d">충동구매 자주 함</label></div>
+          <div class="option-item"><input type="radio" name="q12" id="q12a" value="0.1"><label for="q12a">비교 3일 후 구매 장인</label></div>
+          <div class="option-item"><input type="radio" name="q12" id="q12b" value="0.4"><label for="q12b">후기 좀 보고 결제</label></div>
+          <div class="option-item"><input type="radio" name="q12" id="q12c" value="0.75"><label for="q12c">마음에 들면 바로 겟</label></div>
+          <div class="option-item"><input type="radio" name="q12" id="q12d" value="0.95"><label for="q12d">장바구니가 뭐야 바로결제</label></div>
         </div>
       </div>
     </div>
 
     <!-- 음식 & 카페 -->
     <div class="section">
-      <div class="section-label">음식 &amp; 카페</div>
+      <div class="section-label">먹는 거에 진심인 편?</div>
 
       <div class="question">
         <div class="question-num">Q13</div>
-        <p>외식할 때 나는?</p>
+        <p>밥 먹으러 갈 때 넌?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q13" id="q13a" value="0.05"><label for="q13a">항상 단골집</label></div>
-          <div class="option-item"><input type="radio" name="q13" id="q13b" value="0.4"><label for="q13b">가끔 새로운 곳</label></div>
-          <div class="option-item"><input type="radio" name="q13" id="q13c" value="0.75"><label for="q13c">자주 새로운 곳</label></div>
-          <div class="option-item"><input type="radio" name="q13" id="q13d" value="0.95"><label for="q13d">항상 처음 가는 곳</label></div>
+          <div class="option-item"><input type="radio" name="q13" id="q13a" value="0.05"><label for="q13a">단골집 평생 고정ㅋ</label></div>
+          <div class="option-item"><input type="radio" name="q13" id="q13b" value="0.4"><label for="q13b">가끔 새 데도 가봄</label></div>
+          <div class="option-item"><input type="radio" name="q13" id="q13c" value="0.75"><label for="q13c">맛집 탐방 즐기는 편</label></div>
+          <div class="option-item"><input type="radio" name="q13" id="q13d" value="0.95"><label for="q13d">한번 간 곳은 안 감</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q14</div>
-        <p>식당에서 분위기·인테리어가?</p>
+        <p>식당 인테리어 신경 써?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q14" id="q14a" value="0.05"><label for="q14a">맛만 좋으면 됨</label></div>
-          <div class="option-item"><input type="radio" name="q14" id="q14b" value="0.4"><label for="q14b">적당히 신경 씀</label></div>
-          <div class="option-item"><input type="radio" name="q14" id="q14c" value="0.75"><label for="q14c">꽤 중요해요</label></div>
-          <div class="option-item"><input type="radio" name="q14" id="q14d" value="0.95"><label for="q14d">인테리어가 핵심</label></div>
+          <div class="option-item"><input type="radio" name="q14" id="q14a" value="0.05"><label for="q14a">맛있으면 노점도 ㄱ</label></div>
+          <div class="option-item"><input type="radio" name="q14" id="q14b" value="0.4"><label for="q14b">좀 깔끔하면 좋긴 해</label></div>
+          <div class="option-item"><input type="radio" name="q14" id="q14c" value="0.75"><label for="q14c">분위기 꽤 중요함</label></div>
+          <div class="option-item"><input type="radio" name="q14" id="q14d" value="0.95"><label for="q14d">사진 안 예쁘면 안 감</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q15</div>
-        <p>음식 맛 선호는?</p>
+        <p>입맛이 어떤 쪽이야?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q15" id="q15a" value="0.1"><label for="q15a">달고 부드러운 맛</label></div>
-          <div class="option-item"><input type="radio" name="q15" id="q15b" value="0.4"><label for="q15b">고소하고 담백한</label></div>
-          <div class="option-item"><input type="radio" name="q15" id="q15c" value="0.7"><label for="q15c">짜고 감칠맛</label></div>
-          <div class="option-item"><input type="radio" name="q15" id="q15d" value="0.95"><label for="q15d">쓰고 진한 맛</label></div>
+          <div class="option-item"><input type="radio" name="q15" id="q15a" value="0.1"><label for="q15a">달달 부드러운 게 최고</label></div>
+          <div class="option-item"><input type="radio" name="q15" id="q15b" value="0.4"><label for="q15b">고소 담백 건강한 맛</label></div>
+          <div class="option-item"><input type="radio" name="q15" id="q15c" value="0.7"><label for="q15c">짭조름 감칠맛 파</label></div>
+          <div class="option-item"><input type="radio" name="q15" id="q15d" value="0.95"><label for="q15d">쓰고 진한 어른의 맛</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q16</div>
-        <p>커피 취향은?</p>
+        <p>카페가면 뭐 시켜?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q16" id="q16a" value="0.1"><label for="q16a">달달한 라떼·프라푸치노</label></div>
-          <div class="option-item"><input type="radio" name="q16" id="q16b" value="0.45"><label for="q16b">오트라떼·연한 아메리카노</label></div>
-          <div class="option-item"><input type="radio" name="q16" id="q16c" value="0.75"><label for="q16c">아이스 아메리카노</label></div>
-          <div class="option-item"><input type="radio" name="q16" id="q16d" value="0.95"><label for="q16d">에스프레소·핸드드립</label></div>
+          <div class="option-item"><input type="radio" name="q16" id="q16a" value="0.1"><label for="q16a">달달 라떼 프라푸치노</label></div>
+          <div class="option-item"><input type="radio" name="q16" id="q16b" value="0.45"><label for="q16b">오트라떼 연한 아아</label></div>
+          <div class="option-item"><input type="radio" name="q16" id="q16c" value="0.75"><label for="q16c">아아 (국룰)</label></div>
+          <div class="option-item"><input type="radio" name="q16" id="q16d" value="0.95"><label for="q16d">에스프레소 핸드드립</label></div>
         </div>
       </div>
     </div>
 
     <!-- 음악 & 취미 -->
     <div class="section">
-      <div class="section-label">음악 &amp; 취미</div>
+      <div class="section-label">귀가 뭘 좋아해?</div>
 
       <div class="question">
         <div class="question-num">Q17</div>
-        <p>음악을 주로 듣는 상황은?</p>
+        <p>음악 언제 들어?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q17" id="q17a" value="0.1"><label for="q17a">혼자 집중할 때만</label></div>
-          <div class="option-item"><input type="radio" name="q17" id="q17b" value="0.5"><label for="q17b">이동 중에</label></div>
-          <div class="option-item"><input type="radio" name="q17" id="q17c" value="0.8"><label for="q17c">운동·활동할 때</label></div>
-          <div class="option-item"><input type="radio" name="q17" id="q17d" value="0.95"><label for="q17d">항상 틀어놓음</label></div>
+          <div class="option-item"><input type="radio" name="q17" id="q17a" value="0.1"><label for="q17a">집중할 때만 살짝</label></div>
+          <div class="option-item"><input type="radio" name="q17" id="q17b" value="0.5"><label for="q17b">지하철에서 에어팟</label></div>
+          <div class="option-item"><input type="radio" name="q17" id="q17c" value="0.8"><label for="q17c">운동할 때 빵빵하게</label></div>
+          <div class="option-item"><input type="radio" name="q17" id="q17d" value="0.95"><label for="q17d">24시간 BGM 틀어놓는 편</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q18</div>
-        <p>선호하는 음악 장르는?</p>
+        <p>플레이리스트 까봐 뭐 있어?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q18" id="q18a" value="0.1"><label for="q18a">클래식·재즈</label></div>
-          <div class="option-item"><input type="radio" name="q18" id="q18b" value="0.4"><label for="q18b">인디·어쿠스틱·로파이</label></div>
-          <div class="option-item"><input type="radio" name="q18" id="q18c" value="0.7"><label for="q18c">팝·R&amp;B</label></div>
-          <div class="option-item"><input type="radio" name="q18" id="q18d" value="0.95"><label for="q18d">힙합·EDM·트랩</label></div>
+          <div class="option-item"><input type="radio" name="q18" id="q18a" value="0.1"><label for="q18a">클래식 재즈 (간지)</label></div>
+          <div class="option-item"><input type="radio" name="q18" id="q18b" value="0.4"><label for="q18b">인디 어쿠스틱 로파이</label></div>
+          <div class="option-item"><input type="radio" name="q18" id="q18c" value="0.7"><label for="q18c">팝 R&amp;B 무난하게</label></div>
+          <div class="option-item"><input type="radio" name="q18" id="q18d" value="0.95"><label for="q18d">힙합 EDM 트랩 털자</label></div>
         </div>
       </div>
     </div>
 
     <!-- 운동 & 액티비티 -->
     <div class="section">
-      <div class="section-label">운동 &amp; 액티비티</div>
+      <div class="section-label">몸 좀 쓰는 편?</div>
 
       <div class="question">
         <div class="question-num">Q19</div>
-        <p>운동 스타일은?</p>
+        <p>운동 얼마나 해?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q19" id="q19a" value="0.05"><label for="q19a">거의 안 해요</label></div>
-          <div class="option-item"><input type="radio" name="q19" id="q19b" value="0.35"><label for="q19b">산책·요가·스트레칭</label></div>
-          <div class="option-item"><input type="radio" name="q19" id="q19c" value="0.7"><label for="q19c">수영·헬스·러닝</label></div>
-          <div class="option-item"><input type="radio" name="q19" id="q19d" value="0.95"><label for="q19d">크로스핏·격투기·극한 스포츠</label></div>
+          <div class="option-item"><input type="radio" name="q19" id="q19a" value="0.05"><label for="q19a">운동은 무슨.. 숨쉬기 운동</label></div>
+          <div class="option-item"><input type="radio" name="q19" id="q19b" value="0.35"><label for="q19b">산책 요가 스트레칭 정도</label></div>
+          <div class="option-item"><input type="radio" name="q19" id="q19c" value="0.7"><label for="q19c">헬스 수영 러닝 꾸준히</label></div>
+          <div class="option-item"><input type="radio" name="q19" id="q19d" value="0.95"><label for="q19d">크로스핏 격투기 극한러</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q20</div>
-        <p>운동 환경 선호는?</p>
+        <p>운동한다면 어디서?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q20" id="q20a" value="0.1"><label for="q20a">실내 헬스장·스튜디오</label></div>
-          <div class="option-item"><input type="radio" name="q20" id="q20b" value="0.45"><label for="q20b">동네 공원·한강</label></div>
-          <div class="option-item"><input type="radio" name="q20" id="q20c" value="0.75"><label for="q20c">산·트레일</label></div>
-          <div class="option-item"><input type="radio" name="q20" id="q20d" value="0.95"><label for="q20d">바다·서핑·클라이밍</label></div>
+          <div class="option-item"><input type="radio" name="q20" id="q20a" value="0.1"><label for="q20a">에어컨 빵빵 실내 헬스장</label></div>
+          <div class="option-item"><input type="radio" name="q20" id="q20b" value="0.45"><label for="q20b">동네 공원이나 한강</label></div>
+          <div class="option-item"><input type="radio" name="q20" id="q20c" value="0.75"><label for="q20c">산 트레일 자연 속</label></div>
+          <div class="option-item"><input type="radio" name="q20" id="q20d" value="0.95"><label for="q20d">바다 서핑 클라이밍 야생</label></div>
         </div>
       </div>
     </div>
 
     <!-- 여행 -->
     <div class="section">
-      <div class="section-label">여행</div>
+      <div class="section-label">여행 가자 ✈️</div>
 
       <div class="question">
         <div class="question-num">Q21</div>
-        <p>여행 스타일은?</p>
+        <p>여행 스타일이 어때?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q21" id="q21a" value="0.05"><label for="q21a">올인클루시브 패키지</label></div>
-          <div class="option-item"><input type="radio" name="q21" id="q21b" value="0.4"><label for="q21b">꼼꼼히 짠 자유여행</label></div>
-          <div class="option-item"><input type="radio" name="q21" id="q21c" value="0.75"><label for="q21c">느슨한 자유여행</label></div>
-          <div class="option-item"><input type="radio" name="q21" id="q21d" value="0.95"><label for="q21d">즉흥 배낭여행</label></div>
+          <div class="option-item"><input type="radio" name="q21" id="q21a" value="0.05"><label for="q21a">다 해주는 패키지 최고</label></div>
+          <div class="option-item"><input type="radio" name="q21" id="q21b" value="0.4"><label for="q21b">엑셀로 짠 자유여행</label></div>
+          <div class="option-item"><input type="radio" name="q21" id="q21c" value="0.75"><label for="q21c">대충 느슨하게 여유롭게</label></div>
+          <div class="option-item"><input type="radio" name="q21" id="q21d" value="0.95"><label for="q21d">비행기만 끊고 ㄱㄱ 즉흥</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q22</div>
-        <p>여행 숙소는?</p>
+        <p>숙소는 어디서 자?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q22" id="q22a" value="0.1"><label for="q22a">5성급 호텔</label></div>
+          <div class="option-item"><input type="radio" name="q22" id="q22a" value="0.1"><label for="q22a">5성급 호캉스 인생은 짧다</label></div>
           <div class="option-item"><input type="radio" name="q22" id="q22b" value="0.45"><label for="q22b">깔끔한 비즈니스 호텔</label></div>
-          <div class="option-item"><input type="radio" name="q22" id="q22c" value="0.75"><label for="q22c">감성 게스트하우스</label></div>
-          <div class="option-item"><input type="radio" name="q22" id="q22d" value="0.95"><label for="q22d">에어비앤비·현지 민박</label></div>
+          <div class="option-item"><input type="radio" name="q22" id="q22c" value="0.75"><label for="q22c">감성 게하 인스타각</label></div>
+          <div class="option-item"><input type="radio" name="q22" id="q22d" value="0.95"><label for="q22d">에어비앤비 현지 민박</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q23</div>
-        <p>여행지 선택 기준은?</p>
+        <p>여행 가면 뭐가 제일 중요?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q23" id="q23a" value="0.05"><label for="q23a">힐링·휴양</label></div>
-          <div class="option-item"><input type="radio" name="q23" id="q23b" value="0.4"><label for="q23b">미식·맛집 탐방</label></div>
-          <div class="option-item"><input type="radio" name="q23" id="q23c" value="0.7"><label for="q23c">문화·예술·건축</label></div>
-          <div class="option-item"><input type="radio" name="q23" id="q23d" value="0.95"><label for="q23d">모험·액티비티</label></div>
+          <div class="option-item"><input type="radio" name="q23" id="q23a" value="0.05"><label for="q23a">아무것도 안 하고 힐링</label></div>
+          <div class="option-item"><input type="radio" name="q23" id="q23b" value="0.4"><label for="q23b">현지 맛집 순례 필수</label></div>
+          <div class="option-item"><input type="radio" name="q23" id="q23c" value="0.7"><label for="q23c">미술관 건축물 문화탐방</label></div>
+          <div class="option-item"><input type="radio" name="q23" id="q23d" value="0.95"><label for="q23d">번지점프 하러 감ㅋ 모험</label></div>
         </div>
       </div>
     </div>
 
     <!-- 향 & 예산 -->
     <div class="section">
-      <div class="section-label">향 &amp; 예산</div>
+      <div class="section-label">코랑 지갑 이야기</div>
 
       <div class="question">
         <div class="question-num">Q24</div>
-        <p>향기 취향은?</p>
+        <p>향수 어떤 스타일 좋아해?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q24" id="q24a" value="0.05"><label for="q24a">향 없이 무향이 편해요</label></div>
-          <div class="option-item"><input type="radio" name="q24" id="q24b" value="0.35"><label for="q24b">은은한 자연향</label></div>
-          <div class="option-item"><input type="radio" name="q24" id="q24c" value="0.7"><label for="q24c">개성 있는 향</label></div>
-          <div class="option-item"><input type="radio" name="q24" id="q24d" value="0.95"><label for="q24d">강하고 독특한 향</label></div>
+          <div class="option-item"><input type="radio" name="q24" id="q24a" value="0.05"><label for="q24a">무향이 젤 편해 향 싫어</label></div>
+          <div class="option-item"><input type="radio" name="q24" id="q24b" value="0.35"><label for="q24b">은은~ 자연스럽게</label></div>
+          <div class="option-item"><input type="radio" name="q24" id="q24c" value="0.7"><label for="q24c">나만의 시그니처 향</label></div>
+          <div class="option-item"><input type="radio" name="q24" id="q24d" value="0.95"><label for="q24d">강렬하고 독특하게 존재감</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q25</div>
-        <p>지출 철학은?</p>
+        <p>돈 쓸 때 철학이 뭐야?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q25" id="q25a" value="0.05"><label for="q25a">필요한 것만 최저가</label></div>
-          <div class="option-item"><input type="radio" name="q25" id="q25b" value="0.4"><label for="q25b">가성비 꼼꼼히 따져요</label></div>
-          <div class="option-item"><input type="radio" name="q25" id="q25c" value="0.75"><label for="q25c">마음에 들면 투자해요</label></div>
-          <div class="option-item"><input type="radio" name="q25" id="q25d" value="0.95"><label for="q25d">가격 크게 신경 안 써요</label></div>
+          <div class="option-item"><input type="radio" name="q25" id="q25a" value="0.05"><label for="q25a">최저가 아니면 안 삼</label></div>
+          <div class="option-item"><input type="radio" name="q25" id="q25b" value="0.4"><label for="q25b">가성비 따지는 편</label></div>
+          <div class="option-item"><input type="radio" name="q25" id="q25c" value="0.75"><label for="q25c">좋으면 돈은 아깝지 않아</label></div>
+          <div class="option-item"><input type="radio" name="q25" id="q25d" value="0.95"><label for="q25d">가격표 안 봄ㅋ</label></div>
         </div>
       </div>
     </div>
 
     <!-- 안정감 & 루틴 (comfort 독립 측정) -->
     <div class="section">
-      <div class="section-label">안정감 &amp; 루틴</div>
+      <div class="section-label">멘탈 체크 ㄱㄱ</div>
 
       <div class="question">
         <div class="question-num">Q26</div>
-        <p>낯선 환경이나 새로운 상황에서 나는?</p>
+        <p>처음 가는 곳, 새로운 상황에서 넌?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q26" id="q26a" value="0.9"><label for="q26a">많이 불편하고 적응에 시간이 걸려요</label></div>
-          <div class="option-item"><input type="radio" name="q26" id="q26b" value="0.6"><label for="q26b">좀 불편하지만 곧 적응해요</label></div>
-          <div class="option-item"><input type="radio" name="q26" id="q26c" value="0.3"><label for="q26c">금방 익숙해지는 편이에요</label></div>
-          <div class="option-item"><input type="radio" name="q26" id="q26d" value="0.1"><label for="q26d">오히려 설레고 즐거워요</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26a" value="0.9"><label for="q26a">심장 쿵쾅 적응 오래 걸림</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26b" value="0.6"><label for="q26b">좀 어색한데 금방 괜찮아</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26c" value="0.3"><label for="q26c">적응 빠른 편 어디든 ㄱ</label></div>
+          <div class="option-item"><input type="radio" name="q26" id="q26d" value="0.1"><label for="q26d">오히려 설레는데?ㅋㅋ</label></div>
         </div>
       </div>
 
       <div class="question">
         <div class="question-num">Q27</div>
-        <p>여행이나 외출 전 나는?</p>
+        <p>나갈 때 준비를 얼마나 해?</p>
         <div class="options">
-          <div class="option-item"><input type="radio" name="q27" id="q27a" value="0.1"><label for="q27a">완전 즉흥파, 계획 없이 나가요</label></div>
-          <div class="option-item"><input type="radio" name="q27" id="q27b" value="0.4"><label for="q27b">대략적인 방향만 잡아요</label></div>
-          <div class="option-item"><input type="radio" name="q27" id="q27c" value="0.7"><label for="q27c">어느 정도 계획을 세워요</label></div>
-          <div class="option-item"><input type="radio" name="q27" id="q27d" value="0.95"><label for="q27d">꼼꼼하게 다 계획해요</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27a" value="0.1"><label for="q27a">신발 신고 나가면 그게 여행</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27b" value="0.4"><label for="q27b">방향만 대충 잡고 출발</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27c" value="0.7"><label for="q27c">어느 정도 계획은 세움</label></div>
+          <div class="option-item"><input type="radio" name="q27" id="q27d" value="0.95"><label for="q27d">분 단위 스케줄 완벽 세팅</label></div>
         </div>
       </div>
     </div>
 
-    <button class="btn-submit" id="submitBtn" onclick="submitSurvey()">✨ 나의 취향 분석하기</button>
+    <button class="btn-submit" id="submitBtn" onclick="submitSurvey()">🔥 내 취향 까발리기</button>
   </div>
 
   <!-- 결과 -->
@@ -597,11 +597,11 @@
     </div>
     <div class="domain-grid" id="domain-results"></div>
     <div class="share-box">
-      <p>이 결과 친구한테 보내보기 👇</p>
-      <button class="btn-copy" id="btn-copy" onclick="copyShareUrl()">🔗 링크 복사하기</button>
+      <p>야 이거 친구한테도 시켜봐ㅋㅋ 👇</p>
+      <button class="btn-copy" id="btn-copy" onclick="copyShareUrl()">🔗 링크 복사 (톡으로 던져)</button>
       <div class="share-url" id="share-url" style="display:none"></div>
     </div>
-    <button class="btn-again" onclick="location.reload()">↩ 다시 분석하기</button>
+    <button class="btn-again" onclick="location.reload()">↩ 다시 해볼래 (결과 바뀔 수도?)</button>
   </div>
 
 </div>
@@ -694,14 +694,14 @@ async function submitSurvey() {
   const dy   = document.getElementById('birth_day').value;
 
   if (!yr || !mo || !dy) {
-    alert('생년월일을 모두 선택해주세요!');
+    alert('야 생년월일 다 골라야지!');
     return;
   }
   const birth_date = `${yr}-${mo}-${dy}`;
   const gender     = document.getElementById('gender').value;
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = '분석 중...';
+  btn.disabled = true; btn.textContent = '두근두근 분석 중...ㅋ';
 
   // q1~q27 원본값 수집 (백엔드 SoT — 계산은 서버가 담당)
   const raw_answers = {};
@@ -774,7 +774,7 @@ function showResult(data, profile) {
   const shareUrl = data.id ? `${API_BASE}/result/${data.id}` : '';
   document.getElementById('share-url').textContent = shareUrl;
   if (!shareUrl) {
-    document.getElementById('btn-copy').textContent = '(링크 저장 안됨)';
+    document.getElementById('btn-copy').textContent = '(링크 저장 안됨ㅠ)';
     document.getElementById('btn-copy').disabled = true;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -785,10 +785,10 @@ function copyShareUrl() {
   if (!url) return;
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById('btn-copy');
-    btn.textContent = '✅ 복사됐어요! 친구에게 보내세요';
+    btn.textContent = '✅ 복사 완료! 톡으로 던져ㅋ';
     btn.classList.add('copied');
     setTimeout(() => {
-      btn.textContent = '🔗 링크 복사하기';
+      btn.textContent = '🔗 링크 복사 (톡으로 던져)';
       btn.classList.remove('copied');
     }, 2500);
   }).catch(() => {
@@ -822,14 +822,14 @@ function showOfflineResult(payload, profile) {
   showResult({
     name: payload.name,
     results: {
-      "커피":    { item: "오트밀크 라떼",    reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "향수":    { item: "시트러스 계열",    reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "음악":    { item: "인디 팝",          reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "식당":    { item: "이탈리안 비스트로",reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "운동":    { item: "수영",             reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "여행":    { item: "일본 소도시",      reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "패션":    { item: "캐주얼 스트리트",  reason: "서버 연결 후 정확한 분석이 가능해요" },
-      "인테리어":{ item: "모던 빈티지",      reason: "서버 연결 후 정확한 분석이 가능해요" },
+      "커피":    { item: "오트밀크 라떼",    reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "향수":    { item: "시트러스 계열",    reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "음악":    { item: "인디 팝",          reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "식당":    { item: "이탈리안 비스트로",reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "운동":    { item: "수영",             reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "여행":    { item: "일본 소도시",      reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "패션":    { item: "캐주얼 스트리트",  reason: "서버 연결되면 제대로 알려줄게ㅋ" },
+      "인테리어":{ item: "모던 빈티지",      reason: "서버 연결되면 제대로 알려줄게ㅋ" },
     },
     id: null
   }, profile);
