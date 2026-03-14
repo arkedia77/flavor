@@ -210,6 +210,26 @@ body {
       <div class="card-title">패션 사주</div>
       <div class="card-desc">팔자가 아는 네 스타일,<br>맞나 까보자</div>
     </a>
+    <a class="quiz-card" href="/health-quiz-saju" id="card-health-saju">
+      <span class="card-icon">🏃</span>
+      <div class="card-title">건강 사주</div>
+      <div class="card-desc">팔자가 아는 네 건강법,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/music-saju" id="card-music-saju">
+      <span class="card-icon">🎵</span>
+      <div class="card-title">음악 사주</div>
+      <div class="card-desc">팔자가 아는 네 음악,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/social-saju" id="card-social-saju">
+      <span class="card-icon">🫂</span>
+      <div class="card-title">인간관계 사주</div>
+      <div class="card-desc">팔자가 아는 네 관계법,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/lifestyle-saju" id="card-lifestyle-saju">
+      <span class="card-icon">🏠</span>
+      <div class="card-title">라이프스타일 사주</div>
+      <div class="card-desc">팔자가 아는 네 일상,<br>맞나 까보자</div>
+    </a>
   </div>
 
   <a class="dna-link" href="/">🧬 DNA 버전으로 보고 싶으면 여기</a>
@@ -346,7 +366,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju' };
+  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju', 'vol7_health_saju': 'card-health-saju', 'vol8_music_saju': 'card-music-saju', 'vol9_social_saju': 'card-social-saju', 'vol10_lifestyle_saju': 'card-lifestyle-saju' };
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;

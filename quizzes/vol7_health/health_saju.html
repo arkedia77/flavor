@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>사주 건강 테스트 — 팔자가 아는 내 건강 습관</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>:root { --primary: #f59e0b; --primary-rgb: 245,158,11; --secondary: #d97706; --secondary-rgb: 217,119,6; }</style>
+</head>
+<body>
+
+<div id="screen-intro">
+  <div class="intro-bg"></div><div class="intro-bg-ring"></div>
+  <div class="intro-hero">
+    <span class="intro-icon">💪</span>
+    <div class="intro-title">팔자가 아는 <span>내 건강 습관</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">사주가 말해주는 너의 건강 팔자,<br>맞는지 틀리는지 한번 까보자!</div>
+  </div>
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 건강 폭로</div>
+  </div>
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group"><div class="field-label">닉네임</div><div class="info-row"><input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()"></div></div>
+    <div class="field-group"><div class="field-label">생년월일</div><div class="info-row"><select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select></div><div class="info-row" style="margin-top:8px;"><select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select><select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select></div></div>
+    <div class="field-group"><div class="field-label">태어난 시간</div><div class="info-row"><select id="birth_hour" onchange="checkFormReady()"><option value="">모름</option><option value="子">子시 (23:00~01:00)</option><option value="丑">丑시 (01:00~03:00)</option><option value="寅">寅시 (03:00~05:00)</option><option value="卯">卯시 (05:00~07:00)</option><option value="辰">辰시 (07:00~09:00)</option><option value="巳">巳시 (09:00~11:00)</option><option value="午">午시 (11:00~13:00)</option><option value="未">未시 (13:00~15:00)</option><option value="申">申시 (15:00~17:00)</option><option value="酉">酉시 (17:00~19:00)</option><option value="戌">戌시 (19:00~21:00)</option><option value="亥">亥시 (21:00~23:00)</option></select></div></div>
+    <div class="field-group"><div class="field-label">성별</div><div class="gender-row"><button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button><button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button></div></div>
+  </div>
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 건강 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div><div class="progress-text" id="progress-text">1 / 15</div></div>
+  <div class="innate-banner"><div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div><div class="innate-text" id="innate-text"></div></div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')"><div class="ab-check">✓</div><div class="ab-emoji" id="emoji-a"></div><div class="ab-text" id="text-a"></div></div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')"><div class="ab-check">✓</div><div class="ab-emoji" id="emoji-b"></div><div class="ab-text" id="text-b"></div></div>
+  </div>
+</div>
+
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🔮</div><div class="loading-text">사주쌤이 건강 팔자 감정 중...</div><div class="loading-sub" style="margin-top:8px;">팔자에 적힌 건강 습관이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="dual-type">
+      <div class="type-card innate"><div class="type-card-badge">🔮 팔자 건강</div><span class="type-card-emoji" id="r-innate-emoji"></span><div class="type-card-name" id="r-innate-type"></div></div>
+      <div class="type-card actual"><div class="type-card-badge">🏃 진짜 건강</div><span class="type-card-emoji" id="r-actual-emoji"></span><div class="type-card-name" id="r-actual-type"></div></div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner"><div class="gap-title" id="r-gap-title"></div><div class="gap-detail" id="r-gap-detail"></div></div>
+    <div class="result-name-sub">사주 × 15문항 분석 — <strong id="r-name"></strong>님의 건강 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 건강 비교</div>
+  <div class="trait-legend"><div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 건강</div><div class="trait-legend-item"><span class="legend-circle"></span> 진짜 건강</div></div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 건강 루틴 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 건강 팔자도 까볼까? 🔮</div>
+    <div class="cta-sub">보내서 건강 습관도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+window.QUIZ_CONFIG = {
+  mode: 'saju', quizType: 'vol7_health_saju', storageKey: 'flavor_profile_saju',
+  loading: { emoji: '🔮', text: '사주쌤이 건강 팔자 감정 중...', sub: '팔자에 적힌 건강 습관이랑 실제가 얼마나 다른지 보는 중' },
+  result: { shareUrl: '/health-saju', shareConfirm: '✅ 복사 완료! 보내서 건강 비교해봐 🔮' },
+  questions: [
+    { id:'h1', dimension:'social', highText:'같이 운동해야 되는', lowText:'혼자 운동이 좋은',
+      A:{emoji:'👫', label:'맞아, 운동은 같이 해야 재밌지', val:0.85}, B:{emoji:'🎧', label:'아닌데? 혼자 뛰는 게 편해', val:0.15} },
+    { id:'h2', dimension:'social', highText:'헬스장/그룹 운동파', lowText:'홈트파',
+      A:{emoji:'🏋️', label:'맞아, 헬스장 가야 동기부여 돼', val:0.8}, B:{emoji:'🏠', label:'아닌데? 집에서 유튜브 보고 하면 되지', val:0.2} },
+    { id:'h3', dimension:'adventurous', highText:'새 운동 도전하는', lowText:'한 운동만 하는',
+      A:{emoji:'🧗', label:'맞아, 클라이밍 필라테스 다 해봐야지', val:0.85}, B:{emoji:'🏃', label:'아닌데? 달리기만 하면 되잖아', val:0.15} },
+    { id:'h4', dimension:'adventurous', highText:'식단도 새로운 거 도전하는', lowText:'검증된 식단만 먹는',
+      A:{emoji:'🥑', label:'맞아, 슈퍼푸드 신상은 다 먹어봐야지', val:0.9}, B:{emoji:'🥚', label:'아닌데? 닭가슴살이 정답이야', val:0.1} },
+    { id:'h5', dimension:'aesthetic', highText:'운동복도 예뻐야 하는', lowText:'기능만 좋으면 되는',
+      A:{emoji:'👟', label:'맞아, 운동복 코디도 중요하지', val:0.85}, B:{emoji:'🩳', label:'아닌데? 편하면 다 된 거야', val:0.2} },
+    { id:'h6', dimension:'aesthetic', highText:'바디 라인 중시하는', lowText:'건강만 챙기면 되는',
+      A:{emoji:'💪', label:'맞아, 눈바디가 동기부여의 시작', val:0.8}, B:{emoji:'❤️', label:'아닌데? 건강하면 장땡이지', val:0.2} },
+    { id:'h7', dimension:'comfort', highText:'무리 안 하는', lowText:'한계까지 밀어붙이는',
+      A:{emoji:'😌', label:'맞아, 몸이 보내는 신호를 들어야지', val:0.85}, B:{emoji:'🔥', label:'아닌데? 힘들어야 운동한 거야', val:0.15} },
+    { id:'h8', dimension:'comfort', highText:'수면 우선인', lowText:'잠 줄여도 되는',
+      A:{emoji:'😴', label:'맞아, 잠이 보약이다', val:0.85}, B:{emoji:'⏰', label:'아닌데? 5시간이면 충분해', val:0.15} },
+    { id:'h9', dimension:'budget', highText:'건강에 투자하는', lowText:'돈 안 들이고 건강한',
+      A:{emoji:'💳', label:'맞아, PT비 영양제비는 아끼면 안 돼', val:0.85}, B:{emoji:'🚶', label:'아닌데? 걷기만 해도 건강해지잖아', val:0.15} },
+    { id:'h10', dimension:'maximalist', highText:'영양제 풀세팅하는', lowText:'영양제 안 먹는',
+      A:{emoji:'💊', label:'맞아, 비타민 오메가3 유산균 필수지', val:0.85}, B:{emoji:'🍎', label:'아닌데? 밥만 잘 먹으면 필요 없어', val:0.15} },
+    { id:'h11', dimension:'maximalist', highText:'건강 기록 꼼꼼한', lowText:'느낌으로 사는',
+      A:{emoji:'📊', label:'맞아, 체중 칼로리 걸음 수 다 기록해', val:0.8}, B:{emoji:'🤷', label:'아닌데? 몸이 알아서 말해주잖아', val:0.2} },
+    { id:'h12', dimension:'energetic', highText:'아침 운동파', lowText:'저녁 운동파',
+      A:{emoji:'🌅', label:'맞아, 아침 운동하면 하루가 달라', val:0.85}, B:{emoji:'🌙', label:'아닌데? 퇴근 후 운동이 스트레스 해소야', val:0.15} },
+    { id:'h13', dimension:'energetic', highText:'매일 운동하는', lowText:'가끔 운동하는',
+      A:{emoji:'📅', label:'맞아, 하루라도 빠지면 찜찜해', val:0.8}, B:{emoji:'🛋️', label:'아닌데? 주 2~3회면 충분하지', val:0.2} },
+    { id:'h14', dimension:'urban', highText:'트렌디한 운동 좋아하는', lowText:'전통적 운동이 좋은',
+      A:{emoji:'🏙️', label:'맞아, 필라테스 크로스핏 새로운 거 해야지', val:0.85}, B:{emoji:'🏔️', label:'아닌데? 등산 수영이 최고야', val:0.15} },
+    { id:'h15', dimension:'bitter', highText:'식단 관리 철저한', lowText:'먹고 싶은 거 먹는',
+      A:{emoji:'🥗', label:'맞아, 먹는 게 몸을 만든다', val:0.85}, B:{emoji:'🍕', label:'아닌데? 인생은 한 번인데 맛있는 거 먹자', val:0.15} },
+  ],
+  types: [
+    { cond: p => p.energetic>0.6 && p.maximalist>0.6 && p.bitter>0.5, type: '피트니스 덕후', emoji: '🏋️', tagline: '오운완은 인생의 루틴', detail: '매일 운동, 영양제 풀세팅, 식단 관리까지. 건강이 곧 인생의 기본값인 타입.' },
+    { cond: p => p.comfort>0.6 && p.social<0.5, type: '느긋한 힐링러', emoji: '🧘', tagline: '스트레스 안 받는 게 최고의 건강법', detail: '무리하지 않고, 잠 잘 자고, 스트레스 안 받기. 심신의 평화가 건강의 비결인 타입.' },
+    { cond: p => p.adventurous>0.6 && p.energetic>0.5, type: '운동 모험가', emoji: '🧗', tagline: '안 해본 운동이 없다', detail: '클라이밍, 서핑, 크로스핏 다 섭렵. 새로운 운동 도전이 곧 취미인 타입.' },
+    { cond: p => p.social>0.6 && p.energetic>0.5, type: '운동 소셜러', emoji: '🤸', tagline: '같이 해야 운동이 되는 사람', detail: '러닝크루, 그룹PT, 등산 동호회. 혼자는 못 하는데 같이 하면 끝까지 가는 타입.' },
+    { cond: p => p.bitter>0.6 && p.budget>0.5, type: '식단 관리 장인', emoji: '🥗', tagline: '먹는 거로 몸을 디자인하는 사람', detail: '칼로리 계산, 매크로 관리, 밀프렙 전문가. 몸은 주방에서 만들어진다고 믿는 타입.' },
+    { cond: p => p.comfort>0.6 && p.aesthetic>0.5, type: '뷰티 헬스러', emoji: '✨', tagline: '건강하면서 예뻐야 진짜', detail: '피부, 바디라인, 자세 교정까지. 건강과 아름다움을 동시에 추구하는 타입.' },
+    { cond: p => p.budget<0.4 && p.energetic>0.5, type: '맨몸 운동 고수', emoji: '🤸', tagline: '돈 안 들이고 건강해지는 법을 아는 사람', detail: '공원 달리기, 맨몸 운동, 계단 오르기. 장비 없이 몸 하나로 건강 유지하는 타입.' },
+    { cond: p => p.maximalist>0.6 && p.budget>0.6, type: '바이오해커', emoji: '🧬', tagline: '건강 데이터를 수치로 관리하는 사람', detail: '스마트워치, 영양제, 혈액검사. 몸 상태를 데이터로 추적하는 과학적 건강 관리자.' },
+    { cond: p => p.urban>0.6 && p.aesthetic>0.5, type: '트렌디 웰니스러', emoji: '🧃', tagline: '핫한 건강 트렌드는 다 해봐야 직성이 풀려', detail: '주스클렌즈, 명상앱, 필라테스. SNS에서 핫한 건강 트렌드는 일단 해보는 타입.' },
+    { cond: p => p.comfort>0.6 && p.energetic<0.4, type: '수면 우선 장인', emoji: '😴', tagline: '잠이 보약이라는 걸 체감하는 사람', detail: '7시간 이상 수면 사수, 수면 루틴 철저. 잠을 잘 자면 운동 안 해도 된다고 믿는 타입.' },
+    { cond: () => true, type: '밸런스 건강러', emoji: '⚖️', tagline: '적당히 운동하고 적당히 먹는 팔방미인', detail: '극단적이지 않고 균형 잡힌 건강 관리. 무리 없이 꾸준한 게 비결인 타입.' },
+  ],
+  traits: [
+    { dim:'social', label:'운동 동행', low:'혼자 운동파', high:'같이 해야 재밌어' },
+    { dim:'adventurous', label:'운동 모험', low:'한 운동만', high:'새 운동 도전' },
+    { dim:'aesthetic', label:'외모 관리', low:'건강만 챙기면 OK', high:'바디라인도 중요' },
+    { dim:'comfort', label:'운동 강도', low:'한계까지 밀기', high:'무리 안 하기' },
+    { dim:'maximalist', label:'건강 기록', low:'느낌으로 살기', high:'데이터 관리' },
+    { dim:'energetic', label:'운동 빈도', low:'가끔 할 때만', high:'매일 루틴' },
+    { dim:'bitter', label:'식단 관리', low:'먹고 싶은 거 먹기', high:'식단 철저 관리' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

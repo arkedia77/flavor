@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>음악 DNA 테스트 — 타고난 음악 취향, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🎵</span>
+    <div class="intro-title">타고난 음악 취향은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 음악 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🎵</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 취향 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 음악 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🎵 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🎧</div>
+  <div class="loading-text">음악 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 귀가 실제로 뭘 듣는지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🎵 DNA 음악</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🎧 진짜 음악</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 음악 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 음악 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 음악</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 음악</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 음악 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 음악 DNA도 까볼까? 🎵</div>
+    <div class="cta-sub">보내서 상대방 음악 취향도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol8_music',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🎧', text: '음악 DNA vs 현실 대조 중...', sub: '타고난 귀가 실제로 뭘 듣는지 보는 중' },
+  result: {
+    shareUrl: '/music',
+    shareConfirm: '✅ 복사 완료! 보내서 음악 취향 비교해봐 🎵',
+  },
+
+  questions: [
+    // urban (트렌디/차트/K-pop)
+    { id:'mu1', dimension:'urban',
+      highText:'대중음악 좋아하는', lowText:'인디 음악 파는',
+      A:{emoji:'📱', label:'맞아, 차트 1위 곡은 일단 들어봐야지', val:0.85},
+      B:{emoji:'🎭', label:'아닌데? 아무도 모르는 곡이 제일 좋아', val:0.15} },
+    { id:'mu2', dimension:'urban',
+      highText:'남들 다 아는 곡 좋아하는', lowText:'숨겨진 명곡 찾는',
+      A:{emoji:'🎤', label:'맞아, 노래방에서 다같이 부를 수 있어야지', val:0.8},
+      B:{emoji:'🔍', label:'아닌데? 나만 아는 곡이 있어야 뿌듯해', val:0.2} },
+
+    // aesthetic (가사/감성/뮤비)
+    { id:'mu3', dimension:'aesthetic',
+      highText:'가사 먼저 보는', lowText:'멜로디가 먼저인',
+      A:{emoji:'📝', label:'맞아, 가사가 좋아야 진짜 명곡이지', val:0.85},
+      B:{emoji:'🎶', label:'아닌데? 가사는 몰라도 멜로디가 좋으면 됨', val:0.15} },
+    { id:'mu4', dimension:'aesthetic',
+      highText:'노래 가사에 감동받는', lowText:'비트에 몸이 반응하는',
+      A:{emoji:'😭', label:'맞아, 가사 읽다가 울어본 적 있어', val:0.8},
+      B:{emoji:'🕺', label:'아닌데? 몸이 먼저 움직이면 그게 좋은 곡이야', val:0.2} },
+
+    // budget (콘서트/앨범 투자)
+    { id:'mu5', dimension:'budget',
+      highText:'콘서트/페스티벌 러버인', lowText:'이어폰이 최고인',
+      A:{emoji:'🎪', label:'맞아, 현장 떼창이 인생이야', val:0.85},
+      B:{emoji:'🎧', label:'아닌데? 집에서 혼자 듣는 게 꿀이야', val:0.15} },
+
+    // comfort (옛날곡/익숙함/아날로그)
+    { id:'mu6', dimension:'comfort',
+      highText:'옛날 노래 좋아하는', lowText:'신곡만 듣는',
+      A:{emoji:'📻', label:'맞아, 7080 감성 못 참지', val:0.85},
+      B:{emoji:'🆕', label:'아닌데? 최신곡 위주로만 들어', val:0.15} },
+    { id:'mu7', dimension:'comfort',
+      highText:'레트로 감성인', lowText:'트렌디한 사운드 좋아하는',
+      A:{emoji:'💿', label:'맞아, 옛날 감성이 요즘 것보다 나아', val:0.8},
+      B:{emoji:'🔊', label:'아닌데? 새로운 사운드가 더 끌려', val:0.2} },
+
+    // social (같이/공유 vs 혼자)
+    { id:'mu8', dimension:'social',
+      highText:'플리 공유하는', lowText:'비밀 플레이리스트인',
+      A:{emoji:'📤', label:'맞아, 좋은 곡은 바로 공유해야 해', val:0.85},
+      B:{emoji:'🤫', label:'아닌데? 내 플리는 내 비밀이야', val:0.15} },
+    { id:'mu9', dimension:'social',
+      highText:'같이 음악 듣는 게 좋은', lowText:'혼자 음악 세계에 빠지는',
+      A:{emoji:'👯', label:'맞아, 같이 들으면 감동이 두 배야', val:0.8},
+      B:{emoji:'🧘', label:'아닌데? 혼자 이어폰 꽂는 게 최고의 힐링', val:0.2} },
+
+    // adventurous (새 장르/해외 도전)
+    { id:'mu10', dimension:'adventurous',
+      highText:'새로운 장르 도전하는', lowText:'좋아하는 장르만 파는',
+      A:{emoji:'🌍', label:'맞아, 장르 안 가리고 다 들어봐', val:0.85},
+      B:{emoji:'🏠', label:'아닌데? 내 취향은 확고해, 딴 거 필요 없어', val:0.15} },
+    { id:'mu11', dimension:'adventurous',
+      highText:'알고리즘 추천 잘 듣는', lowText:'내가 직접 찾아 듣는',
+      A:{emoji:'🤖', label:'맞아, 알고리즘이 나보다 내 취향을 잘 알아', val:0.8},
+      B:{emoji:'🧭', label:'아닌데? 직접 발굴하는 맛이 있지', val:0.2} },
+
+    // energetic (매일듣기/능동적감상)
+    { id:'mu12', dimension:'energetic',
+      highText:'감성적인 음악 좋아하는', lowText:'신나는 음악 좋아하는',
+      A:{emoji:'🌙', label:'맞아, 새벽에 발라드 틀면 눈물 나와', val:0.85},
+      B:{emoji:'🔥', label:'아닌데? 텐션 올라가는 음악이 최고야', val:0.15} },
+    { id:'mu13', dimension:'energetic',
+      highText:'음악에 감정이입 하는', lowText:'음악은 배경음악인',
+      A:{emoji:'💔', label:'맞아, 이별 노래 들으면 내 얘기 같아', val:0.8},
+      B:{emoji:'🎵', label:'아닌데? 그냥 틀어놓는 게 좋은 거지', val:0.2} },
+
+    // maximalist (음향장비/풀세팅/대형페스)
+    { id:'mu14', dimension:'maximalist',
+      highText:'악기 소리에 귀 기울이는', lowText:'보컬이 전부인',
+      A:{emoji:'🎸', label:'맞아, 기타 리프 하나에 소름 돋아', val:0.85},
+      B:{emoji:'🎤', label:'아닌데? 목소리가 좋으면 다 용서됨', val:0.15} },
+
+    // bitter (깊은감상/음악감별)
+    { id:'mu15', dimension:'bitter',
+      highText:'음악 덕질 깊은', lowText:'가볍게 즐기는',
+      A:{emoji:'📚', label:'맞아, 아티스트 인터뷰까지 다 찾아봐', val:0.85},
+      B:{emoji:'😌', label:'아닌데? 좋으면 듣고 끝, 깊이 안 파', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.urban>0.6 && p.social>0.6 && p.bitter>0.5,
+      type: '차트 정복자', emoji: '👑', tagline: '멜론 TOP100이 내 교과서',
+      detail: '실시간 차트는 기본 체크, 신곡 나오면 바로 줄 서서 듣는 타입. 노래방 18번이 매달 바뀜.' },
+    { cond: p => p.urban<0.4 && p.bitter>0.6,
+      type: '인디 감성러', emoji: '🌿', tagline: '대중은 모르는 나만의 보석',
+      detail: '아무도 모르는 밴드를 혼자 알 때 쾌감 200%. 소규모 공연장이 놀이터인 타입.' },
+    { cond: p => p.comfort>0.6 && p.energetic>0.5,
+      type: '레트로 수호자', emoji: '📻', tagline: '옛날 노래가 진짜 음악이다',
+      detail: 'LP 소리에 감동받고, 부모님 세대 음악에 자동 떼창. 김광석 노래에 눈물 흘려본 적 있음.' },
+    { cond: p => p.budget>0.6 && p.social>0.5,
+      type: '콘서트 광', emoji: '🎪', tagline: '현장을 안 가면 죽는 체질',
+      detail: '티켓팅 전쟁은 기본, 페스티벌 시즌엔 텐트도 챙김. 떼창이 인생의 의미인 타입.' },
+    { cond: p => p.energetic>0.6 && p.aesthetic>0.6,
+      type: '감성 발라드러', emoji: '🌙', tagline: '새벽 감성은 발라드와 함께',
+      detail: '비 오는 날 발라드 틀면 자동 감성모드. 가사 한 줄에 인생이 스쳐가는 타입.' },
+    { cond: p => p.adventurous>0.6 && p.urban<0.5,
+      type: '장르 유목민', emoji: '🌍', tagline: '장르에 국경은 없다',
+      detail: '재즈, 보사노바, 아프로비트까지 안 들어본 장르가 없음. 스포티파이 추천이 항상 새로움.' },
+    { cond: p => p.energetic<0.4 && p.budget>0.5,
+      type: '힙합 소울', emoji: '🎤', tagline: '비트 위에서 사는 사람',
+      detail: '힙합, R&B가 인생 장르. 래퍼 디스전까지 실시간 팔로우하는 열정의 타입.' },
+    { cond: p => p.maximalist>0.6 && p.bitter>0.5,
+      type: '밴드 키즈', emoji: '🎸', tagline: '기타 리프 하나에 영혼이 떨린다',
+      detail: '밴드 음악이 진짜 음악이라고 믿는 타입. 드럼, 베이스, 기타 소리를 분리해서 들음.' },
+    { cond: p => p.energetic<0.4 && p.adventurous>0.5,
+      type: 'EDM 전사', emoji: '⚡', tagline: '드랍이 오면 세상이 터진다',
+      detail: '클럽, 페스티벌, 차 안에서도 EDM. 베이스 올리면 심장이 뛰는 타입.' },
+    { cond: p => p.maximalist>0.6 && p.energetic>0.6,
+      type: '클래식 감상가', emoji: '🎻', tagline: '오케스트라 앞에서 눈물 흘린 적 있다',
+      detail: '클래식, 재즈, OST까지 악기 중심 음악 애호가. 콘서트홀이 교회 같은 타입.' },
+    { cond: () => true,
+      type: '밸런스 뮤직러', emoji: '⚖️', tagline: '때에 따라 척척, 음악 팔방미인',
+      detail: '운동할 땐 힙합, 출근길엔 팝, 자기 전엔 발라드. 상황별 플레이리스트가 10개 넘는 만능형.' },
+  ],
+
+  traits: [
+    { dim:'urban', label:'대중성', low:'인디/마이너', high:'차트/메이저' },
+    { dim:'aesthetic', label:'가사 vs 사운드', low:'멜로디/비트 중심', high:'가사 중심' },
+    { dim:'comfort', label:'시대 감성', low:'최신곡 위주', high:'레트로 감성' },
+    { dim:'energetic', label:'감성 깊이', low:'신나는 게 최고', high:'감성 폭발' },
+    { dim:'adventurous', label:'장르 모험', low:'내 장르만', high:'장르 유목민' },
+    { dim:'social', label:'공유 성향', low:'혼자 듣기', high:'같이 듣기' },
+    { dim:'maximalist', label:'악기 감각', low:'보컬 위주', high:'악기 귀 열림' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

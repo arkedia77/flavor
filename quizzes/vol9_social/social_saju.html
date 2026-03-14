@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>사주 인간관계 테스트 — 팔자가 아는 내 인간관계</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+  <div class="intro-hero">
+    <span class="intro-icon">🤝</span>
+    <div class="intro-title">팔자가 아는 <span>내 인간관계</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">사주가 말해주는 타고난 관계 스타일,<br>맞는지 틀리는지 한번 까보자!</div>
+  </div>
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 관계 폭로</div>
+  </div>
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row"><input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()"></div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row"><select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select></div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row"><select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select></div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 인간관계 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div><div class="progress-text" id="progress-text">1 / 15</div></div>
+  <div class="innate-banner"><div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div><div class="innate-text" id="innate-text"></div></div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')"><div class="ab-check">✓</div><div class="ab-emoji" id="emoji-a"></div><div class="ab-text" id="text-a"></div></div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')"><div class="ab-check">✓</div><div class="ab-emoji" id="emoji-b"></div><div class="ab-text" id="text-b"></div></div>
+  </div>
+</div>
+
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🔍</div>
+  <div class="loading-text">사주쌤이 인간관계 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 사귀는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate"><div class="type-card-badge">🔮 팔자 관계</div><span class="type-card-emoji" id="r-innate-emoji"></span><div class="type-card-name" id="r-innate-type"></div></div>
+      <div class="type-card actual"><div class="type-card-badge">💬 진짜 관계</div><span class="type-card-emoji" id="r-actual-emoji"></span><div class="type-card-name" id="r-actual-type"></div></div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner"><div class="gap-title" id="r-gap-title"></div><div class="gap-detail" id="r-gap-detail"></div></div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 인간관계 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 관계 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 관계</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 관계</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 관계 스타일 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 인간관계 팔자도 까볼까? 🤝</div>
+    <div class="cta-sub">보내서 상대방 관계 스타일도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol9_social_saju',
+  storageKey: 'flavor_profile_saju',
+  loading: { emoji: '🔍', text: '사주쌤이 인간관계 팔자 감정 중...', sub: '팔자대로 사귀는 건지 거역하는 건지 보는 중' },
+  result: { shareUrl: '/social-saju', shareConfirm: '✅ 복사 완료! 보내서 인간관계 비교해봐 🤝' },
+  questions: [
+    { id:'sc1', dimension:'social', highText:'넓은 인맥 자랑하는', lowText:'소수정예 고집하는',
+      A:{emoji:'🌍', label:'맞아, 아는 사람 많을수록 인생이 재밌어', val:0.85}, B:{emoji:'👥', label:'아닌데? 진짜 친한 3명이면 충분해', val:0.15} },
+    { id:'sc2', dimension:'social', highText:'모임 있으면 일단 가는', lowText:'선택적으로 참석하는',
+      A:{emoji:'🎉', label:'맞아, 초대받으면 일단 간다가 원칙', val:0.8}, B:{emoji:'🏠', label:'아닌데? 안 친한 모임은 패스가 답', val:0.2} },
+    { id:'sc3', dimension:'energetic', highText:'먼저 연락하는', lowText:'연락 오면 받는',
+      A:{emoji:'📱', label:'맞아, 카톡 먼저 하는 건 기본이지', val:0.85}, B:{emoji:'⏳', label:'아닌데? 먼저 연락 잘 안 해... 미안', val:0.15} },
+    { id:'sc4', dimension:'energetic', highText:'약속 잡는 걸 주도하는', lowText:'약속은 남이 잡아주면 가는',
+      A:{emoji:'📅', label:'맞아, 내가 안 잡으면 모임이 없어', val:0.85}, B:{emoji:'🤷', label:'아닌데? 누가 잡아주면 감사히 가지', val:0.15} },
+    { id:'sc5', dimension:'adventurous', highText:'할 말 하는', lowText:'참고 넘기는',
+      A:{emoji:'🗣️', label:'맞아, 불편하면 바로 말해야 속이 풀려', val:0.85}, B:{emoji:'🤐', label:'아닌데? 괜히 말했다가 분위기 깨기 싫어', val:0.15} },
+    { id:'sc6', dimension:'adventurous', highText:'싸워도 금방 푸는', lowText:'한번 서운하면 오래가는',
+      A:{emoji:'🤗', label:'맞아, 싸우고 5분 뒤에 밥 먹자 함', val:0.8}, B:{emoji:'💭', label:'아닌데? 서운한 건 한참 생각나더라', val:0.2} },
+    { id:'sc7', dimension:'aesthetic', highText:'일단 들어주는', lowText:'해결책 제시하는',
+      A:{emoji:'👂', label:'맞아, 들어주는 게 제일 중요해', val:0.85}, B:{emoji:'💡', label:'아닌데? 해결책을 알려줘야 진짜 도움이지', val:0.15} },
+    { id:'sc8', dimension:'aesthetic', highText:'감정 공유 잘하는', lowText:'감정 표현 서투른',
+      A:{emoji:'🥺', label:'맞아, 같이 울고 같이 웃는 타입', val:0.85}, B:{emoji:'😶', label:'아닌데? 마음은 있는데 표현이 어렵...', val:0.15} },
+    { id:'sc9', dimension:'comfort', highText:'의리에 목숨 거는', lowText:'각자 삶이 중요한',
+      A:{emoji:'🔥', label:'맞아, 친구 부르면 새벽 3시에도 감', val:0.85}, B:{emoji:'🧘', label:'아닌데? 내 시간도 소중하거든', val:0.15} },
+    { id:'sc10', dimension:'energetic', highText:'사람 만나면 에너지 충전되는', lowText:'혼자 있어야 충전되는',
+      A:{emoji:'⚡', label:'맞아, 사람들이랑 있으면 힘이 나', val:0.85}, B:{emoji:'🔋', label:'아닌데? 사람 만나면 방전돼... 충전 필요', val:0.15} },
+    { id:'sc11', dimension:'urban', highText:'파티/단체모임 좋아하는', lowText:'1:1 만남이 편한',
+      A:{emoji:'🎊', label:'맞아, 사람 많을수록 신나잖아', val:0.8}, B:{emoji:'☕', label:'아닌데? 카페에서 둘이 수다가 최고야', val:0.2} },
+    { id:'sc12', dimension:'maximalist', highText:'말로 애정 표현하는', lowText:'행동으로 보여주는',
+      A:{emoji:'💬', label:'맞아, 좋아하면 말로 해야지 어떻게 참아', val:0.85}, B:{emoji:'🎁', label:'아닌데? 말보다 챙겨주는 게 진심이야', val:0.15} },
+    { id:'sc13', dimension:'maximalist', highText:'SNS에 친구 자랑하는', lowText:'관계는 조용히 유지하는',
+      A:{emoji:'📸', label:'맞아, 좋은 사람들이랑 찍으면 올려야지', val:0.8}, B:{emoji:'🤫', label:'아닌데? 내 인간관계를 왜 공개해', val:0.2} },
+    { id:'sc14', dimension:'budget', highText:'NO 잘 하는', lowText:'부탁 거절 못하는',
+      A:{emoji:'🚫', label:'맞아, 싫으면 싫다고 해야 건강한 관계', val:0.85}, B:{emoji:'😅', label:'아닌데? 거절하면 미안해서 결국 다 들어줌', val:0.15} },
+    { id:'sc15', dimension:'bitter', highText:'속마음 잘 터놓는', lowText:'선 지키며 지내는',
+      A:{emoji:'💝', label:'맞아, 친하면 TMI까지 공유해야 진짜 친구', val:0.85}, B:{emoji:'🧱', label:'아닌데? 아무리 친해도 선은 있어야지', val:0.15} },
+  ],
+  types: [
+    { cond: p => p.social>0.6 && p.energetic>0.6, type: '인싸 소셜러', emoji: '🦋', tagline: '인맥의 끝판왕, 어디서든 아는 사람 있음', detail: '모임이 있으면 무조건 참석, 새로운 사람 만나는 게 에너지 충전인 타입. 동창회부터 동호회까지 다 섭렵.' },
+    { cond: p => p.social<0.4 && p.comfort>0.6 && p.bitter>0.6, type: '소수정예 장인', emoji: '💎', tagline: '진짜 내 편 3명이면 세상 무섭지 않다', detail: '넓은 인맥보다 깊은 관계에 올인. 10년 넘은 찐친이 인생의 보물이라고 생각하는 타입.' },
+    { cond: p => p.adventurous>0.6 && p.aesthetic>0.6, type: '갈등 해결사', emoji: '⚖️', tagline: '싸움도 화해도 내가 중재한다', detail: '할 말은 하되 상대 감정까지 챙기는 밸런스 달인. 친구들 사이에서 상담사 역할 맡는 타입.' },
+    { cond: p => p.budget>0.6 && p.energetic<0.4, type: '독립형 관계러', emoji: '🏔️', tagline: '혼자여도 외롭지 않아, 내가 제일 좋은 친구', detail: '내 시간과 공간이 최우선. 관계는 필요하지만 침범은 사절인 자기 확신형 타입.' },
+    { cond: p => p.aesthetic>0.6 && p.maximalist>0.5 && p.comfort>0.5, type: '케어 마스터', emoji: '🫶', tagline: '네 생일은 내가 챙기고, 네 고민은 내가 들어줌', detail: '주변 사람 챙기기의 달인. 기념일 알림 설정은 기본, 힘들 때 제일 먼저 달려가는 타입.' },
+    { cond: p => p.energetic>0.6 && p.social>0.5 && p.maximalist>0.5, type: '파티 피플', emoji: '🎊', tagline: '분위기 메이커는 나, 심심하면 내가 모임 만듦', detail: '단체 모임의 핵심 인물. 텅 빈 단톡방도 내가 한마디 하면 약속이 잡히는 타입.' },
+    { cond: p => p.energetic<0.4 && p.aesthetic>0.5 && p.bitter>0.5, type: '조용한 관찰자', emoji: '🦉', tagline: '말은 적지만, 다 보고 있었다', detail: '조용히 옆에서 지켜보다가 정확한 타이밍에 한마디 건네는 타입. 과묵하지만 깊은 사람.' },
+    { cond: p => p.comfort>0.7 && p.adventurous<0.5, type: '의리의 사나이', emoji: '🤜', tagline: '한번 내 편이면 영원한 내 편', detail: '친구를 위해서라면 뭐든 하는 타입. 다만 갈등 상황에선 좀 서투르지만 마음만은 진심 100%.' },
+    { cond: p => p.social>0.5 && p.budget>0.5 && p.adventurous>0.4, type: '사교 카멜레온', emoji: '🦎', tagline: 'TPO에 맞춰 관계 스타일이 변한다', detail: '직장에선 프로, 친구들이랑은 개그맨, 가족 앞에선 애교. 상황별 모드 전환이 자유로운 타입.' },
+    { cond: p => p.energetic>0.5 && p.maximalist>0.6, type: '리액션 장인', emoji: '🎭', tagline: '대화의 꽃, 리액션 하나로 분위기를 살린다', detail: '친구 얘기에 100% 리액션, 공감 능력 만렙. 같이 있으면 기분 좋아지는 비타민 같은 타입.' },
+    { cond: () => true, type: '밸런스 관계러', emoji: '☯️', tagline: '넓지도 좁지도 않은, 딱 좋은 관계의 달인', detail: '혼자도 좋고 같이도 좋은 균형 잡힌 타입. 상황에 맞게 에너지를 조절할 줄 아는 인간관계 만능키.' },
+  ],
+  traits: [
+    { dim:'social', label:'인맥 범위', low:'소수정예', high:'넓은 인맥' },
+    { dim:'energetic', label:'연락 주도', low:'기다리는 편', high:'먼저 연락' },
+    { dim:'adventurous', label:'갈등 대응', low:'참고 넘김', high:'직접 해결' },
+    { dim:'aesthetic', label:'공감 능력', low:'해결책 제시형', high:'감정 공유형' },
+    { dim:'comfort', label:'의리 지수', low:'각자 삶 존중', high:'의리 MAX' },
+    { dim:'maximalist', label:'표현 방식', low:'행동으로 보여줌', high:'말로 표현' },
+    { dim:'budget', label:'경계 설정', low:'거절 못함', high:'NO 잘 함' },
+    { dim:'urban', label:'모임 스타일', low:'소규모 선호', high:'대규모 선호' },
+    { dim:'bitter', label:'관계 깊이', low:'선 지킴', high:'속마음 오픈' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

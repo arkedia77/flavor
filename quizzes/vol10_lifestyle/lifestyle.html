@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>라이프스타일 DNA 테스트 — 타고난 라이프스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🌟</span>
+    <div class="intro-title">타고난 라이프스타일은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 라이프스타일 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🌟</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 라이프 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 라이프스타일 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🌟 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🌟</div>
+  <div class="loading-text">라이프스타일 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 삶의 방식이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🌟 DNA 라이프</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🏠 진짜 라이프</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 라이프 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 라이프스타일 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 라이프</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 라이프</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 라이프스타일 추천</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 라이프스타일 DNA도 까볼까? 🌟</div>
+    <div class="cta-sub">보내서 상대방 라이프 DNA도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol10_lifestyle',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🌟', text: '라이프스타일 DNA vs 현실 대조 중...', sub: '타고난 삶의 방식이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/lifestyle',
+    shareConfirm: '✅ 복사 완료! 보내서 라이프스타일 비교해봐 🌟',
+  },
+
+  questions: [
+    // social
+    { id:'ls1', dimension:'social',
+      highText:'사람 만나는 걸 좋아하는', lowText:'혼자가 편한',
+      A:{emoji:'🎉', label:'맞아, 약속 없는 주말은 우울해', val:0.85},
+      B:{emoji:'🏠', label:'아닌데? 집이 세상에서 제일 좋아', val:0.15} },
+    { id:'ls2', dimension:'social',
+      highText:'SNS에 일상 공유하는', lowText:'디지털 은둔자인',
+      A:{emoji:'📸', label:'맞아, 먹기 전에 사진 먼저지', val:0.8},
+      B:{emoji:'👻', label:'아닌데? 계정은 있는데 유령이야', val:0.2} },
+
+    // adventurous
+    { id:'ls3', dimension:'adventurous',
+      highText:'즉흥적으로 사는', lowText:'계획대로 사는',
+      A:{emoji:'🎲', label:'맞아, 오늘 갑자기 부산 갈 수도 있어', val:0.85},
+      B:{emoji:'📋', label:'아닌데? 다음 주 스케줄도 이미 짜놨어', val:0.15} },
+    { id:'ls4', dimension:'adventurous',
+      highText:'새로운 경험에 열린', lowText:'익숙한 게 편한',
+      A:{emoji:'🪂', label:'맞아, 안 해본 건 일단 해봐야지', val:0.9},
+      B:{emoji:'🛋️', label:'아닌데? 가본 맛집을 또 가는 게 좋아', val:0.1} },
+
+    // aesthetic
+    { id:'ls5', dimension:'aesthetic',
+      highText:'인테리어에 진심인', lowText:'살 수 있으면 되는',
+      A:{emoji:'🕯️', label:'맞아, 캔들 하나도 위치가 중요해', val:0.85},
+      B:{emoji:'📦', label:'아닌데? 이사 박스 아직 안 풀었는데 뭘', val:0.2} },
+    { id:'ls6', dimension:'aesthetic',
+      highText:'감성 카페 찾아다니는', lowText:'커피만 맛있으면 되는',
+      A:{emoji:'☕', label:'맞아, 예쁜 카페는 일단 가봐야 해', val:0.8},
+      B:{emoji:'🥤', label:'아닌데? 편의점 커피도 커피야', val:0.2} },
+
+    // comfort (was routine)
+    { id:'ls7', dimension:'comfort',
+      highText:'루틴대로 사는', lowText:'그때그때 다른',
+      A:{emoji:'⏰', label:'맞아, 기상-운동-출근 순서는 못 바꿔', val:0.85},
+      B:{emoji:'🌀', label:'아닌데? 매일이 다른 게 인생이지', val:0.15} },
+    { id:'ls8', dimension:'comfort',
+      highText:'아침형 인간인', lowText:'밤형 인간인',
+      A:{emoji:'🌅', label:'맞아, 새벽 6시에 눈 떠지는 체질이야', val:0.85},
+      B:{emoji:'🌙', label:'아닌데? 새벽 2시가 골든타임이야', val:0.15} },
+
+    // budget (was spending)
+    { id:'ls9', dimension:'budget',
+      highText:'경험에 투자하는', lowText:'저축이 우선인',
+      A:{emoji:'✈️', label:'맞아, 돈은 쓸 때 써야지 여행가자', val:0.85},
+      B:{emoji:'🏦', label:'아닌데? 통장 잔고가 마음의 평화야', val:0.15} },
+
+    // maximalist (was minimalist, values inverted)
+    { id:'ls10', dimension:'maximalist',
+      highText:'맥시멀하게 사는', lowText:'미니멀하게 사는',
+      A:{emoji:'🧸', label:'아닌데? 다 추억이 있어서 못 버려', val:0.85},
+      B:{emoji:'🧹', label:'맞아, 안 쓰는 건 바로 버려야 해', val:0.15} },
+    { id:'ls11', dimension:'maximalist',
+      highText:'다양하게 즐기는', lowText:'심플한 삶이 좋은',
+      A:{emoji:'🎪', label:'아닌데? 취미가 10개는 돼야 안 지루해', val:0.8},
+      B:{emoji:'⬜', label:'맞아, 적게 가지고 여유롭게 살래', val:0.2} },
+
+    // energetic (was wellness)
+    { id:'ls12', dimension:'energetic',
+      highText:'자기관리에 진심인', lowText:'자연에 맡기는',
+      A:{emoji:'🧘', label:'맞아, 운동+식단+명상 3종 세트지', val:0.85},
+      B:{emoji:'🍕', label:'아닌데? 인생은 한 번이야 피자 시켜', val:0.15} },
+    { id:'ls13', dimension:'energetic',
+      highText:'자기계발 좋아하는', lowText:'쉬는 게 최고인',
+      A:{emoji:'📚', label:'맞아, 퇴근 후에도 뭔가 배워야 해', val:0.8},
+      B:{emoji:'🛌', label:'아닌데? 퇴근 후엔 넷플릭스가 진리야', val:0.2} },
+
+    // urban
+    { id:'ls14', dimension:'urban',
+      highText:'도시가 맞는', lowText:'시골이 끌리는',
+      A:{emoji:'🏙️', label:'맞아, 편의점 3분 거리 아니면 못 살아', val:0.85},
+      B:{emoji:'🌿', label:'아닌데? 마당 있는 시골집이 꿈이야', val:0.15} },
+
+    // bitter (was digital)
+    { id:'ls15', dimension:'bitter',
+      highText:'디지털 라이프인', lowText:'아날로그 감성인',
+      A:{emoji:'📱', label:'맞아, 앱으로 안 되는 게 없는 세상 최고', val:0.85},
+      B:{emoji:'📓', label:'아닌데? 종이 다이어리가 제일 좋아', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.comfort>0.6 && p.energetic>0.6 && p.maximalist<0.5,
+      type: '루틴 장인', emoji: '⏰', tagline: '미래의 나에게 감사받는 중',
+      detail: '기상-운동-식단-취침 시간이 정해져 있고, 흐트러지면 불안한 타입. 갓생의 정석.' },
+    { cond: p => p.maximalist<0.4 && p.aesthetic>0.5,
+      type: '미니멀리스트', emoji: '⬜', tagline: '적게 가지고 잘 사는 게 진짜 부자',
+      detail: '물건은 최소한으로, 공간은 깔끔하게. 정리의 달인이자 쓸모없는 건 가차없이 버리는 타입.' },
+    { cond: p => p.maximalist>0.6 && p.budget>0.5,
+      type: '맥시멀리스트', emoji: '🎪', tagline: '인생은 한 번이야, 다 해보자',
+      detail: '취미도 많고, 물건도 많고, 관심사도 많은 타입. 집이 항상 뭔가로 가득한 콜렉터 기질.' },
+    { cond: p => p.social>0.6 && p.bitter>0.5,
+      type: '인스타 라이퍼', emoji: '📸', tagline: '기록하지 않으면 안 한 거나 마찬가지',
+      detail: '맛집, 카페, 여행 다 기록해야 직성이 풀려. 인스타 피드가 곧 인생 포트폴리오인 타입.' },
+    { cond: p => p.social<0.4 && p.comfort>0.5,
+      type: '은둔형 외톨이', emoji: '🏠', tagline: '집 밖은 위험해, 집이 최고야',
+      detail: '주말에 약속 잡히면 스트레스. 혼밥 혼영 혼술 다 마스터한 진정한 집순이/집돌이.' },
+    { cond: p => p.social>0.6 && p.adventurous>0.5,
+      type: '액티브 소셜러', emoji: '🎉', tagline: '이번 주말에 뭐하지? 일단 모여!',
+      detail: '약속 없는 주말은 있을 수 없는 타입. 인맥도 넓고 새로운 사람 만나는 걸 에너지로 쓰는 외향의 끝판왕.' },
+    { cond: p => p.adventurous>0.6 && p.budget>0.5,
+      type: '즉흥 자유인', emoji: '🎲', tagline: '계획? 그게 뭐야 먹는 거야?',
+      detail: '오늘 갑자기 제주도 갈 수 있고, 퇴근 후 갑자기 파티도 가능. 즉흥이 인생의 맛인 타입.' },
+    { cond: p => p.energetic>0.6 && p.aesthetic>0.5,
+      type: '자기계발 중독', emoji: '📚', tagline: '어제보다 나은 오늘을 사는 사람',
+      detail: '운동, 독서, 명상, 사이드 프로젝트. 쉬는 시간에도 뭔가 하고 있어야 안심되는 성장 중독 타입.' },
+    { cond: p => p.energetic>0.5 && p.urban<0.4,
+      type: '힐링 마스터', emoji: '🧘', tagline: '바쁜 세상에서 나만의 평화를 찾는 자',
+      detail: '명상, 요가, 산책, 자연. 번아웃 오기 전에 스스로 리셋하는 법을 아는 현명한 타입.' },
+    { cond: p => p.urban>0.6 && p.bitter>0.5,
+      type: '도시 노마드', emoji: '🏙️', tagline: '카페가 사무실이고 도시가 놀이터',
+      detail: '핫플 찾아다니고, 새로 생긴 곳은 일단 가봐야 하는 타입. 도시의 에너지가 곧 내 에너지.' },
+    { cond: p => p.budget>0.6 && p.adventurous>0.6,
+      type: '라이프 해커', emoji: '🚀', tagline: '효율과 경험 두 마리 토끼를 잡는다',
+      detail: '앱, 가젯, 꿀팁 총동원해서 삶의 질을 올리는 타입. 시간은 금이고 경험은 다이아몬드.' },
+    { cond: () => true,
+      type: '밸런스 라이퍼', emoji: '⚖️', tagline: '다 적당히, 근데 그게 제일 어려운 거잖아',
+      detail: '일도 쉬는 것도 적당히, 사람도 혼자도 적당히. 균형 잡힌 삶을 살고 있는 진정한 어른.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'사교 활동', low:'혼자가 편해', high:'사람이 좋아' },
+    { dim:'adventurous', label:'모험 vs 안정', low:'익숙한 게 좋아', high:'새로운 거 좋아' },
+    { dim:'comfort', label:'루틴 성향', low:'즉흥적', high:'루틴 장인' },
+    { dim:'maximalist', label:'소유 성향', low:'미니멀', high:'맥시멀' },
+    { dim:'energetic', label:'자기관리', low:'자연에 맡김', high:'관리에 진심' },
+    { dim:'urban', label:'도시 vs 자연', low:'시골이 끌려', high:'도시가 좋아' },
+    { dim:'bitter', label:'디지털 감도', low:'아날로그 감성', high:'디지털 네이티브' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

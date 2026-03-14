@@ -1,4 +1,4 @@
-"""공개 페이지 Blueprint: /, /survey, /result, /ab, /swipe, /compare, /health"""
+"""공개 페이지 Blueprint: /, /survey, /result, /ab, /swipe, /compare, /health + vol4~10 퀴즈"""
 
 import os
 import json
@@ -124,6 +124,62 @@ def fashion_quiz():
 @public.route("/fashion-saju")
 def fashion_saju_quiz():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol6_fashion", "fashion_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/health-quiz")
+def health_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol7_health", "health.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/health-quiz-saju")
+def health_quiz_saju():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol7_health", "health_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/music")
+def music_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol8_music", "music.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/music-saju")
+def music_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol8_music", "music_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/social")
+def social_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol9_social", "social.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/social-saju")
+def social_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol9_social", "social_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/lifestyle")
+def lifestyle_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol10_lifestyle", "lifestyle.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/lifestyle-saju")
+def lifestyle_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol10_lifestyle", "lifestyle_saju.html")
     with open(path, "r", encoding="utf-8") as f:
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
