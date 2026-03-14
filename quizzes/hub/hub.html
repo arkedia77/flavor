@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta property="og:title" content="flavor — 야 너 취향이 뭐야">
+<meta property="og:description" content="사주 × 설문으로 까보는 내 진짜 취향ㅋㅋ">
+<title>flavor — 야 너 취향이 뭐야</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+}
+.wrap { max-width: 480px; margin: 0 auto; padding: 0 16px 80px; }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 48px 0 32px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255,137,6,0.15) 0%, rgba(255,95,64,0.05) 40%, transparent 70%);
+  pointer-events: none;
+}
+.hero-logo {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ff8906, #ff5f40);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  position: relative;
+}
+.hero-sub {
+  font-size: 0.88rem;
+  color: #777799;
+  line-height: 1.6;
+}
+
+/* ── PROFILE CARD ── */
+.profile-card {
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  padding: 24px 20px;
+  margin: 0 0 24px;
+}
+.profile-card h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ff8906;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* profile form */
+.pf-row { display: grid; gap: 8px; margin-bottom: 10px; }
+.pf-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.pf-row.cols-3 { grid-template-columns: 2fr 1fr 1fr; }
+.pf-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.pf-field { position: relative; }
+.pf-label {
+  position: absolute; top: 4px; left: 12px;
+  font-size: 0.58rem; font-weight: 700; color: #555577;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  pointer-events: none;
+}
+.pf-field input, .pf-field select {
+  width: 100%; height: 52px; padding: 18px 12px 6px;
+  background: #0a0a18; border: 1.5px solid #1e1e38; border-radius: 12px;
+  color: #e8e8f0; font-size: 0.95rem; font-family: inherit;
+  outline: none; -webkit-appearance: none; appearance: none;
+}
+.pf-field input::placeholder { color: #333355; }
+.pf-field input:focus, .pf-field select:focus { border-color: #ff8906; }
+.pf-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+/* gender buttons */
+.gender-row { display: flex; gap: 8px; }
+.gender-btn {
+  flex: 1; height: 52px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: #0a0a18; border: 1.5px solid #1e1e38; border-radius: 12px;
+  color: #777799; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.gender-btn.selected { border-color: #ff8906; color: #ff8906; background: rgba(255,137,6,0.06); }
+
+/* profile save button */
+.btn-save {
+  width: 100%; height: 48px; margin-top: 12px;
+  background: linear-gradient(135deg, #ff8906, #ff5f40);
+  color: #fff; font-weight: 800; font-size: 0.92rem;
+  border: none; border-radius: 12px; cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 20px rgba(255,137,6,0.25);
+  transition: opacity 0.15s;
+}
+.btn-save:active { opacity: 0.85; }
+.btn-save.saved { background: #4ade80; box-shadow: 0 6px 20px rgba(74,222,128,0.2); }
+
+/* profile display (when saved) */
+.profile-display { display: flex; align-items: center; gap: 14px; }
+.profile-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #ff8906, #ff5f40);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; font-weight: 900; color: #fff;
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name { font-size: 1.1rem; font-weight: 800; margin-bottom: 2px; }
+.profile-meta { font-size: 0.78rem; color: #777799; }
+.profile-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-edit, .btn-reset {
+  flex: 1; height: 36px;
+  background: transparent; border: 1px solid #1e1e38; border-radius: 10px;
+  color: #777799; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-edit:active, .btn-reset:active { border-color: #ff8906; color: #ff8906; }
+
+/* ── QUIZ LIST ── */
+.section-title {
+  font-size: 0.72rem; font-weight: 700;
+  color: #555577; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.quiz-card {
+  display: block;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 18px;
+  padding: 20px 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.quiz-card:active { border-color: #ff890644; transform: scale(0.98); }
+.quiz-card .card-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+.quiz-card .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3; }
+.quiz-card .card-desc { font-size: 0.72rem; color: #777799; line-height: 1.5; }
+.quiz-card .card-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 0.62rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 8px;
+}
+.badge-done { background: rgba(74,222,128,0.12); color: #4ade80; }
+.badge-new { background: rgba(255,137,6,0.12); color: #ff8906; }
+.badge-saju { background: rgba(245,158,11,0.12); color: #f59e0b; }
+
+/* card accent stripes */
+.quiz-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px;
+}
+.card-purple::after { background: linear-gradient(90deg, #c084fc, #a855f7); }
+.card-gold::after { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.card-orange::after { background: linear-gradient(90deg, #ff8906, #ff5f40); }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 0.72rem;
+  color: #333355;
+}
+.footer a { color: #555577; text-decoration: none; }
+
+/* ── mobile small ── */
+@media (max-width: 360px) {
+  .quiz-card { padding: 16px 12px; }
+  .quiz-card .card-title { font-size: 0.88rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-logo">flavor</div>
+    <div class="hero-sub">사주 x 설문으로 까보는<br>내 진짜 취향ㅋㅋ</div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="profile-card" id="profile-card">
+    <!-- JS가 form 또는 display 모드를 채움 -->
+  </div>
+
+  <!-- QUIZ LIST: 주제별 테스트 -->
+  <div class="section-title">테스트 골라봐</div>
+  <div class="quiz-grid">
+    <a class="quiz-card card-purple" href="/romance-v2" id="card-romance">
+      <span class="card-icon">💘</span>
+      <div class="card-title">연애 DNA</div>
+      <div class="card-desc">타고난 연애 유형 vs<br>진짜 내 연애 스타일</div>
+    </a>
+    <a class="quiz-card card-gold" href="/romance-v2-saju" id="card-romance-saju">
+      <span class="card-badge badge-saju">사주</span>
+      <span class="card-icon">💘</span>
+      <div class="card-title">연애 사주</div>
+      <div class="card-desc">팔자가 알고 있는<br>네 연애 패턴ㅋ</div>
+    </a>
+    <a class="quiz-card card-purple" href="/food" id="card-food">
+      <span class="card-icon">🍽️</span>
+      <div class="card-title">식도락 DNA</div>
+      <div class="card-desc">타고난 입맛 vs<br>진짜 내 먹성</div>
+    </a>
+    <a class="quiz-card card-gold" href="/food-saju" id="card-food-saju">
+      <span class="card-badge badge-saju">사주</span>
+      <span class="card-icon">🍽️</span>
+      <div class="card-title">식도락 사주</div>
+      <div class="card-desc">사주가 아는 네 입맛,<br>맞나 한번 까보자</div>
+    </a>
+  </div>
+
+  <!-- 종합 테스트 -->
+  <div class="section-title">종합 분석</div>
+  <div class="quiz-grid">
+    <a class="quiz-card card-orange" href="/survey" id="card-survey" style="grid-column: 1 / -1;">
+      <span class="card-icon">🔥</span>
+      <div class="card-title">종합 취향 테스트 (27문항)</div>
+      <div class="card-desc">커피부터 인테리어까지, 8개 도메인 한방에 분석 · 3분이면 끝남</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    flavor by <a href="https://arkedia.work">arkedia</a>
+  </div>
+
+</div>
+
+<script>
+const PROFILE_KEY = 'flavor_profile';
+
+/* ── 프로필 렌더링 ── */
+function renderProfile() {
+  const card = document.getElementById('profile-card');
+  const profile = getProfile();
+
+  if (profile && profile.name) {
+    // 저장된 프로필 표시
+    const initial = profile.name.charAt(0).toUpperCase();
+    const genderText = profile.gender === 'male' ? '남' : profile.gender === 'female' ? '여' : '';
+    const metaParts = [profile.birth_date, genderText].filter(Boolean);
+    card.innerHTML = `
+      <div class="profile-display">
+        <div class="profile-avatar">${initial}</div>
+        <div class="profile-info">
+          <div class="profile-name">${profile.name}님, 또 왔네ㅋ</div>
+          <div class="profile-meta">${metaParts.join(' · ')}</div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn-edit" onclick="editProfile()">프로필 수정</button>
+        <button class="btn-reset" onclick="resetProfile()">다른 사람으로</button>
+      </div>`;
+  } else {
+    // 입력 폼
+    card.innerHTML = `
+      <h3>일단 너 누구야</h3>
+      <div class="pf-row">
+        <div class="pf-field">
+          <span class="pf-label">닉네임</span>
+          <input type="text" id="pf-name" placeholder="뭐라고 부를까?" autocomplete="off" />
+        </div>
+      </div>
+      <div class="pf-row cols-3">
+        <div class="pf-field">
+          <span class="pf-label">년</span>
+          <select id="pf-year"><option value="">출생년도</option></select>
+        </div>
+        <div class="pf-field">
+          <span class="pf-label">월</span>
+          <select id="pf-month"><option value="">월</option></select>
+        </div>
+        <div class="pf-field">
+          <span class="pf-label">일</span>
+          <select id="pf-day"><option value="">일</option></select>
+        </div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field">
+          <span class="pf-label">태어난 시간 (몰라도 됨)</span>
+          <select id="pf-hour">
+            <option value="">모르겠어 / 안 넣을래</option>
+            <option value="0">자시 (23:30~01:29)</option>
+            <option value="1">축시 (01:30~03:29)</option>
+            <option value="2">인시 (03:30~05:29)</option>
+            <option value="3">묘시 (05:30~07:29)</option>
+            <option value="4">진시 (07:30~09:29)</option>
+            <option value="5">사시 (09:30~11:29)</option>
+            <option value="6">오시 (11:30~13:29)</option>
+            <option value="7">미시 (13:30~15:29)</option>
+            <option value="8">신시 (15:30~17:29)</option>
+            <option value="9">유시 (17:30~19:29)</option>
+            <option value="10">술시 (19:30~21:29)</option>
+            <option value="11">해시 (21:30~23:29)</option>
+          </select>
+        </div>
+      </div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">남자</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">여자</button>
+      </div>
+      <button class="btn-save" id="btn-save" onclick="saveProfile()">저장하고 테스트 ㄱㄱ</button>`;
+
+    // populate selects
+    const yearSel = document.getElementById('pf-year');
+    const curYear = new Date().getFullYear();
+    for (let y = curYear - 10; y >= 1940; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y + '년';
+      yearSel.appendChild(o);
+    }
+    const monthSel = document.getElementById('pf-month');
+    for (let m = 1; m <= 12; m++) {
+      const o = document.createElement('option');
+      o.value = String(m).padStart(2, '0');
+      o.textContent = m + '월';
+      monthSel.appendChild(o);
+    }
+    const daySel = document.getElementById('pf-day');
+    for (let d = 1; d <= 31; d++) {
+      const o = document.createElement('option');
+      o.value = String(d).padStart(2, '0');
+      o.textContent = d + '일';
+      daySel.appendChild(o);
+    }
+
+    // pre-fill if partial profile exists
+    if (profile) {
+      if (profile.name) document.getElementById('pf-name').value = profile.name;
+      if (profile.birth_date) {
+        const [y, m, d] = profile.birth_date.split('-');
+        // wait for options to exist
+        setTimeout(() => {
+          document.getElementById('pf-year').value = y;
+          document.getElementById('pf-month').value = m;
+          document.getElementById('pf-day').value = d;
+        }, 0);
+      }
+      if (profile.birth_hour) {
+        setTimeout(() => { document.getElementById('pf-hour').value = profile.birth_hour; }, 0);
+      }
+      if (profile.gender) {
+        const btn = document.querySelector(`.gender-btn[data-gender="${profile.gender}"]`);
+        if (btn) btn.classList.add('selected');
+      }
+    }
+  }
+
+  // 완료 뱃지 업데이트
+  updateBadges(profile);
+}
+
+function selectGender(btn) {
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function getProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || null; }
+  catch(e) { return null; }
+}
+
+function saveProfile() {
+  const name = document.getElementById('pf-name').value.trim();
+  const year = document.getElementById('pf-year').value;
+  const month = document.getElementById('pf-month').value;
+  const day = document.getElementById('pf-day').value;
+  const hour = document.getElementById('pf-hour').value;
+  const genderBtn = document.querySelector('.gender-btn.selected');
+
+  if (!name) { alert('닉네임 좀 알려줘!'); return; }
+  if (!year || !month || !day) { alert('생년월일 다 골라!'); return; }
+
+  const profile = getProfile() || {};
+  profile.name = name;
+  profile.birth_date = `${year}-${month}-${day}`;
+  if (hour) profile.birth_hour = hour;
+  if (genderBtn) profile.gender = genderBtn.dataset.gender;
+  if (!profile.completed_quizzes) profile.completed_quizzes = [];
+  if (!profile.created_at) profile.created_at = new Date().toISOString();
+
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+
+  const btn = document.getElementById('btn-save');
+  btn.textContent = '저장 완료!';
+  btn.classList.add('saved');
+  setTimeout(() => renderProfile(), 600);
+}
+
+function editProfile() {
+  // 폼으로 다시 전환 (기존 데이터 유지)
+  const profile = getProfile();
+  // name 임시 제거해서 폼 모드로 전환
+  const tempProfile = { ...profile, _editing: true };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(tempProfile));
+  // 강제로 폼 렌더
+  const card = document.getElementById('profile-card');
+  // 임시로 name 비우고 re-render, 그 후 다시 채움
+  delete tempProfile._editing;
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(tempProfile));
+  // 폼 다시 보여주기 위해 name 유지한채로 폼 렌더
+  renderFormWithData(profile);
+}
+
+function renderFormWithData(profile) {
+  // 강제 폼 모드
+  const tempName = profile.name;
+  profile.name = ''; // 임시로 비워서 폼 렌더
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  renderProfile();
+  // name 복원
+  setTimeout(() => {
+    const nameInput = document.getElementById('pf-name');
+    if (nameInput) nameInput.value = tempName;
+  }, 10);
+}
+
+function resetProfile() {
+  if (confirm('프로필 초기화할까? (테스트 기록은 남아있어)')) {
+    localStorage.removeItem(PROFILE_KEY);
+    renderProfile();
+  }
+}
+
+function updateBadges(profile) {
+  const completed = (profile && profile.completed_quizzes) || [];
+  const map = {
+    'vol2_romance_v2': 'card-romance',
+    'vol2_romance_v2_saju': 'card-romance-saju',
+    'vol3_food': 'card-food',
+    'vol3_food_saju': 'card-food-saju',
+    'survey': 'card-survey'
+  };
+  Object.entries(map).forEach(([quizType, cardId]) => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    // 기존 done 뱃지 제거
+    const existing = card.querySelector('.badge-done');
+    if (existing) existing.remove();
+    if (completed.includes(quizType)) {
+      const badge = document.createElement('span');
+      badge.className = 'card-badge badge-done';
+      badge.textContent = '완료';
+      card.appendChild(badge);
+    }
+  });
+}
+
+// 초기 렌더
+renderProfile();
+</script>
+</body>
+</html>

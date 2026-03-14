@@ -12,8 +12,11 @@ public = Blueprint('public', __name__)
 
 
 @public.route("/")
-def index():
-    return redirect("/survey", code=302)
+@public.route("/hub")
+def hub():
+    hub_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "hub", "hub.html")
+    with open(hub_path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
 @public.route("/health")
