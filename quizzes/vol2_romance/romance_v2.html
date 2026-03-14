@@ -501,7 +501,6 @@ body.no-scroll { overflow: hidden; }
     <div class="cta-sub">보내서 상대방 DNA vs 현실도 비교해보셈!</div>
     <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
     <button class="btn-secondary" onclick="location.href='/romance'">💕 일반 연애 테스트도 해보기</button>
-    <button class="btn-secondary" onclick="location.href='/survey'">📋 전체 취향 분석도 해보기</button>
     <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
   </div>
 </div>
@@ -1168,12 +1167,12 @@ function renderDomains(results) {
 }
 
 function copyResult() {
-  if (!resultShareUrl) { alert('공유 링크를 불러오지 못했어요.'); return; }
-  navigator.clipboard.writeText(resultShareUrl).then(() => {
+  const shareUrl = `${API_BASE}/romance-v2`;
+  navigator.clipboard.writeText(shareUrl).then(() => {
     const btn = document.querySelector('.btn-primary');
     btn.textContent = '✅ 복사 완료! 어디 한번 보내봐 🧬';
-    setTimeout(() => { btn.textContent = '🔗 이 결과 공유하기'; }, 2500);
-  }).catch(() => { prompt('아래 링크를 복사하세요', resultShareUrl); });
+    setTimeout(() => { btn.textContent = '🔗 결과 보내서 도발하기'; }, 2500);
+  }).catch(() => { prompt('아래 링크를 복사하세요', shareUrl); });
 }
 </script>
 </body>

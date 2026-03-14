@@ -63,6 +63,20 @@ def romance_v2_saju_quiz():
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
+@public.route("/food")
+def food_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol3_food", "food.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/food-saju")
+def food_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol3_food", "food_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 @public.route("/compare")
 def compare():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "compare", "compare.html")
