@@ -1,8 +1,19 @@
 /* ═══════════════════════════════════════════
    saju-engine.js — 십신/사주 계산 엔진
+   lunar-javascript (6tail/lunar) 기반 만세력
    DNA + 사주 모드 공통
+   한국 명리학 기준 KST 직접 사용
    ═══════════════════════════════════════════ */
 
+/* ── 한자 → 한글 매핑 ── */
+const _STEM_CK = {'甲':'갑','乙':'을','丙':'병','丁':'정','戊':'무','己':'기','庚':'경','辛':'신','壬':'임','癸':'계'};
+const _BRANCH_CK = {'子':'자','丑':'축','寅':'인','卯':'묘','辰':'진','巳':'사','午':'오','未':'미','申':'신','酉':'유','戌':'술','亥':'해'};
+const _SIPSIN_CK = {'比肩':'비견','劫财':'겁재','劫財':'겁재','食神':'식신','伤官':'상관','傷官':'상관','偏财':'편재','偏財':'편재','正财':'정재','正財':'정재','七杀':'편관','七殺':'편관','正官':'정관','偏印':'편인','正印':'정인'};
+
+function _toKr(ch) { return _STEM_CK[ch] || _BRANCH_CK[ch] || ch; }
+function _sipsinKr(s) { return _SIPSIN_CK[s] || s; }
+
+/* ── 기존 상수 (하위 호환) ── */
 const STEMS = ["갑","을","병","정","무","기","경","신","임","계"];
 const BRANCHES = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
 
@@ -14,123 +25,102 @@ const BRANCH_POLARITY = {자:"양",축:"음",인:"양",묘:"음",진:"양",사:"
 const PRODUCES = {목:"화",화:"토",토:"금",금:"수",수:"목"};
 const OVERCOMES = {목:"토",토:"수",수:"화",화:"금",금:"목"};
 
-function getSipsin(dayEl, dayPol, tEl, tPol) {
-  const samePol = dayPol === tPol;
-  if (tEl === dayEl) return samePol ? "비견" : "겁재";
-  if (tEl === PRODUCES[dayEl]) return samePol ? "식신" : "상관";
-  if (tEl === OVERCOMES[dayEl]) return samePol ? "편재" : "정재";
-  if (dayEl === PRODUCES[tEl]) return samePol ? "편인" : "정인";
-  if (dayEl === OVERCOMES[tEl]) return samePol ? "편관" : "정관";
-  return "비견";
+/* ── lunar 라이브러리 EightChar 가져오기 ── */
+function _getEightChar(year, month, day, hour) {
+  // 한국 명리학: KST 시간 그대로 사용
+  var h = (hour !== null && hour !== undefined) ? parseInt(hour) : 12;
+  var solar = Solar.fromYmdHms(year, month, day, h, 0, 0);
+  return solar.getLunar().getEightChar();
 }
 
-function calcJDN(year, month, day) {
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-}
-
-/* DNA 모드: 6글자 (시주 없음) */
+/* DNA 모드: 6글자 (시주 없음) — 기본 시간 12시(정오) */
 function calcPillars(year, month, day) {
-  const ys = STEMS[(year - 4 + 1000) % 10];
-  const yb = BRANCHES[(year - 4 + 1200) % 12];
-  const ysIdx = ((year - 4) % 10 + 10) % 10;
-  const baseMap = [2,4,6,8,0,2,4,6,8,0];
-  const ms = STEMS[(baseMap[ysIdx] + month - 1) % 10];
-  const mb = BRANCHES[(month + 1) % 12];
-  const jdn = calcJDN(year, month, day);
-  const ds = STEMS[((jdn % 10) + 10) % 10];
-  const db = BRANCHES[((jdn % 12) + 12) % 12];
-  return { ys, yb, ms, mb, ds, db };
-}
-
-/* 사주 모드: 시간 → 지지 (12시진) */
-function hourToBranch(hour) {
-  if (hour === null || hour === undefined) return null;
-  const h = parseInt(hour);
-  const map = [[23,0,'자'],[1,2,'축'],[3,4,'인'],[5,6,'묘'],[7,8,'진'],[9,10,'사'],
-               [11,12,'오'],[13,14,'미'],[15,16,'신'],[17,18,'유'],[19,20,'술'],[21,22,'해']];
-  for (const [s, e, br] of map) {
-    if (s <= e) { if (h >= s && h <= e) return br; }
-    else { if (h >= s || h <= e) return br; }
-  }
-  return '오';
+  var ba = _getEightChar(year, month, day, 12);
+  var ys = _toKr(ba.getYearGan());
+  var yb = _toKr(ba.getYearZhi());
+  var ms = _toKr(ba.getMonthGan());
+  var mb = _toKr(ba.getMonthZhi());
+  var ds = _toKr(ba.getDayGan());
+  var db = _toKr(ba.getDayZhi());
+  return { ys: ys, yb: yb, ms: ms, mb: mb, ds: ds, db: db };
 }
 
 /* 사주 모드: 8글자 (시주 포함) */
 function calcPillarsFull(year, month, day, hour) {
-  const base = calcPillars(year, month, day);
-  if (hour === null || hour === undefined) return base;
+  if (hour === null || hour === undefined) return calcPillars(year, month, day);
+  var ba = _getEightChar(year, month, day, hour);
+  var ys = _toKr(ba.getYearGan());
+  var yb = _toKr(ba.getYearZhi());
+  var ms = _toKr(ba.getMonthGan());
+  var mb = _toKr(ba.getMonthZhi());
+  var ds = _toKr(ba.getDayGan());
+  var db = _toKr(ba.getDayZhi());
+  var hs = _toKr(ba.getTimeGan());
+  var hb = _toKr(ba.getTimeZhi());
+  return { ys: ys, yb: yb, ms: ms, mb: mb, ds: ds, db: db, hs: hs, hb: hb };
+}
 
-  const hb = hourToBranch(hour);
-  const dsIdx = STEMS.indexOf(base.ds);
-  const startMap = [0,2,4,6,8,0,2,4,6,8];
-  const hbIdx = BRANCHES.indexOf(hb);
-  const hs = STEMS[(startMap[dsIdx] + hbIdx) % 10];
+/* ── 십신: lunar 라이브러리 결과 → 기존 분포 형식 ── */
+function _buildSipsinDist(ba, includeHour) {
+  var dist = {};
+  ["비견","겁재","식신","상관","편재","정재","편관","정관","편인","정인"].forEach(function(n) { dist[n] = 0; });
 
-  return { ...base, hs, hb };
+  // 천간 십신 (년간, 월간 + 선택적 시간)
+  var ganList = [
+    _sipsinKr(ba.getYearShiShenGan()),
+    _sipsinKr(ba.getMonthShiShenGan())
+  ];
+  if (includeHour) {
+    ganList.push(_sipsinKr(ba.getTimeShiShenGan()));
+  }
+  ganList.forEach(function(s) { if (dist[s] !== undefined) dist[s]++; });
+
+  // 지지 십신 (년지, 월지, 일지 + 선택적 시지)
+  var zhiLists = [
+    ba.getYearShiShenZhi(),
+    ba.getMonthShiShenZhi(),
+    ba.getDayShiShenZhi()
+  ];
+  if (includeHour) {
+    zhiLists.push(ba.getTimeShiShenZhi());
+  }
+  zhiLists.forEach(function(arr) {
+    if (arr && arr.length > 0) {
+      // 지장간의 첫 번째(본기)만 카운트 — 기존 로직과 일관성 유지
+      var s = _sipsinKr(arr[arr.length - 1]);
+      if (dist[s] !== undefined) dist[s]++;
+    }
+  });
+
+  var dominant = "비견", maxCount = 0;
+  Object.keys(dist).forEach(function(k) {
+    if (dist[k] > maxCount) { maxCount = dist[k]; dominant = k; }
+  });
+
+  return { distribution: dist, dominant: dominant };
 }
 
 /* DNA 모드: 십신 분포 (6글자) */
 function calcSipsin(year, month, day) {
-  const p = calcPillars(year, month, day);
-  const dayEl = STEM_ELEMENT[p.ds];
-  const dayPol = STEM_POLARITY[p.ds];
-
-  const targets = [
-    [p.ys, "stem"], [p.yb, "branch"],
-    [p.ms, "stem"], [p.mb, "branch"],
-    [p.db, "branch"]
-  ];
-
-  const dist = {};
-  ["비견","겁재","식신","상관","편재","정재","편관","정관","편인","정인"].forEach(n => dist[n] = 0);
-
-  targets.forEach(([ch, type]) => {
-    const tEl = type === "stem" ? STEM_ELEMENT[ch] : BRANCH_ELEMENT[ch];
-    const tPol = type === "stem" ? STEM_POLARITY[ch] : BRANCH_POLARITY[ch];
-    const s = getSipsin(dayEl, dayPol, tEl, tPol);
-    dist[s]++;
-  });
-
-  let dominant = "비견", maxCount = 0;
-  Object.entries(dist).forEach(([k, v]) => { if (v > maxCount) { maxCount = v; dominant = k; } });
-
-  return { dayStem: p.ds, dayEl, dayPol, distribution: dist, dominant, pillars: p };
+  var ba = _getEightChar(year, month, day, 12);
+  var ds = _toKr(ba.getDayGan());
+  var dayEl = STEM_ELEMENT[ds];
+  var dayPol = STEM_POLARITY[ds];
+  var p = calcPillars(year, month, day);
+  var result = _buildSipsinDist(ba, false);
+  return { dayStem: ds, dayEl: dayEl, dayPol: dayPol, distribution: result.distribution, dominant: result.dominant, pillars: p };
 }
 
 /* 사주 모드: 십신 분포 (8글자, 시주 포함) */
 function calcSipsinFull(year, month, day, hour) {
-  const p = calcPillarsFull(year, month, day, hour);
-  const dayEl = STEM_ELEMENT[p.ds];
-  const dayPol = STEM_POLARITY[p.ds];
-
-  const targets = [
-    [p.ys, "stem"], [p.yb, "branch"],
-    [p.ms, "stem"], [p.mb, "branch"],
-    [p.db, "branch"]
-  ];
-
-  // 시주가 있으면 추가
-  if (p.hs && p.hb) {
-    targets.push([p.hs, "stem"], [p.hb, "branch"]);
-  }
-
-  const dist = {};
-  ["비견","겁재","식신","상관","편재","정재","편관","정관","편인","정인"].forEach(n => dist[n] = 0);
-
-  targets.forEach(([ch, type]) => {
-    const tEl = type === "stem" ? STEM_ELEMENT[ch] : BRANCH_ELEMENT[ch];
-    const tPol = type === "stem" ? STEM_POLARITY[ch] : BRANCH_POLARITY[ch];
-    const s = getSipsin(dayEl, dayPol, tEl, tPol);
-    dist[s]++;
-  });
-
-  let dominant = "비견", maxCount = 0;
-  Object.entries(dist).forEach(([k, v]) => { if (v > maxCount) { maxCount = v; dominant = k; } });
-
-  return { dayStem: p.ds, dayEl, dayPol, distribution: dist, dominant, pillars: p };
+  var ba = _getEightChar(year, month, day, hour || 12);
+  var ds = _toKr(ba.getDayGan());
+  var dayEl = STEM_ELEMENT[ds];
+  var dayPol = STEM_POLARITY[ds];
+  var p = calcPillarsFull(year, month, day, hour);
+  var includeHour = (hour !== null && hour !== undefined);
+  var result = _buildSipsinDist(ba, includeHour);
+  return { dayStem: ds, dayEl: dayEl, dayPol: dayPol, distribution: result.distribution, dominant: result.dominant, pillars: p };
 }
 
 /* ── 십신 → 9차원 innate 벡터 ── */
@@ -166,7 +156,6 @@ function sipsinToInnate(sipsinResult, amplify) {
     });
   });
 
-  // amplify: DNA=5, 사주(8글자)=5, 사주(6글자)=4
   const amp = amplify || 5;
   DIMENSIONS.forEach(d => {
     const delta = innate[d] - 0.5;
