@@ -412,9 +412,32 @@ function renderDomains(results) {
       </div>
       <div class="d-item">${rec.item||''}</div>
       <div class="d-reason">${rec.reason||''}</div>
-      ${descHtml}`;
+      ${descHtml}
+      <div class="d-feedback" data-domain="${domain}">
+        <button class="fb-btn fb-up" onclick="sendFeedback(this,'${domain}',1)">👍</button>
+        <button class="fb-btn fb-down" onclick="sendFeedback(this,'${domain}',-1)">👎</button>
+      </div>`;
     grid.appendChild(card);
   });
+}
+
+/* ═══ 피드백 전송 ═══ */
+let _submissionId = null;
+
+function sendFeedback(btn, domain, thumb) {
+  if (!_submissionId) return;
+  const wrap = btn.parentElement;
+  if (wrap.classList.contains('voted')) return;
+
+  wrap.classList.add('voted');
+  wrap.querySelectorAll('.fb-btn').forEach(b => b.disabled = true);
+  btn.classList.add('selected');
+
+  fetch(`${API_BASE}/api/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ submission_id: _submissionId, domain, thumb })
+  }).catch(() => {});
 }
 
 /* 사주 모드: 팔주 디스플레이 */
@@ -513,6 +536,7 @@ function showResult(data, actualProfile) {
   renderDomains(data.results || {});
 
   if (data.id) {
+    _submissionId = data.id;
     resultShareUrl = `${API_BASE}/result/${data.id}`;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });

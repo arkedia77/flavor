@@ -22,16 +22,55 @@ from engines.recommend import centered_cosine
 from config import DIMENSIONS
 
 
-def fetch_from_api(base_url="https://flavor.arkedia.work"):
-    """서버 API에서 데이터 fetch"""
+def fetch_from_admin_api(base_url="https://flavor.arkedia.work", token=None):
+    """서버 admin export API에서 submissions + feedbacks fetch"""
     import urllib.request
 
-    cal_url = f"{base_url}/api/calibration-data"
-    print(f"[*] Fetching calibration data from {cal_url}")
-    with urllib.request.urlopen(cal_url, timeout=10) as resp:
-        cal_data = json.loads(resp.read())
+    if not token:
+        token = os.environ.get("FLAVOR_ADMIN_TOKEN", "")
+    if not token:
+        print("[!] FLAVOR_ADMIN_TOKEN 환경변수 또는 --token 필요")
+        sys.exit(1)
 
-    return cal_data
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "User-Agent": "leoflavor-accuracy/1.0",
+    }
+
+    # submissions (profile_json, results_json 포함)
+    sub_url = f"{base_url}/api/admin/export?table=submissions&limit=1000"
+    print(f"[*] Fetching submissions from {sub_url}")
+    req = urllib.request.Request(sub_url, headers=headers)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        sub_data = json.loads(resp.read())
+
+    submissions = []
+    for r in sub_data.get("data", []):
+        submissions.append({
+            "id": r["id"],
+            "birth_date": r.get("birth_date", ""),
+            "birth_time": r.get("birth_time", "12"),
+            "gender": r.get("gender", ""),
+            "elements": json.loads(r["elements_json"]) if r.get("elements_json") else {},
+            "raw_answers": json.loads(r["raw_survey_json"]) if r.get("raw_survey_json") else {},
+            "survey": json.loads(r["survey_json"]) if r.get("survey_json") else {},
+            "profile": json.loads(r["profile_json"]) if r.get("profile_json") else {},
+            "results": json.loads(r["results_json"]) if r.get("results_json") else {},
+            "profile_version": r.get("profile_version"),
+            "created_at": r.get("created_at", ""),
+        })
+
+    # feedbacks
+    fb_url = f"{base_url}/api/admin/export?table=feedbacks&limit=5000"
+    print(f"[*] Fetching feedbacks from {fb_url}")
+    req = urllib.request.Request(fb_url, headers=headers)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        fb_data = json.loads(resp.read())
+
+    feedbacks = fb_data.get("data", [])
+
+    print(f"[*] Loaded {len(submissions)} submissions, {len(feedbacks)} feedbacks")
+    return submissions, feedbacks
 
 
 def fetch_from_db(db_path):
@@ -228,22 +267,16 @@ def main():
     parser.add_argument("--db", type=str, help="로컬 SQLite DB 경로")
     parser.add_argument("--url", type=str, default="https://flavor.arkedia.work",
                         help="서버 API base URL")
+    parser.add_argument("--token", type=str, help="Admin API 토큰 (또는 FLAVOR_ADMIN_TOKEN 환경변수)")
     args = parser.parse_args()
 
     if args.db:
         submissions, feedbacks = fetch_from_db(args.db)
     else:
         try:
-            cal_data = fetch_from_api(args.url)
-            submissions = cal_data.get("data", [])
-            # API에는 feedbacks가 포함되지 않으므로 별도 fetch 필요
-            # 현재는 calibration-data만으로 제한적 분석
-            feedbacks = []
-            print("[!] API 모드: feedbacks 별도 endpoint 없음 → DB 모드 권장")
-            print(f"    사용법: python scripts/measure_accuracy.py --db /path/to/saju_submissions.db")
+            submissions, feedbacks = fetch_from_admin_api(args.url, args.token)
         except Exception as e:
             print(f"[!] API 접근 실패: {e}")
-            print(f"    서버가 다운되었거나 접근 불가합니다.")
             print(f"    로컬 DB로 실행: python scripts/measure_accuracy.py --db /path/to/saju_submissions.db")
             sys.exit(1)
 

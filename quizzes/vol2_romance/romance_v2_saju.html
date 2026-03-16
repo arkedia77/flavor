@@ -406,6 +406,15 @@ body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling
 .d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
 .d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
 .d-desc { font-size: 0.7rem; color: rgba(245,158,11,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
+.d-feedback { display:flex; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid #1e1e38; }
+.fb-btn { flex:1; padding:6px 0; border:1px solid #1e1e38; border-radius:10px; background:transparent; font-size:1rem; cursor:pointer; transition:all 0.2s; opacity:0.6; }
+.fb-btn:hover { opacity:1; }
+.fb-btn:active { transform:scale(0.92); }
+.fb-btn:disabled { cursor:default; }
+.d-feedback.voted .fb-btn { opacity:0.25; }
+.d-feedback.voted .fb-btn.selected { opacity:1; }
+.fb-btn.fb-up.selected { background:rgba(34,197,94,0.15); border-color:#22c55e; }
+.fb-btn.fb-down.selected { background:rgba(239,68,68,0.15); border-color:#ef4444; }
 
 .cta-box {
   margin: 20px 16px 0; background: #111124;
@@ -691,6 +700,7 @@ let userData = {};
 let innateProfile = {};
 let sipsinData = {};
 let resultShareUrl = '';
+let _submissionId = null;
 
 /* ── 초기화 ── */
 (function() {
@@ -1050,6 +1060,7 @@ function showResult(data, actualProfile) {
   renderDomains(data.results || {});
 
   if (data.id) {
+    _submissionId = data.id;
     resultShareUrl = `${API_BASE}/result/${data.id}`;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1161,9 +1172,27 @@ function renderDomains(results) {
       </div>
       <div class="d-item">${rec.item||''}</div>
       <div class="d-reason">${rec.reason||''}</div>
-      ${descHtml}`;
+      ${descHtml}
+      <div class="d-feedback" data-domain="${domain}">
+        <button class="fb-btn fb-up" onclick="sendFeedback(this,'${domain}',1)">👍</button>
+        <button class="fb-btn fb-down" onclick="sendFeedback(this,'${domain}',-1)">👎</button>
+      </div>`;
     grid.appendChild(card);
   });
+}
+
+function sendFeedback(btn, domain, thumb) {
+  if (!_submissionId) return;
+  const wrap = btn.parentElement;
+  if (wrap.classList.contains('voted')) return;
+  wrap.classList.add('voted');
+  wrap.querySelectorAll('.fb-btn').forEach(b => b.disabled = true);
+  btn.classList.add('selected');
+  fetch(`${API_BASE}/api/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ submission_id: _submissionId, domain, thumb })
+  }).catch(() => {});
 }
 
 function copyResult() {
