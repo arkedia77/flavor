@@ -217,19 +217,19 @@ window.QUIZ_CONFIG = {
       B:{emoji:'🍕', label:'아닌데? 야식으로 치킨 시키면서 내일부터 하자 하는 게 나야', val:0.15} },
     { id:'ls13', dimension:'energetic',
       highText:'자기계발 좋아하는', lowText:'쉬는 게 최고인',
-      A:{emoji:'📚', label:'맞아, 퇴근하면 온라인 강의 틀고 노트 펴는 게 일과야', val:0.8},
+      A:{emoji:'📚', label:'맞아, 퇴근하면 클래스101 틀고 노트 펴는 게 일과야', val:0.8},
       B:{emoji:'🛌', label:'아닌데? 퇴근 후 침대에 누워서 넷플릭스 자동재생이 힐링이야', val:0.2} },
 
     // urban
     { id:'ls14', dimension:'urban',
       highText:'도시가 맞는', lowText:'시골이 끌리는',
-      A:{emoji:'🏙️', label:'맞아, 새벽에 배달 가능한 동네 아니면 불안해서 못 살아', val:0.85},
+      A:{emoji:'🏙️', label:'맞아, 새벽에 배민 가능한 동네 아니면 불안해서 못 살아', val:0.85},
       B:{emoji:'🌿', label:'아닌데? 마당에서 텃밭 가꾸면서 사는 게 진짜 인생 목표야', val:0.15} },
 
     // bitter (was digital)
     { id:'ls15', dimension:'bitter',
       highText:'디지털 라이프인', lowText:'아날로그 감성인',
-      A:{emoji:'📱', label:'맞아, 장보기도 앱, 운동도 앱, 일기도 앱으로 쓰는 사람', val:0.85},
+      A:{emoji:'📱', label:'맞아, 장보기도 쿠팡, 운동도 나이키런, 일기도 노션으로 쓰는 사람', val:0.85},
       B:{emoji:'📓', label:'아닌데? 종이 다이어리에 펜으로 쓸 때 그 감각이 좋아', val:0.15} },
   ],
 
@@ -263,10 +263,10 @@ window.QUIZ_CONFIG = {
       detail: '명상, 요가, 산책, 자연. 번아웃 오기 전에 스스로 리셋하는 법을 아는 현명한 타입.' },
     { cond: p => p.urban>0.6 && p.bitter>0.5,
       type: '도시 노마드', emoji: '🏙️', tagline: '카페가 사무실이고 도시가 놀이터',
-      detail: '핫플 찾아다니고, 새로 생긴 곳은 일단 가봐야 하는 타입. 도시의 에너지가 곧 내 에너지.' },
+      detail: '성수·한남 핫플 찾아다니고, 새로 생긴 곳은 일단 가봐야 하는 타입. 도시의 에너지가 곧 내 에너지.' },
     { cond: p => p.budget>0.6 && p.adventurous>0.6,
       type: '라이프 해커', emoji: '🚀', tagline: '효율과 경험 두 마리 토끼를 잡는다',
-      detail: '앱, 가젯, 꿀팁 총동원해서 삶의 질을 올리는 타입. 시간은 금이고 경험은 다이아몬드.' },
+      detail: '노션, 에어팟, 꿀팁 총동원해서 삶의 질을 올리는 타입. 시간은 금이고 경험은 다이아몬드.' },
     { cond: () => true,
       type: '밸런스 라이퍼', emoji: '⚖️', tagline: '다 적당히, 근데 그게 제일 어려운 거잖아',
       detail: '일도 쉬는 것도 적당히, 사람도 혼자도 적당히. 균형 잡힌 삶을 살고 있는 진정한 어른.' },
