@@ -1,4 +1,4 @@
-"""공개 페이지 Blueprint: /, /survey, /result, /ab, /swipe, /compare, /health + vol4~10 퀴즈"""
+"""공개 페이지 Blueprint: /, /survey, /result, /ab, /swipe, /compare, /health + vol4~20 퀴즈"""
 
 import os
 import json
@@ -180,6 +180,146 @@ def lifestyle_quiz():
 @public.route("/lifestyle-saju")
 def lifestyle_saju_quiz():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol10_lifestyle", "lifestyle_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/spending")
+def spending_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol11_spending", "spending.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/spending-saju")
+def spending_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol11_spending", "spending_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/drink")
+def drink_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol12_drink", "drink.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/drink-saju")
+def drink_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol12_drink", "drink_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/red-flag")
+def redflag_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol13_redflag", "redflag.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/red-flag-saju")
+def redflag_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol13_redflag", "redflag_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/home")
+def home_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol14_home", "home.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/home-saju")
+def home_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol14_home", "home_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/fandom")
+def fandom_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol15_fandom", "fandom.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/fandom-saju")
+def fandom_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol15_fandom", "fandom_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/cafe")
+def cafe_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol16_cafe", "cafe.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/cafe-saju")
+def cafe_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol16_cafe", "cafe_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/sleep")
+def sleep_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol17_sleep", "sleep.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/sleep-saju")
+def sleep_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol17_sleep", "sleep_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/sns")
+def sns_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol18_sns", "sns.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/sns-saju")
+def sns_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol18_sns", "sns_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/study")
+def study_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol19_study", "study.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/study-saju")
+def study_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol19_study", "study_saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/interior")
+def interior_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol20_interior", "interior.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/interior-saju")
+def interior_saju_quiz():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "quizzes", "vol20_interior", "interior_saju.html")
     with open(path, "r", encoding="utf-8") as f:
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 

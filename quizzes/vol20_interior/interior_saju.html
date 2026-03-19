@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>집 꾸미는데 통장 텅 사주 (인테리어) — 팔자가 아는 내 인테리어 스타일</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🛋️</span>
+    <div class="intro-title">팔자가 아는 <span>내 인테리어 스타일</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주가 말해주는 타고난 집꾸 팔자,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 집꾸 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 집꾸 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🛋️</div>
+  <div class="loading-text">사주쌤이 집꾸 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 집 꾸미는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 집꾸</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🏠 진짜 집꾸</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <!-- 사주 팔주 표시 -->
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 집꾸 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 집꾸 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 집꾸</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 집꾸</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 집꾸 해보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 인테리어 팔자도 까볼까? 🛋️</div>
+    <div class="cta-sub">보내서 친구 집꾸 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol20_interior_saju',
+  storageKey: 'flavor_profile_saju',
+
+  loading: { emoji: '🛋️', text: '사주쌤이 집꾸 팔자 감정 중...', sub: '팔자대로 집 꾸미는 건지 거역하는 건지 보는 중' },
+  result: {
+    shareUrl: '/interior-saju',
+    shareConfirm: '✅ 복사 완료! 보내서 집꾸 팔자 비교해봐 🛋️',
+  },
+
+  questions: [
+    // budget
+    { id:'i1', dimension:'budget',
+      highText:'인테리어에 돈 아끼지 않는', lowText:'가성비가 최고인',
+      A:{emoji:'💳', label:'맞아, 오늘의집에서 소파 하나에 200만원 질렀는데 후회 없어 ㅋㅋ', val:0.85},
+      B:{emoji:'🏷️', label:'아닌데? 다이소에서 3만원이면 방 하나 분위기 바꿀 수 있는데 왜 비싼 거 사냐', val:0.15} },
+    { id:'i2', dimension:'budget',
+      highText:'브랜드 가구 사는', lowText:'DIY로 해결하는',
+      A:{emoji:'🪑', label:'맞아, 한샘 매장 가면 2시간은 기본이고 침대 프레임 고르는 데 3주 걸림', val:0.8},
+      B:{emoji:'🔨', label:'아닌데? 이케아 조립가구에 페인트 칠하면 그게 빈티지야 ㅋㅋ', val:0.2} },
+
+    // minimalist
+    { id:'i3', dimension:'minimalist',
+      highText:'미니멀한', lowText:'맥시멀한',
+      A:{emoji:'⬜', label:'맞아, 방에 물건 10개 넘으면 불안해지는 타입이고 화이트톤이 국룰', val:0.85},
+      B:{emoji:'🎪', label:'아닌데? 벽에 포스터 20장, 선반에 피규어 30개... 꽉 차야 내 방이지', val:0.15} },
+    { id:'i4', dimension:'minimalist',
+      highText:'수납 정리 잘하는', lowText:'보이는 곳에 두는',
+      A:{emoji:'📦', label:'맞아, 무인양품 수납박스로 카테고리별 정리 완료, 서랍 안까지 미니멀함', val:0.8},
+      B:{emoji:'🗄️', label:'아닌데? 자주 쓰는 건 보이는 데 둬야 편하지 서랍에 넣으면 까먹어', val:0.2} },
+
+    // mood
+    { id:'i5', dimension:'mood',
+      highText:'감성/무드 중시하는', lowText:'실용성 중시하는',
+      A:{emoji:'🕯️', label:'맞아, 디퓨저 3개, 캔들 5개, 간접조명 7개... 무드가 곧 인테리어야', val:0.85},
+      B:{emoji:'💡', label:'아닌데? 조명이요? 밝으면 되지 뭘 ㅋㅋ 형광등이 가성비 최고임', val:0.15} },
+
+    // nature
+    { id:'i6', dimension:'nature',
+      highText:'식물 키우는', lowText:'인조 or 없는',
+      A:{emoji:'🌿', label:'맞아, 몬스테라 3개, 스킨답서스 5개, 물 주는 스케줄 캘린더에 등록됨', val:0.85},
+      B:{emoji:'🏜️', label:'아닌데? 선인장도 죽이는 손이라 이제 다이소 조화로 만족해', val:0.15} },
+    { id:'i7', dimension:'nature',
+      highText:'자연 소재 좋아하는', lowText:'인공 소재도 괜찮은',
+      A:{emoji:'🪵', label:'맞아, 원목 테이블, 린넨 커튼, 라탄 바구니... 자연 소재가 진리야', val:0.8},
+      B:{emoji:'✨', label:'아닌데? 아크릴 선반이 깔끔하고 관리도 편하고 가격도 착하잖아', val:0.2} },
+
+    // trend
+    { id:'i8', dimension:'trend',
+      highText:'트렌드 따르는', lowText:'내 스타일 고집하는',
+      A:{emoji:'📱', label:'맞아, 오늘의집 인기 게시물 매일 보고 요즘 유행하는 거 바로 적용함', val:0.85},
+      B:{emoji:'🎨', label:'아닌데? 유행 상관없이 내가 좋으면 그게 정답이야 10년째 같은 취향', val:0.15} },
+    { id:'i9', dimension:'trend',
+      highText:'인스타 감성인', lowText:'편한 게 최고인',
+      A:{emoji:'📸', label:'맞아, 방 한쪽 코너는 항상 사진 찍을 수 있게 세팅해놓는 편', val:0.8},
+      B:{emoji:'🛏️', label:'아닌데? 침대에서 넷플릭스 편하게 볼 수 있으면 인테리어 끝 아님?', val:0.2} },
+
+    // color
+    { id:'i10', dimension:'color',
+      highText:'컬러풀한', lowText:'모노톤 좋아하는',
+      A:{emoji:'🌈', label:'맞아, 쿠션은 노란색, 러그는 초록색, 커튼은 핑크... 컬러 믹스가 인생이야', val:0.85},
+      B:{emoji:'⬛', label:'아닌데? 화이트+그레이+블랙이면 실패 없는 조합이잖아 컬러는 위험해', val:0.15} },
+
+    // obsession
+    { id:'i11', dimension:'obsession',
+      highText:'집꾸에 진심인', lowText:'대충 살아도 되는',
+      A:{emoji:'🔍', label:'맞아, 수전 하나 고르는 데 3시간 검색하고 후기 50개 읽는 게 나임', val:0.85},
+      B:{emoji:'🤷', label:'아닌데? 이사 온 지 1년인데 아직 커튼 안 달았어 없어도 살아짐', val:0.15} },
+    { id:'i12', dimension:'obsession',
+      highText:'시즌마다 바꾸는', lowText:'한번 하면 안 바꾸는',
+      A:{emoji:'🔄', label:'맞아, 봄엔 파스텔, 가을엔 브라운 톤으로 쿠션이랑 러그 교체 필수', val:0.8},
+      B:{emoji:'🪨', label:'아닌데? 한번 세팅하면 5년은 그대로 가는 게 효율적이지', val:0.2} },
+
+    // vintage
+    { id:'i13', dimension:'vintage',
+      highText:'빈티지/레트로 좋아하는', lowText:'모던/심플 좋아하는',
+      A:{emoji:'📻', label:'맞아, 당근마켓에서 70년대 라디오 사서 선반에 올려놓는 그 감성 ㅋㅋ', val:0.85},
+      B:{emoji:'🔲', label:'아닌데? 깔끔한 직선, 매끈한 표면, 모던이 진리야 먼지도 안 쌓여', val:0.15} },
+
+    // lighting
+    { id:'i14', dimension:'lighting',
+      highText:'조명에 진심인', lowText:'밝기만 되면 되는',
+      A:{emoji:'💫', label:'맞아, 필립스 휴 설치하고 상황별 조명 씬 5개 만들어놨는데 이게 인생임', val:0.85},
+      B:{emoji:'💡', label:'아닌데? LED 방등 하나면 충분하지 조명에 왜 돈을 쓰냐', val:0.15} },
+
+    // bedding
+    { id:'i15', dimension:'bedding',
+      highText:'침구에 투자하는', lowText:'아무 데나 자는',
+      A:{emoji:'🛏️', label:'맞아, 거위털 이불에 호텔식 베개 4개, 침대는 매트리스가 생명이야', val:0.85},
+      B:{emoji:'😴', label:'아닌데? 바닥에 요 깔아도 3초면 잠드는 사람이라 침구에 관심 없음', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.obsession>0.6 && p.trend>0.6 && p.budget>0.5,
+      type: '오늘의집 중독자', emoji: '📱', tagline: '오늘의집 앱 하루 3시간은 기본',
+      detail: '인테리어 게시글 저장만 500개, 스크랩북 카테고리가 12개. 집은 아직 원룸인데 머릿속엔 이미 펜트하우스 완성도임.' },
+    { cond: p => p.minimalist>0.6 && p.mood<0.5,
+      type: '미니멀리스트', emoji: '⬜', tagline: '물건 하나 늘면 하나 버린다',
+      detail: '방에 물건 10개 이하가 목표. "이거 진짜 필요해?" 3번 자문하고도 안 사는 타입. 깔끔함이 곧 행복.' },
+    { cond: p => p.nature>0.6 && p.mood>0.5,
+      type: '식물집사', emoji: '🌿', tagline: '방이 아니라 식물원이다',
+      detail: '몬스테라, 스킨답서스, 떡갈고무나무가 룸메이트. 물 주는 날 캘린더에 등록하고 새 잎 나면 사진 찍어서 인스타에 올림.' },
+    { cond: p => p.vintage>0.6 && p.trend<0.5,
+      type: '빈티지 수집가', emoji: '📻', tagline: '당근마켓이 내 인테리어 쇼핑몰',
+      detail: '70년대 라디오, 80년대 유리컵, 플리마켓 가면 보물찾기 모드 ON. 새 가구는 영혼이 없다고 생각하는 타입.' },
+    { cond: p => p.budget<0.5 && p.obsession>0.5,
+      type: '이케아 해커', emoji: '🔧', tagline: '이케아+다이소 = 무한 가능성',
+      detail: '이케아 칼락스에 다이소 바구니 넣으면 맞춤가구 완성. DIY 유튜브 보면서 페인트칠하고 손재주로 예산 부족을 극복하는 달인.' },
+    { cond: p => p.lighting>0.6 && p.mood>0.6,
+      type: 'LED 감성러', emoji: '💫', tagline: '조명 하나로 방 분위기 200% 바꿈',
+      detail: '필립스 휴, 간접조명, 캔들까지. 상황별 조명 씬이 5개 이상이고 "불 끄고 간접만 켜면 여기가 카페야"가 인생 모토.' },
+    { cond: p => p.color>0.6 && p.nature>0.4,
+      type: '컬러 믹서', emoji: '🌈', tagline: '방에 색 없으면 우울해지는 사람',
+      detail: '화이트만? 재미없어 죽겠어. 머스타드 쿠션, 테라코타 화분, 세이지 그린 커튼으로 사계절 무드 연출하는 컬러 천재.' },
+    { cond: p => p.bedding>0.6 && p.budget>0.5,
+      type: '침구 투자가', emoji: '🛏️', tagline: '매트리스에 200만원은 기본이다',
+      detail: '잠이 인생이라서 침구에 올인. 거위털 이불, 메모리폼 매트리스, 호텔식 베개. "좋은 침구는 건강 투자"가 쇼핑 명분.' },
+    { cond: p => p.trend>0.6 && p.color>0.5,
+      type: '인스타 감성러', emoji: '📸', tagline: '방 한쪽은 항상 포토존 세팅',
+      detail: '방 꾸미는 이유의 50%는 인스타 사진용. 팜파스 그라스, 라탄 거울, 감성 소품은 필수 아이템. 해시태그 #방스타그램 장인.' },
+    { cond: p => p.obsession<0.4 && p.minimalist>0.4,
+      type: '귀차니즘 인테리어러', emoji: '🤷', tagline: '깨끗하기만 하면 인테리어 끝',
+      detail: '커튼? 블라인드면 되지. 소파? 빈백이면 되지. 최소한의 노력으로 최대한 깔끔하게. 인테리어는 "안 더러우면 성공".' },
+    { cond: p => p.nature>0.5 && p.vintage>0.5,
+      type: '내추럴 우드 러버', emoji: '🪵', tagline: '원목 아니면 가구가 아니다',
+      detail: '원목 테이블, 라탄 의자, 린넨 패브릭. 플라스틱은 최대한 배제하고 자연 소재로 채우는 힐링 공간 만들기 장인.' },
+    { cond: () => true,
+      type: '밸런스 집꾸러', emoji: '⚖️', tagline: '이것저것 다 좋아하는 인테리어 잡식',
+      detail: '미니멀도 좋고 맥시멀도 좋고, 모던도 좋고 빈티지도 좋고. 그때그때 기분 따라 바꾸는 유연한 인테리어 스타일.' },
+  ],
+
+  traits: [
+    { dim:'budget', label:'투자 레벨', low:'다이소 가성비', high:'프리미엄 투자' },
+    { dim:'minimalist', label:'물건 밀도', low:'맥시멀 가득', high:'미니멀 텅텅' },
+    { dim:'mood', label:'감성 지수', low:'실용이 최고', high:'무드 필수' },
+    { dim:'nature', label:'자연 친화', low:'인공도 OK', high:'식물+원목' },
+    { dim:'trend', label:'트렌드 감도', low:'내 취향 고집', high:'유행 즉시 반영' },
+    { dim:'obsession', label:'집꾸 진심도', low:'대충 살기', high:'디테일 장인' },
+    { dim:'vintage', label:'스타일 취향', low:'모던 심플', high:'빈티지 레트로' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>카페 안 가면 죽는 DNA (카페) — 타고난 카페 스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">☕</span>
+    <div class="intro-title">타고난 카페 스타일은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 카페 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">☕</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 카페 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 카페 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">☕ DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">☕</div>
+  <div class="loading-text">카페 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 카페 스타일이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">☕ DNA 카페</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🍰 진짜 카페</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 카페 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 카페 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 카페</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 카페</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 카페 가보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 카페 스타일도 까볼까? ☕</div>
+    <div class="cta-sub">보내서 상대방 카페 DNA도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol16_cafe',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '☕', text: '카페 DNA vs 현실 대조 중...', sub: '타고난 카페 스타일이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/cafe',
+    shareConfirm: '✅ 복사 완료! 보내서 카페 스타일 비교해봐 ☕',
+  },
+
+  questions: [
+    // temperature (온도 취향)
+    { id:'c1', dimension:'temperature',
+      highText:'아이스만 마시는', lowText:'따뜻한 게 좋은',
+      A:{emoji:'🧊', label:'맞아, 한겨울 영하 10도에도 아아 시키는 게 나야나... 얼죽아가 국룰이지', val:0.85},
+      B:{emoji:'🫖', label:'아닌데? 따뜻한 라떼 감싸 쥐고 호호 불면서 마시는 그 감성이 좋아', val:0.15} },
+
+    // coffee_purist (커피 순수주의)
+    { id:'c2', dimension:'coffee_purist',
+      highText:'블랙커피 원칙인', lowText:'달달한 게 좋은',
+      A:{emoji:'☕', label:'맞아, 아메리카노 연하게? 그건 커피가 아니야. 블루보틀 싱글오리진 핸드드립이 진짜지', val:0.85},
+      B:{emoji:'🍫', label:'아닌데? 카라멜 마키아토에 시럽 추가해야 커피지... 쓴 건 못 마셔', val:0.15} },
+    { id:'c3', dimension:'coffee_purist',
+      highText:'원두 맛 구분하는', lowText:'커피는 다 거기서 거기인',
+      A:{emoji:'🫘', label:'맞아, 에티오피아 예가체프랑 콜롬비아 수프리모는 완전 다른 맛인데 모르는 사람이 많아', val:0.8},
+      B:{emoji:'🤷', label:'아닌데? 솔직히 스벅이나 투썸이나 맛 차이 모르겠어 ㅋㅋ', val:0.2} },
+
+    // ambiance (분위기)
+    { id:'c4', dimension:'ambiance',
+      highText:'인테리어 중요한', lowText:'맛만 좋으면 되는',
+      A:{emoji:'📸', label:'맞아, 인스타 감성 터지는 인테리어 아니면 안 가... 입구에서 사진 안 찍히면 의미 없어', val:0.85},
+      B:{emoji:'👅', label:'아닌데? 허름해도 커피 맛있으면 그게 맛집이지 뭘 꾸며', val:0.15} },
+    { id:'c5', dimension:'ambiance',
+      highText:'새 카페 탐방하는', lowText:'단골만 가는',
+      A:{emoji:'🗺️', label:'맞아, 인스타에서 신상 카페 뜨면 바로 저장하고 주말에 원정 가는 게 취미야', val:0.85},
+      B:{emoji:'🏠', label:'아닌데? 내 자리, 내 메뉴가 정해진 단골집이 제일 편해', val:0.15} },
+
+    // dessert (디저트)
+    { id:'c6', dimension:'dessert',
+      highText:'디저트 필수인', lowText:'음료만으로 충분한',
+      A:{emoji:'🍰', label:'맞아, 카페에서 디저트 안 시키면 뭐 하러 온 거야... 크로플+케이크 필수 조합', val:0.85},
+      B:{emoji:'🥤', label:'아닌데? 커피 한 잔이면 충분해 디저트까지 먹으면 배불러', val:0.15} },
+
+    // study (카공)
+    { id:'c7', dimension:'study',
+      highText:'카공족인', lowText:'카페에서 공부 안 하는',
+      A:{emoji:'💻', label:'맞아, 맥북 펴고 에어팟 꽂으면 그 순간 카페가 내 사무실이야... 콘센트 위치가 카페 선택 기준임', val:0.85},
+      B:{emoji:'🛋️', label:'아닌데? 카페는 쉬러 가는 건데 왜 일을 해... 그냥 멍때리고 싶어', val:0.15} },
+
+    // spending_cafe (소비)
+    { id:'c8', dimension:'spending_cafe',
+      highText:'카페에 돈 아끼지 않는', lowText:'가성비 중시하는',
+      A:{emoji:'💳', label:'맞아, 스벅 텀블러 한정판 나오면 바로 사고 리저브 매장 7천원짜리도 기꺼이 마셔', val:0.85},
+      B:{emoji:'💰', label:'아닌데? 메가커피 1500원 아아면 충분해... 커피에 7천원은 사치야', val:0.15} },
+    { id:'c9', dimension:'spending_cafe',
+      highText:'스벅 별 모으는', lowText:'프랜차이즈 상관없는',
+      A:{emoji:'⭐', label:'맞아, 스벅 골드 레벨이고 별 300개 넘었어... 프리퀀시 다 모으는 건 기본이지', val:0.8},
+      B:{emoji:'🏪', label:'아닌데? 아무 카페나 가까운 데 가지 별 모으는 건 관심 없어', val:0.2} },
+
+    // social_cafe (사교)
+    { id:'c10', dimension:'social_cafe',
+      highText:'카페에서 수다 떠는', lowText:'혼카가 편한',
+      A:{emoji:'👯', label:'맞아, 카페는 친구 만나서 3시간 수다 떠는 곳이지... 커피보다 대화가 메인이야', val:0.85},
+      B:{emoji:'🎧', label:'아닌데? 혼자 이어폰 꽂고 창밖 보면서 커피 마시는 게 힐링이야', val:0.15} },
+
+    // frequency (빈도)
+    { id:'c11', dimension:'frequency',
+      highText:'매일 카페 가는', lowText:'가끔 가는',
+      A:{emoji:'📅', label:'맞아, 하루에 카페 안 가면 뭔가 빠진 느낌... 출근길 아아 + 점심 후 라떼가 국룰이야', val:0.85},
+      B:{emoji:'🏠', label:'아닌데? 집에서 믹스커피 타 먹어도 충분한데 굳이 매일 가?', val:0.15} },
+
+    // indie (독립카페 선호)
+    { id:'c12', dimension:'indie',
+      highText:'독립카페 파인', lowText:'프랜차이즈 파인',
+      A:{emoji:'🏡', label:'맞아, 사장님이 직접 로스팅하고 메뉴판에 오늘의 원두 적어놓은 그런 카페가 진짜지', val:0.85},
+      B:{emoji:'🏢', label:'아닌데? 투썸 크기 큰 아아가 가성비 최고야... 독립카페는 비싸고 양도 적어', val:0.15} },
+
+    // takeout (테이크아웃)
+    { id:'c13', dimension:'takeout',
+      highText:'매장에서 마시는', lowText:'테이크아웃 파인',
+      A:{emoji:'🪑', label:'맞아, 카페에 앉아서 마셔야 커피지... 테이크아웃은 그냥 음료수 사 먹는 거잖아', val:0.85},
+      B:{emoji:'🚶', label:'아닌데? 들고 걸으면서 마시는 게 효율적이고 좋은데?', val:0.15} },
+
+    // noncoffee (논커피)
+    { id:'c14', dimension:'noncoffee',
+      highText:'논커피도 잘 마시는', lowText:'커피 아니면 안 마시는',
+      A:{emoji:'🍵', label:'맞아, 말차 라떼, 자몽 에이드, 얼그레이도 다 좋아... 기분에 따라 다르지', val:0.85},
+      B:{emoji:'☕', label:'아닌데? 카페에서 논커피 시키는 건 이해가 안 돼 ㅋㅋ 커피를 마셔야지', val:0.15} },
+
+    // seasonal (시즌 메뉴)
+    { id:'c15', dimension:'seasonal',
+      highText:'시즌 메뉴 필수인', lowText:'기본 메뉴만 마시는',
+      A:{emoji:'🎄', label:'맞아, 스벅 토피넛 라떼 나오면 겨울 왔구나 싶고, 여름엔 자몽 허니 블랙티 필수지', val:0.85},
+      B:{emoji:'📋', label:'아닌데? 아메리카노 하나면 사계절 충분한데 시즌 메뉴가 뭐가 다르다고', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.coffee_purist>0.6 && p.indie>0.6,
+      type: '커피 덕후', emoji: '☕', tagline: '원두 산지까지 따지는 진짜 커피 러버',
+      detail: '핸드드립, 싱글오리진, 로스팅 날짜까지 확인하는 타입. 블루보틀 앞에서 줄 서는 것도 마다하지 않는 커피 순수주의자.' },
+    { cond: p => p.dessert>0.6 && p.ambiance>0.6,
+      type: '디저트 없으면 안 가는 사람', emoji: '🍰', tagline: '크로플+케이크가 없으면 카페가 아니다',
+      detail: '메뉴판에서 디저트 먼저 보고 음료를 정하는 타입. "여기 시그니처 디저트 뭐예요?"가 입장 시 첫 마디.' },
+    { cond: p => p.study>0.6 && p.frequency>0.5,
+      type: '카공족', emoji: '💻', tagline: '콘센트 + 와이파이 = 카페 선택의 전부',
+      detail: '맥북 펴는 순간 카페는 나의 사무실. 좌석 넓이, 콘센트 위치, 와이파이 속도가 카페 평가의 핵심 기준.' },
+    { cond: p => p.ambiance>0.6 && p.spending_cafe>0.5,
+      type: '분위기 카페 수집가', emoji: '📸', tagline: '인스타 저장함에 카페만 200개',
+      detail: '신상 카페 오픈하면 첫째 주에 다녀오는 타입. 인테리어 사진 찍고, 메뉴 리뷰 올리고, 친구한테 공유까지가 한 세트.' },
+    { cond: p => p.spending_cafe>0.6 && p.frequency>0.5,
+      type: '스벅 골드회원', emoji: '⭐', tagline: '별이 곧 나의 훈장이다',
+      detail: '스타벅스 앱 골드 레벨, 프리퀀시 매년 다 모음. 한정판 텀블러 출시일엔 오픈런도 불사하는 충성 고객.' },
+    { cond: p => p.temperature>0.6 && p.frequency>0.5,
+      type: '얼죽아 전사', emoji: '🧊', tagline: '영하 20도에도 아이스 아메리카노',
+      detail: '패딩 입고 아이스 아메리카노 들고 다니는 게 일상. "아아 주세요"가 자동으로 나오는 타입.' },
+    { cond: p => p.social_cafe>0.6 && p.dessert>0.5,
+      type: '카페 수다왕', emoji: '💬', tagline: '커피보다 대화가 메인이다',
+      detail: '카페에서 3시간은 기본. 커피 한 잔으로 버티면서 친구랑 인생 상담부터 연예인 얘기까지 풀코스 수다.' },
+    { cond: p => p.indie>0.6 && p.coffee_purist>0.5,
+      type: '독립카페 탐험가', emoji: '🏡', tagline: '프랜차이즈는 가지 않는다는 원칙',
+      detail: '동네 숨은 카페 찾는 게 취미. 사장님이 직접 내려주는 커피, 소규모 로스터리, 골목 안쪽 카페를 사랑하는 타입.' },
+    { cond: p => p.noncoffee>0.6 && p.seasonal>0.5,
+      type: '논커피 마스터', emoji: '🍵', tagline: '카페 가서 커피를 안 마신다고요',
+      detail: '말차 라떼, 자몽 에이드, 얼그레이 밀크티가 레귤러 메뉴. 시즌 한정 논커피가 나오면 제일 먼저 마셔보는 타입.' },
+    { cond: p => p.takeout<0.4 && p.frequency>0.5,
+      type: '테이크아웃 장인', emoji: '🚶', tagline: '들고 걸으면서 마시는 게 효율적이다',
+      detail: '카페에 앉을 시간이 없어서가 아니라, 걸으면서 마시는 게 더 맛있는 타입. 빨대 꽂고 출발~' },
+    { cond: p => p.seasonal>0.6 && p.spending_cafe>0.5,
+      type: '시즌 메뉴 헌터', emoji: '🎄', tagline: '시즌 메뉴가 곧 계절의 시작이다',
+      detail: '토피넛 라떼=겨울, 딸기 라떼=봄, 자몽 에이드=여름. 시즌 메뉴 출시일을 기다리는 감성 카페 러버.' },
+    { cond: () => true,
+      type: '밸런스 카페러', emoji: '⚖️', tagline: '아무 카페나 가도 행복한 사람',
+      detail: '스벅도 좋고 독립카페도 좋고, 아아도 좋고 라떼도 좋고. 어디서든 커피 한 잔이면 행복한 축복받은 타입.' },
+  ],
+
+  traits: [
+    { dim:'temperature', label:'온도 취향', low:'뜨아파', high:'얼죽아' },
+    { dim:'coffee_purist', label:'커피 순수도', low:'달달하게', high:'블랙만' },
+    { dim:'ambiance', label:'분위기 중시', low:'맛만 좋으면', high:'인테리어 필수' },
+    { dim:'dessert', label:'디저트 의존', low:'음료만', high:'디저트 필수' },
+    { dim:'study', label:'카공 빈도', low:'쉬러 감', high:'일하러 감' },
+    { dim:'spending_cafe', label:'카페 소비', low:'가성비파', high:'프리미엄파' },
+    { dim:'frequency', label:'방문 빈도', low:'가끔', high:'매일 감' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

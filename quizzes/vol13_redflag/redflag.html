@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>이러면 차인다 DNA (연애지뢰) — 타고난 연애 지뢰밭, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🚩</span>
+    <div class="intro-title">타고난 연애 지뢰는 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 레드플래그,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🚩</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 지뢰 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 연애 지뢰 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🚩 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🚩</div>
+  <div class="loading-text">연애 지뢰 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 레드플래그이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🚩 DNA 지뢰</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">💣 진짜 지뢰</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 연애 지뢰 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 지뢰 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 지뢰</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 지뢰</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 연애 조심하셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 레드플래그도 까볼까? 🚩</div>
+    <div class="cta-sub">보내서 상대방 지뢰밭도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol13_redflag',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🚩', text: '연애 지뢰 DNA vs 현실 대조 중...', sub: '타고난 레드플래그이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/red-flag',
+    shareConfirm: '✅ 복사 완료! 보내서 레드플래그 비교해봐 🚩',
+  },
+
+  questions: [
+    // social — 연락/소통 스타일
+    { id:'r1', dimension:'social',
+      highText:'읽씹하면 죽는', lowText:'읽씹은 매너인',
+      A:{emoji:'📱', label:'맞아, 카톡 1 뜨고 30분 지나면 벌써 시나리오 3개 짜고 있어 ㅋㅋ "바쁜가... 나 싫은가... 사고 났나..."', val:0.85},
+      B:{emoji:'😌', label:'아닌데? 읽씹은 그냥 바쁜 거지~ 나도 자주 하는데 뭘 ㅋㅋ 답장은 올 때 오는 거야', val:0.15} },
+    { id:'r2', dimension:'social',
+      highText:'매일 연락해야 사는', lowText:'각자 시간 존중하는',
+      A:{emoji:'💬', label:'맞아, 굿모닝 문자부터 잘자 문자까지 없으면 우리 사귀는 거 맞아? 싶어짐', val:0.8},
+      B:{emoji:'🙂', label:'아닌데? 하루 한두 번이면 충분하지~ 할 말 있을 때 하는 게 편해', val:0.2} },
+
+    // adventurous — 즉흥/계획
+    { id:'r3', dimension:'adventurous',
+      highText:'서프라이즈 좋아하는', lowText:'예고 없으면 당황하는',
+      A:{emoji:'🎁', label:'맞아, 갑자기 "지금 나와" 하면 심장 터지잖아~ 로맨스는 즉흥이지!', val:0.85},
+      B:{emoji:'📅', label:'아닌데? 갑자기 나오래? 오늘 넷플릭스 정주행 계획 있었는데... 하루 전에 말해줘', val:0.15} },
+    { id:'r4', dimension:'adventurous',
+      highText:'전 얘기 쿨하게 듣는', lowText:'전 얘기 나오면 소름인',
+      A:{emoji:'😎', label:'맞아, 전 여자친구 얘기? ㅋㅋ 궁금한데 말해봐 뭐했어 걔랑', val:0.85},
+      B:{emoji:'🙄', label:'아닌데? "전에 여기 왔었는데~" 하는 순간 밥맛 뚝 떨어지거든요', val:0.1} },
+
+    // aesthetic — 기념일/감성
+    { id:'r5', dimension:'aesthetic',
+      highText:'기념일 필수인', lowText:'기념일 별거 아닌',
+      A:{emoji:'🎂', label:'맞아, 100일 200일 1주년... 인스타 스토리 안 올리면 사귀는 의미가 없지 않아?', val:0.85},
+      B:{emoji:'🤷', label:'아닌데? 기념일을 왜 외워... 매일이 기념일이면 되지 ㅋㅋ (= 하나도 안 챙김)', val:0.2} },
+    { id:'r6', dimension:'aesthetic',
+      highText:'인스타 커플 필수인', lowText:'SNS 노출 싫은',
+      A:{emoji:'📸', label:'맞아, 커플 사진 프사 박고 위치 태그하고 #소확행 해야 공식이지', val:0.8},
+      B:{emoji:'🔒', label:'아닌데? 우리 연애를 왜 남들한테 보여줘야 해... 둘이 좋으면 되지', val:0.2} },
+
+    // comfort — 안정/편안함
+    { id:'r7', dimension:'comfort',
+      highText:'핸드폰 확인 OK인', lowText:'핸드폰 확인은 지뢰인',
+      A:{emoji:'🔍', label:'맞아, 떳떳하면 보여줄 수 있는 거 아냐? "잠깐 폰 좀" 하는 게 뭐가 이상해', val:0.85},
+      B:{emoji:'🚫', label:'아닌데? 내 폰은 내 프라이버시거든? 그거 확인하는 순간 신뢰 끝이야', val:0.15} },
+    { id:'r8', dimension:'comfort',
+      highText:'집착도 사랑인', lowText:'자유가 사랑인',
+      A:{emoji:'🤗', label:'맞아, "어디야? 누구랑?" 물어보는 건 관심이지~ 안 물어보면 그게 더 서운해', val:0.85},
+      B:{emoji:'🕊️', label:'아닌데? 30분마다 어디냐고 물어보면 숨이 막혀... 믿어주는 게 사랑 아냐?', val:0.15} },
+
+    // budget — 돈/데이트 비용
+    { id:'r9', dimension:'budget',
+      highText:'데이트 비용 투자형', lowText:'가성비 데이트파',
+      A:{emoji:'💳', label:'맞아, 기념일엔 분위기 좋은 레스토랑 가야지~ 배민 시켜먹자는 건 좀 ㅋㅋ', val:0.85},
+      B:{emoji:'🍜', label:'아닌데? 편의점 삼각김밥 같이 먹어도 재밌으면 그게 최고의 데이트지', val:0.15} },
+
+    // maximalist — 올인/집중도
+    { id:'r10', dimension:'maximalist',
+      highText:'연애에 올인하는', lowText:'내 생활도 중요한',
+      A:{emoji:'💕', label:'맞아, 사귀면 취미도 친구도 다 뒤로 가~ 매일 보고 싶은 게 당연한 거 아냐?', val:0.85},
+      B:{emoji:'⚖️', label:'아닌데? 애인도 중요하지만 내 운동, 내 친구, 내 시간도 포기 못 해', val:0.15} },
+    { id:'r11', dimension:'maximalist',
+      highText:'밥 메뉴 결정해주는', lowText:'아무거나 OK인',
+      A:{emoji:'🍽️', label:'맞아, "뭐 먹을래?" "아무거나~" 이거 5번 반복하면 진짜 차고 싶어짐 ㅋㅋ 결정 좀 해!!', val:0.8},
+      B:{emoji:'😋', label:'아닌데? 진짜 아무거나 다 좋은데... 그게 왜 지뢰야 ㅋㅋ 너가 먹고 싶은 거 먹자', val:0.2} },
+
+    // energetic — 에너지/활동성
+    { id:'r12', dimension:'energetic',
+      highText:'매일 만나고 싶은', lowText:'주 2-3이면 충분한',
+      A:{emoji:'🏃', label:'맞아, 월화수목금토일 다 만나도 안 질리는 게 진짜 사랑 아니냐고~', val:0.85},
+      B:{emoji:'🛋️', label:'아닌데? 주말에 만나면 되지~ 평일엔 각자 살자 나 넷플릭스 밀린 거 많아', val:0.15} },
+    { id:'r13', dimension:'energetic',
+      highText:'싸우면 바로 풀어야 하는', lowText:'쿨링타임 필요한',
+      A:{emoji:'🔥', label:'맞아, 화나면 바로 전화해서 풀어야지! 잠수 타면 더 열받거든?? 지금 당장 통화해', val:0.8},
+      B:{emoji:'❄️', label:'아닌데? 둘 다 열받았을 때 얘기하면 더 싸워~ 하루 쿨링타임 주고 내일 얘기하자', val:0.2} },
+
+    // urban — 현실적/이상적
+    { id:'r14', dimension:'urban',
+      highText:'현실적 연애파', lowText:'로맨틱 연애파',
+      A:{emoji:'🏢', label:'맞아, 사랑만으로 밥 먹고 살 수 없잖아~ 조건도 중요해 솔직히 ㅋㅋ', val:0.85},
+      B:{emoji:'🌹', label:'아닌데? 사랑하면 다 되지~ 돈이 뭐가 중요해 감정이 중요하지', val:0.15} },
+
+    // bitter — 깊이/진지
+    { id:'r15', dimension:'bitter',
+      highText:'속 깊은 대화 필수인', lowText:'가볍게 놀자파',
+      A:{emoji:'🗣️', label:'맞아, "우리 관계에 대해 얘기 좀 하자" 이 말 못 하는 사람은 진짜 답답해 죽어', val:0.85},
+      B:{emoji:'😂', label:'아닌데? 연애를 왜 그렇게 무겁게 해~ 같이 웃고 놀면 되지 진지충 아웃!', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.social>0.6 && p.comfort>0.6 && p.maximalist>0.5,
+      type: '집착 지뢰', emoji: '🔒', tagline: '"어디야? 누구랑? 몇 시에 와?"가 입버릇',
+      detail: '읽씹하면 5분 안에 전화 오고, 인스타 좋아요 누른 거 다 체크하는 타입. 본인은 관심이라고 하지만 상대방은 숨막혀서 도망감.' },
+    { cond: p => p.social<0.4 && p.energetic<0.4,
+      type: '무관심 지뢰', emoji: '🧊', tagline: '"응 ㅋㅋ" "ㅇㅋ" "알겠어"로 대화 끝',
+      detail: '연락 잘 안 하고, 기념일 까먹고, 데이트 계획은 항상 상대방 몫. "나는 원래 이래~"로 다 넘기는 타입.' },
+    { cond: p => p.energetic<0.4 && p.social<0.5,
+      type: '잠수 지뢰', emoji: '🐟', tagline: '읽씹은 기본, 가끔 증발도 함',
+      detail: '화나면 말 안 하고 잠수, 바쁘면 3일 연락 없음. "미안 바빴어~" 한마디로 해결하려는 타입. 상대방은 혼자 시나리오 100개 짬.' },
+    { cond: p => p.comfort>0.6 && p.aesthetic>0.6,
+      type: '질투 폭탄', emoji: '💣', tagline: '이성 친구? 그런 건 이 세상에 없어',
+      detail: '상대방 이성 친구 인스타 스토리까지 다 확인하는 타입. "걔 누구야?"가 매일 나오고, 회식 간다 하면 셀카 인증 요구함.' },
+    { cond: p => p.bitter>0.6 && p.social>0.5,
+      type: '눈치왕', emoji: '👁️', tagline: '표정 하나에 감정 10개를 읽어냄',
+      detail: '"아까 말투가 좀 달랐는데 무슨 일 있어?" 하루에 5번은 물어보는 타입. 센스 있다고도 하지만 상대방은 감시당하는 기분.' },
+    { cond: p => p.aesthetic>0.6 && p.maximalist>0.6,
+      type: '완벽주의 연인', emoji: '👑', tagline: '기념일 안 챙기면 그날이 기일이다',
+      detail: '100일 선물 가격대까지 리서치하고, 데이트 코스는 블로그 3개 참고. 상대방이 노력 안 하면 "나만 이러는 거지?" 폭발.' },
+    { cond: p => p.adventurous>0.6 && p.energetic>0.5,
+      type: '즉흥 폭주형', emoji: '🎢', tagline: '"지금 당장 만나" 새벽 2시에도 가능',
+      detail: '감정 기복 심하고 즉흥적이라 상대방이 예측 불가. 갑자기 울다가 갑자기 여행 가자고 하는 롤러코스터 연애.' },
+    { cond: p => p.budget>0.6 && p.urban>0.6,
+      type: '현실주의 지뢰', emoji: '🧮', tagline: '"우리 더치페이 할까?" 100일에 이러면...',
+      detail: '데이트 비용 정산하고, 미래 계획 따지고, 감정보다 조건 먼저 보는 타입. 현실적이라 안정적이지만 로맨스는 0점.' },
+    { cond: p => p.maximalist>0.6 && p.bitter>0.5,
+      type: '관계 분석가', emoji: '🔬', tagline: '"우리 관계 점검 좀 하자" 월 1회 정기 미팅',
+      detail: '연애도 프로젝트처럼 관리하는 타입. 문제 생기면 원인 분석하고 해결책 제시. 효율적이지만 상대방은 피곤.' },
+    { cond: p => p.comfort<0.4 && p.adventurous>0.5,
+      type: '자유영혼 지뢰', emoji: '🦋', tagline: '"나 구속하지 마" 연락 안 하면서 이러는 건 좀...',
+      detail: '내 자유는 소중하지만 상대방이 같은 짓 하면 서운해하는 이중잣대 보유자. 핸드폰 확인? 절대 안 됨. 근데 궁금함.' },
+    { cond: p => p.urban>0.6 && p.social>0.5,
+      type: '팩폭 지뢰', emoji: '💥', tagline: '"솔직히 말할게" 하면 이미 늦음',
+      detail: '할 말 다 하는 타입이라 시원하지만, 상대방 자존심은 바닥. "그건 네가 잘못한 거잖아" 팩트로 때리면 아프잖아...' },
+    { cond: () => true,
+      type: '밸런스 연인', emoji: '💝', tagline: '특별한 지뢰 없이 무난한 연애 고수',
+      detail: '큰 지뢰 없이 밸런스 잡힌 타입. 근데 지뢰가 없는 게 아니라 아직 안 터진 걸 수도...? 방심은 금물.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'연락 집착도', low:'쿨한 편', high:'읽씹 못 참음' },
+    { dim:'adventurous', label:'즉흥 레벨', low:'예고 필수', high:'서프라이즈 환영' },
+    { dim:'aesthetic', label:'기념일 강박', low:'기념일 뭐 그런 걸', high:'100일도 챙겨야지' },
+    { dim:'comfort', label:'프라이버시', low:'각자 영역 존중', high:'다 공유해야 해' },
+    { dim:'maximalist', label:'올인 강도', low:'내 생활도 중요', high:'연애에 몰빵' },
+    { dim:'energetic', label:'만남 에너지', low:'적당히 만나자', high:'매일 봐도 모자라' },
+    { dim:'bitter', label:'관계 깊이', low:'가볍게 놀자', high:'진지한 대화 필수' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

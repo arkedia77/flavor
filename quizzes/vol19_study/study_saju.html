@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>시험 전날 사주 (공부) — 팔자가 아는 내 공부 스타일</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">📚</span>
+    <div class="intro-title">팔자가 아는 <span>내 공부 스타일</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주가 말해주는 타고난 공부 팔자,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 공부 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 공부 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">📚</div>
+  <div class="loading-text">사주쌤이 공부 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 공부하는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 공부</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">✏️ 진짜 공부</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <!-- 사주 팔주 표시 -->
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 공부 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 공부 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 공부</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 공부</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 공부법 써보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 공부 팔자도 까볼까? 📚</div>
+    <div class="cta-sub">보내서 친구 공부 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol19_study_saju',
+  storageKey: 'flavor_profile_saju',
+
+  loading: { emoji: '📚', text: '사주쌤이 공부 팔자 감정 중...', sub: '팔자대로 공부하는 건지 거역하는 건지 보는 중' },
+  result: {
+    shareUrl: '/study-saju',
+    shareConfirm: '✅ 복사 완료! 보내서 공부 팔자 비교해봐 📚',
+  },
+
+  questions: [
+    // planning
+    { id:'s1', dimension:'planning',
+      highText:'계획표 짜는', lowText:'벼락치기하는',
+      A:{emoji:'📋', label:'맞아, 시험 3주 전부터 과목별 색깔 펜으로 타임테이블 짜놓는 편임 ㅋㅋ', val:0.85},
+      B:{emoji:'⚡', label:'아닌데? 시험 전날 밤 11시에 "아 맞다 시험이다" 하고 책 펴는 게 나임', val:0.15} },
+    { id:'s2', dimension:'planning',
+      highText:'복습 꼬박꼬박 하는', lowText:'한 번 보고 끝인',
+      A:{emoji:'🔄', label:'맞아, 수업 끝나면 바로 노트 정리하고 3일 뒤에 복습까지 하는 타입', val:0.8},
+      B:{emoji:'🙈', label:'아닌데? 필기한 거 시험 전날 처음 다시 보는데 내 글씨를 못 읽겠어', val:0.2} },
+
+    // social
+    { id:'s3', dimension:'social',
+      highText:'같이 공부해야 되는', lowText:'혼자 해야 되는',
+      A:{emoji:'👯', label:'맞아, 스터디 카톡방 3개 운영 중이고 서로 족보 공유하는 맛에 공부함', val:0.85},
+      B:{emoji:'🎧', label:'아닌데? 옆에서 숨소리만 들려도 집중 안 돼서 새벽 혼공이 국룰임', val:0.15} },
+    { id:'s4', dimension:'social',
+      highText:'가르쳐주면서 배우는', lowText:'조용히 내 거 하는',
+      A:{emoji:'🗣️', label:'맞아, 친구한테 설명해주다 보면 나도 이해되는 느낌 있잖아 그게 꿀임', val:0.8},
+      B:{emoji:'📖', label:'아닌데? 남 가르칠 시간에 내 거 한 문제 더 푸는 게 효율적이야', val:0.2} },
+
+    // environment
+    { id:'s5', dimension:'environment',
+      highText:'카공파', lowText:'집공파',
+      A:{emoji:'☕', label:'맞아, 스타벅스 콘센트 자리 쟁탈전에서 이기는 게 공부의 시작임', val:0.85},
+      B:{emoji:'🛏️', label:'아닌데? 집에서 이불 덮고 눕공하다 자는 게 내 공부 루틴인데', val:0.15} },
+
+    // focus
+    { id:'s6', dimension:'focus',
+      highText:'집중력 괴물', lowText:'주의력 분산러',
+      A:{emoji:'🎯', label:'맞아, 한번 앉으면 3시간은 기본이고 화장실 가는 것도 귀찮아', val:0.85},
+      B:{emoji:'📱', label:'아닌데? 공부하다 유튜브 자동재생 당해서 2시간 날리는 게 일상임', val:0.15} },
+    { id:'s7', dimension:'focus',
+      highText:'멀티태스킹 하는', lowText:'한 과목에 올인하는',
+      A:{emoji:'🔀', label:'맞아, 영어 30분 수학 30분 돌려가면서 해야 안 질려', val:0.8},
+      B:{emoji:'🔨', label:'아닌데? 수학 시작하면 수학만 죽어라 파야 직성이 풀리는 타입', val:0.2} },
+
+    // method
+    { id:'s8', dimension:'method',
+      highText:'필기 장인', lowText:'듣기만 하는',
+      A:{emoji:'✍️', label:'맞아, 아이패드 노트앱 폴더가 30개고 필기 예쁘게 하는 게 취미임', val:0.85},
+      B:{emoji:'👂', label:'아닌데? 필기할 시간에 교수님 말 한마디 더 듣는 게 효율적 아님?', val:0.15} },
+    { id:'s9', dimension:'method',
+      highText:'요약정리 하는', lowText:'문제 풀기파',
+      A:{emoji:'📝', label:'맞아, A4 한 장에 한 챕터 요약하는 거 못 하면 시험 볼 자격 없음', val:0.8},
+      B:{emoji:'📊', label:'아닌데? 기출문제 100번 돌리는 게 요약 정리 10번보다 나아', val:0.2} },
+
+    // stamina
+    { id:'s10', dimension:'stamina',
+      highText:'올나이터 가능한', lowText:'수면이 최우선인',
+      A:{emoji:'🦉', label:'맞아, 새벽 4시에 레드불 3캔째 까는데 오히려 집중 잘 되더라?', val:0.85},
+      B:{emoji:'😴', label:'아닌데? 12시 넘기면 글자가 춤추기 시작해서 차라리 자고 새벽에 일어남', val:0.15} },
+
+    // digital
+    { id:'s11', dimension:'digital',
+      highText:'디지털 공부파', lowText:'아날로그 공부파',
+      A:{emoji:'💻', label:'맞아, 유튜브 강의 1.5배속 돌리면서 노션에 정리하는 게 내 루틴', val:0.85},
+      B:{emoji:'📕', label:'아닌데? 종이책에 형광펜 치면서 손으로 써야 외워지는 사람임', val:0.15} },
+    { id:'s12', dimension:'digital',
+      highText:'AI/앱 적극 활용하는', lowText:'내 머리로 직접 하는',
+      A:{emoji:'🤖', label:'맞아, ChatGPT한테 개념 설명 시키고 퀴즐렛으로 복습하면 개꿀임', val:0.8},
+      B:{emoji:'🧠', label:'아닌데? 내가 직접 이해 안 하면 시험장에서 멘탈 나가더라', val:0.2} },
+
+    // perfectionism
+    { id:'s13', dimension:'perfectionism',
+      highText:'만점 욕심 있는', lowText:'적당히 넘기는',
+      A:{emoji:'💯', label:'맞아, 98점 받으면 틀린 2점 때문에 잠이 안 오는 타입임', val:0.85},
+      B:{emoji:'✌️', label:'아닌데? C+ 이상이면 축하할 일이지 뭘 더 바라냐 ㅋㅋ', val:0.15} },
+
+    // reward
+    { id:'s14', dimension:'reward',
+      highText:'보상 시스템 있는', lowText:'그냥 하는',
+      A:{emoji:'🎁', label:'맞아, 한 챕터 끝나면 쿠팡에서 간식 시키는 게 나만의 당근임', val:0.8},
+      B:{emoji:'🤷', label:'아닌데? 보상 같은 거 없어도 그냥 하는 거지 뭐 원래 해야 하니까', val:0.2} },
+
+    // anxiety
+    { id:'s15', dimension:'anxiety',
+      highText:'시험 불안 심한', lowText:'시험 멘탈 강한',
+      A:{emoji:'😰', label:'맞아, 시험지 받는 순간 머리 하얘지면서 아는 것도 까먹는 타입', val:0.85},
+      B:{emoji:'😎', label:'아닌데? 시험장 들어가면 오히려 집중 잘 되고 실력 이상으로 나옴', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.planning<0.4 && p.stamina>0.6 && p.focus>0.4,
+      type: '벼락치기 천재', emoji: '⚡', tagline: '전날에 시작해도 A 나오는 인간',
+      detail: '시험 전날 자정에 에너지 100% 충전. 벼락치기 효율이 남들 3주치라 스스로도 무서운 타입. 근데 매번 "다음엔 미리 해야지" 하면서 안 함.' },
+    { cond: p => p.planning>0.6 && p.perfectionism>0.6,
+      type: '계획형 모범생', emoji: '📋', tagline: '시험 3주 전에 이미 복습 끝남',
+      detail: '색깔 펜 5개, 타임테이블 완벽, D-21부터 카운트다운. 계획대로 안 되면 불안한 타입인데 그래서 항상 됨.' },
+    { cond: p => p.environment>0.6 && p.social>0.5,
+      type: '카공 전문가', emoji: '☕', tagline: '스타벅스 콘센트석이 내 자리다',
+      detail: '카페 안 가면 공부 모드 자체가 안 켜지는 사람. 아메리카노 한 잔에 집중력 +200%. 단골 카페 직원이 이름 알 정도.' },
+    { cond: p => p.stamina>0.6 && p.focus>0.5 && p.planning<0.5,
+      type: '올나이터', emoji: '🦉', tagline: '새벽 4시가 골든타임이다',
+      detail: '밤 11시부터 엔진 켜지는 야행성 공부러. 레드불이 물이고, 새벽 감성에 집중력 MAX. 근데 다음날 1교시는 포기.' },
+    { cond: p => p.method>0.6 && p.digital<0.5,
+      type: '요약왕', emoji: '📝', tagline: 'A4 한 장이면 한 학기 끝',
+      detail: '필기의 신, 요약의 달인. 한 학기 내용을 A4 3장으로 압축하는 능력자. 친구들이 시험 전에 요약본 구걸하러 옴.' },
+    { cond: p => p.digital>0.6 && p.focus<0.5,
+      type: '유튜브 구간반복러', emoji: '📺', tagline: '강의는 1.5배속, 딴짓은 실시간',
+      detail: '유튜브 강의 틀어놓고 1.5배속으로 보다가 어느새 먹방 보고 있는 타입. "이것만 보고 공부해야지"가 무한반복.' },
+    { cond: p => p.social>0.6 && p.method>0.5,
+      type: '스터디 그룹장', emoji: '👥', tagline: '가르치면서 외우는 1석2조',
+      detail: '스터디 카톡방 총무, 족보 수집가, 요약본 배포자. 남 가르치다 보면 나도 A+ 나오는 신기한 구조.' },
+    { cond: p => p.anxiety>0.6 && p.planning>0.5,
+      type: '불안형 과공러', emoji: '😰', tagline: '다 외웠는데 불안해서 한 번 더 봄',
+      detail: '시험 범위 3번 돌렸는데도 "혹시 빠뜨린 거 없나" 불안한 타입. 시험장 앞에서 노트 보는 마지막 5분이 진짜 공부.' },
+    { cond: p => p.perfectionism<0.4 && p.reward>0.5,
+      type: '적당히 해도 행복한 사람', emoji: '✌️', tagline: 'C+이면 파티할 일이지',
+      detail: '완벽주의? 그런 거 없음. 적당히 하고 남은 시간에 넷플릭스 보는 게 인생. 근데 이상하게 학점은 잘 나옴.' },
+    { cond: p => p.digital>0.6 && p.method>0.5,
+      type: '디지털 공부 괴물', emoji: '💻', tagline: '노션+아이패드+AI가 내 공부 세트',
+      detail: '종이는 안 씀. 노션에 정리하고, 아이패드에 필기하고, AI한테 물어보고. 효율의 끝판왕인데 가끔 도구 세팅하다 공부 시간 다 감.' },
+    { cond: p => p.environment<0.4 && p.focus>0.6,
+      type: '집공 히키코모리', emoji: '🏠', tagline: '밖에 나가면 공부 못 해',
+      detail: '내 방, 내 책상, 내 이불 위가 최고의 공부 장소. 카페? 시끄러워서 못 해. 도서관? 귀찮아서 못 감. 집이 최고.' },
+    { cond: () => true,
+      type: '밸런스 공부러', emoji: '⚖️', tagline: '이것저것 다 하는 멀티 플레이어',
+      detail: '카공도 하고 집공도 하고, 벼락치기도 하고 계획도 세우고. 상황에 맞게 유연하게 공부하는 팔방미인 스타일.' },
+  ],
+
+  traits: [
+    { dim:'planning', label:'계획성', low:'벼락치기파', high:'계획표 필수' },
+    { dim:'social', label:'공부 동행', low:'혼공 장인', high:'스터디 필수' },
+    { dim:'focus', label:'집중력', low:'산만 그 자체', high:'몰입의 신' },
+    { dim:'method', label:'학습 방식', low:'문제풀이파', high:'필기 장인' },
+    { dim:'stamina', label:'체력/끈기', low:'12시 취침', high:'올나이터 가능' },
+    { dim:'digital', label:'디지털 활용', low:'종이+펜', high:'풀디지털' },
+    { dim:'perfectionism', label:'목표 수준', low:'적당히 패스', high:'만점 집착' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

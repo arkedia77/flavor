@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>탕진잼 사주 (소비) — 팔자가 아는 내 소비 스타일</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">💸</span>
+    <div class="intro-title">팔자가 아는 <span>내 소비 스타일</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주가 말해주는 타고난 소비 팔자,<br>
+      지갑이 우는지 웃는지 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 소비 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 소비 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">💸</div>
+  <div class="loading-text">사주쌤이 소비 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 쓰는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 소비</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🛒 진짜 소비</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <!-- 사주 팔주 표시 -->
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 소비 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 소비 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 소비</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 소비</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 소비 해보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 소비 팔자도 까볼까? 💸</div>
+    <div class="cta-sub">보내서 상대방 소비 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol11_spending_saju',
+  storageKey: 'flavor_profile_saju',
+
+  loading: { emoji: '💸', text: '사주쌤이 소비 팔자 감정 중...', sub: '팔자대로 쓰는 건지 거역하는 건지 보는 중' },
+  result: {
+    shareUrl: '/spending-saju',
+    shareConfirm: '✅ 복사 완료! 보내서 소비 팔자 비교해봐 💸',
+  },
+
+  questions: [
+    // budget
+    { id:'s1', dimension:'budget',
+      highText:'돈 쓸 때 확 쓰는', lowText:'한 푼도 안 놓치는',
+      A:{emoji:'💳', label:'맞아, 카드값 문자 올 때 "에이 얼마나 썼겠어~" 하다가 멘탈 나감 ㅋㅋ', val:0.85},
+      B:{emoji:'🧮', label:'아닌데? 가계부 앱 매일 체크하고 1원 단위까지 기록하는 사람임', val:0.15} },
+    { id:'s2', dimension:'budget',
+      highText:'명품에 끌리는', lowText:'가성비가 진리인',
+      A:{emoji:'👜', label:'맞아, 백화점 지나가다 "이건 투자야" 하면서 카드 꺼내는 거 나야 나', val:0.85},
+      B:{emoji:'🏷️', label:'아닌데? 다이소에서 3만원어치 사고 "이게 행복이지" 하는 사람임', val:0.15} },
+
+    // adventurous (충동 vs 계획)
+    { id:'s3', dimension:'adventurous',
+      highText:'충동구매 장인인', lowText:'계획구매만 하는',
+      A:{emoji:'🛒', label:'맞아, 쿠팡 새벽배송 "오늘만 이 가격" 보면 일단 담고 보는 타입 ㅋㅋ', val:0.85},
+      B:{emoji:'📋', label:'아닌데? 장바구니 3일 숙성시키고 비교하고 또 비교해야 결제 버튼 누름', val:0.15} },
+    { id:'s4', dimension:'adventurous',
+      highText:'새로운 거 바로 사는', lowText:'검증된 것만 사는',
+      A:{emoji:'✨', label:'맞아, 인스타 광고에 "오 이거 신박하다" 하면 3초 만에 결제 완료', val:0.8},
+      B:{emoji:'🔍', label:'아닌데? 후기 최소 50개는 읽어야 지갑이 열려. 별점 4.5 이하는 패스', val:0.2} },
+
+    // social
+    { id:'s5', dimension:'social',
+      highText:'같이 쓰면 행복한', lowText:'내 돈은 나만 쓰는',
+      A:{emoji:'🎁', label:'맞아, 친구 생일에 선물 고르다가 내 거까지 같이 사는 거 실화 ㅋㅋ', val:0.85},
+      B:{emoji:'🙅', label:'아닌데? 더치페이가 세상에서 제일 합리적인 시스템이라고 생각함', val:0.15} },
+    { id:'s6', dimension:'social',
+      highText:'남 눈치 보고 사는', lowText:'내 만족이 기준인',
+      A:{emoji:'👀', label:'맞아, "요즘 다 이거 쓰더라~" 들으면 나도 모르게 검색하고 있음', val:0.8},
+      B:{emoji:'😎', label:'아닌데? 유행이고 뭐고 내가 편하면 그게 명품이야', val:0.2} },
+
+    // maximalist
+    { id:'s7', dimension:'maximalist',
+      highText:'구독 서비스 다 하는', lowText:'꼭 필요한 것만 하는',
+      A:{emoji:'📱', label:'맞아, 넷플릭스, 유튜브 프리미엄, 스포티파이, 배민클럽... 해지하면 불안해', val:0.85},
+      B:{emoji:'✂️', label:'아닌데? 무료 체험만 돌려쓰고 해지 안 하면 알람 맞춰놓는 타입', val:0.15} },
+    { id:'s8', dimension:'maximalist',
+      highText:'쇼핑몰 탐색이 취미인', lowText:'필요할 때만 사는',
+      A:{emoji:'🛍️', label:'맞아, 잠들기 전에 쿠팡 둘러보는 게 루틴이야. 안 사도 보는 게 힐링', val:0.8},
+      B:{emoji:'💤', label:'아닌데? 뭐 떨어져야 "아 사야겠다" 하는 미니멀리스트임', val:0.2} },
+
+    // comfort
+    { id:'s9', dimension:'comfort',
+      highText:'편의를 위해 돈 쓰는', lowText:'불편해도 아끼는',
+      A:{emoji:'🚕', label:'맞아, 배민 배달비 5천원? 나가기 싫으면 그냥 내. 시간이 돈이야', val:0.85},
+      B:{emoji:'🚶', label:'아닌데? 배달비 아까워서 직접 픽업하러 가는 갓생러임', val:0.15} },
+    { id:'s10', dimension:'comfort',
+      highText:'커피값은 아끼지 않는', lowText:'커피도 가성비인',
+      A:{emoji:'☕', label:'맞아, 스타벅스 사이렌 오더 하루에 두 번은 기본이지. 별 다섯 개 모으는 중', val:0.8},
+      B:{emoji:'🫙', label:'아닌데? 회사에서 믹스커피가 제일 맛있어. 괜히 비싼 거 사서 뭐해', val:0.2} },
+
+    // aesthetic
+    { id:'s11', dimension:'aesthetic',
+      highText:'예쁘면 일단 사는', lowText:'실용성이 우선인',
+      A:{emoji:'🌸', label:'맞아, 예쁜 패키지 보면 "이건 소장 가치가 있어" 하면서 또 삼 ㅋㅋ', val:0.85},
+      B:{emoji:'📦', label:'아닌데? 포장 예쁜 건 다 마케팅이고 내용물만 보면 됨', val:0.15} },
+
+    // energetic
+    { id:'s12', dimension:'energetic',
+      highText:'세일이면 전투 모드인', lowText:'세일도 관심 없는',
+      A:{emoji:'⚡', label:'맞아, 블프 시작하면 새벽 6시에 일어나서 장바구니 정리부터 함. 이게 전쟁이야', val:0.85},
+      B:{emoji:'😴', label:'아닌데? 세일이고 뭐고 필요 없으면 안 사. 할인에 낚이지 않는 마인드', val:0.15} },
+    { id:'s13', dimension:'energetic',
+      highText:'포인트/쿠폰 열심히 모으는', lowText:'귀찮아서 안 모으는',
+      A:{emoji:'🎯', label:'맞아, CU 멤버십, 해피포인트, 신세계포인트... 포인트가 곧 재테크야', val:0.8},
+      B:{emoji:'🤷', label:'아닌데? "포인트 적립하시겠어요?" "아뇨~" 이게 나의 루틴', val:0.2} },
+
+    // urban
+    { id:'s14', dimension:'urban',
+      highText:'오프라인 쇼핑파', lowText:'온라인 쇼핑파',
+      A:{emoji:'🏬', label:'맞아, 성수동 팝업스토어 돌아다니면서 "이거 여기서만 판대!" 하는 맛이 있어', val:0.85},
+      B:{emoji:'📱', label:'아닌데? 집에서 침대 누워서 쿠팡 로켓배송이 진리야. 나가는 게 귀찮아', val:0.15} },
+
+    // bitter
+    { id:'s15', dimension:'bitter',
+      highText:'투자/재테크에 관심 많은', lowText:'지금 행복이 중요한',
+      A:{emoji:'📈', label:'맞아, 주식 앱이랑 부동산 앱 번갈아 보면서 미래를 설계하는 중', val:0.85},
+      B:{emoji:'🎉', label:'아닌데? YOLO야 YOLO. 지금 안 쓰면 언제 써? 내일의 나는 내일의 내가 해결해', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.budget>0.6 && p.adventurous>0.6 && p.maximalist>0.5,
+      type: '탕진잼 마스터', emoji: '🔥', tagline: '카드값은 다음 달의 내가 감당한다',
+      detail: '쿠팡 새벽배송, 배민 주문, 편의점 털기까지 풀콤보. "이번 달만 이렇게 쓸게"가 매달 반복되는 쾌락주의자.' },
+    { cond: p => p.budget<0.4 && p.energetic>0.5 && p.bitter>0.5,
+      type: '짠테크 장인', emoji: '🧮', tagline: '1원도 허투루 안 쓴다',
+      detail: '가계부 앱 3개 깔고, 쿠폰 모으고, 캐시워크 걷고. 절약이 취미이자 특기인 진정한 머니 마스터.' },
+    { cond: p => p.budget>0.6 && p.aesthetic>0.6,
+      type: '플렉스 전사', emoji: '💎', tagline: '좋은 건 좋은 거야, 사야지',
+      detail: '명품백, 호텔 브런치, 퍼스트클래스. "인생은 한 번이니까" 가 인생 모토. 통장 잔고는 안 본다.' },
+    { cond: p => p.budget<0.4 && p.adventurous<0.4,
+      type: '가성비 킹', emoji: '👑', tagline: '최소 비용 최대 만족의 달인',
+      detail: '다이소, 이마트 에브리데이, 1+1 사냥꾼. 비싸다고 좋은 거 아닌 걸 온몸으로 증명하는 사람.' },
+    { cond: p => p.adventurous>0.6 && p.comfort>0.5,
+      type: '충동구매 요정', emoji: '🧚', tagline: '"어 이거 귀엽다" → 결제 완료 (0.3초)',
+      detail: '인스타 광고 한 번에 카드 나가는 타입. 택배 올 때 "내가 이걸 왜 샀지?" 하지만 후회는 없다.' },
+    { cond: p => p.bitter>0.6 && p.budget<0.5,
+      type: '현명한 소비러', emoji: '🦉', tagline: '가격 대비 가치를 따진다',
+      detail: '충동구매 제로, 비교 분석 후 구매. 후기 50개는 기본으로 읽는 타입. 살 때는 아껴도 살 건 산다.' },
+    { cond: p => p.maximalist>0.6 && p.comfort>0.6,
+      type: '구독 수집가', emoji: '📦', tagline: '매달 자동결제가 8개 이상',
+      detail: '넷플릭스, 유튜브 프리미엄, 배민클럽, 쿠팡 로켓와우, 스포티파이... 해지하면 불안한 구독 중독러.' },
+    { cond: p => p.energetic>0.6 && p.budget<0.5,
+      type: '쿠폰 사냥꾼', emoji: '🎯', tagline: '할인 없으면 안 산다',
+      detail: '블프, 11절, 쓱데이 캘린더에 다 표시해놨음. 정가 구매는 패배라고 생각하는 전략적 소비러.' },
+    { cond: p => p.social>0.6 && p.aesthetic>0.5,
+      type: '선물 요정', emoji: '🎁', tagline: '남한테 쓸 때 제일 행복한 사람',
+      detail: '친구 생일, 기념일, 아무 날... 선물 고르는 게 취미. 내 돈보다 남 줄 때 더 기분 좋은 타입.' },
+    { cond: p => p.urban>0.6 && p.aesthetic>0.6,
+      type: '팝업 순례자', emoji: '🏬', tagline: '성수동 팝업은 내가 다 섭렵했다',
+      detail: '한정판, 콜라보, 팝업스토어는 무조건 가야 직성이 풀리는 트렌드세터. 인스타 스토리가 곧 전시회.' },
+    { cond: p => p.comfort>0.6 && p.maximalist<0.4,
+      type: '미니멀 소비러', emoji: '🍃', tagline: '적게 사고 오래 쓴다',
+      detail: '옷 30벌이면 충분하고, 물건 하나 살 때도 10년은 쓸 생각으로 산다. 정리의 달인.' },
+    { cond: () => true,
+      type: '밸런스 소비러', emoji: '⚖️', tagline: '쓸 때 쓰고 아낄 때 아끼는 팔방미인',
+      detail: '플렉스도 하고 짠테크도 하고. 상황에 따라 유연하게 소비하는 축복받은 타입.' },
+  ],
+
+  traits: [
+    { dim:'budget', label:'소비 규모', low:'짠테크 모드', high:'탕진잼 모드' },
+    { dim:'adventurous', label:'구매 스타일', low:'계획 구매', high:'충동 구매' },
+    { dim:'social', label:'소비 대상', low:'나만 위한 소비', high:'함께 쓰는 소비' },
+    { dim:'maximalist', label:'소비 빈도', low:'필요할 때만', high:'쇼핑이 취미' },
+    { dim:'comfort', label:'편의 투자', low:'불편해도 아껴', high:'편하면 돈 써' },
+    { dim:'aesthetic', label:'감성 소비', low:'실용이 최고', high:'예쁘면 지름' },
+    { dim:'energetic', label:'할인 민감도', low:'세일 무관심', high:'쿠폰 사냥꾼' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

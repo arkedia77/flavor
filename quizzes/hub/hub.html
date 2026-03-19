@@ -230,6 +230,56 @@ body {
       <div class="card-title">퇴근하면 사라지는 DNA (라이프스타일)</div>
       <div class="card-desc">타고난 생활 패턴 vs<br>진짜 내 일상</div>
     </a>
+    <a class="quiz-card" href="/spending" id="card-spending">
+      <span class="card-icon">💸</span>
+      <div class="card-title">탕진잼 DNA (소비)</div>
+      <div class="card-desc">타고난 소비 스타일 vs<br>진짜 내 지갑 사정</div>
+    </a>
+    <a class="quiz-card" href="/drink" id="card-drink">
+      <span class="card-icon">🍺</span>
+      <div class="card-title">필름 끊기는 DNA (술자리)</div>
+      <div class="card-desc">타고난 술자리 스타일 vs<br>진짜 내 주량</div>
+    </a>
+    <a class="quiz-card" href="/red-flag" id="card-redflag">
+      <span class="card-icon">🚩</span>
+      <div class="card-title">이러면 차인다 DNA (연애지뢰)</div>
+      <div class="card-desc">타고난 연애 지뢰밭 vs<br>진짜 내 지뢰</div>
+    </a>
+    <a class="quiz-card" href="/home" id="card-home">
+      <span class="card-icon">🏡</span>
+      <div class="card-title">자취하면 다 그래 DNA (혼살림)</div>
+      <div class="card-desc">타고난 자취 스타일 vs<br>진짜 내 혼살림</div>
+    </a>
+    <a class="quiz-card" href="/fandom" id="card-fandom">
+      <span class="card-icon">🔥</span>
+      <div class="card-title">최애 앞에서 DNA (덕질)</div>
+      <div class="card-desc">타고난 덕질 스타일 vs<br>진짜 내 최애 사랑</div>
+    </a>
+    <a class="quiz-card" href="/cafe" id="card-cafe">
+      <span class="card-icon">☕</span>
+      <div class="card-title">카페 안 가면 죽는 DNA (카페)</div>
+      <div class="card-desc">타고난 카페 스타일 vs<br>진짜 내 카페 루틴</div>
+    </a>
+    <a class="quiz-card" href="/sleep" id="card-sleep">
+      <span class="card-icon">😴</span>
+      <div class="card-title">알람 10개 맞춰도 DNA (수면)</div>
+      <div class="card-desc">타고난 수면 스타일 vs<br>진짜 내 잠버릇</div>
+    </a>
+    <a class="quiz-card" href="/sns" id="card-sns">
+      <span class="card-icon">📱</span>
+      <div class="card-title">스토리 올리기 전 DNA (SNS)</div>
+      <div class="card-desc">타고난 SNS 스타일 vs<br>진짜 내 피드</div>
+    </a>
+    <a class="quiz-card" href="/study" id="card-study">
+      <span class="card-icon">📚</span>
+      <div class="card-title">시험 전날 DNA (공부)</div>
+      <div class="card-desc">타고난 공부 스타일 vs<br>진짜 내 벼락치기</div>
+    </a>
+    <a class="quiz-card" href="/interior" id="card-interior">
+      <span class="card-icon">🛋️</span>
+      <div class="card-title">집 꾸미는데 통장 텅 DNA (인테리어)</div>
+      <div class="card-desc">타고난 인테리어 스타일 vs<br>진짜 내 집 꾸미기</div>
+    </a>
   </div>
 
   <div class="section-title">종합 분석</div>
@@ -351,7 +401,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2': 'card-romance', 'vol3_food': 'card-food', 'vol4_travel': 'card-travel', 'vol5_work': 'card-work', 'vol6_fashion': 'card-fashion', 'vol7_health': 'card-health', 'vol8_music': 'card-music', 'vol9_social': 'card-social', 'vol10_lifestyle': 'card-lifestyle', 'survey': 'card-survey' };
+  const map = { 'vol2_romance_v2': 'card-romance', 'vol3_food': 'card-food', 'vol4_travel': 'card-travel', 'vol5_work': 'card-work', 'vol6_fashion': 'card-fashion', 'vol7_health': 'card-health', 'vol8_music': 'card-music', 'vol9_social': 'card-social', 'vol10_lifestyle': 'card-lifestyle', 'vol11_spending': 'card-spending', 'vol12_drink': 'card-drink', 'vol13_redflag': 'card-redflag', 'vol14_home': 'card-home', 'vol15_fandom': 'card-fandom', 'vol16_cafe': 'card-cafe', 'vol17_sleep': 'card-sleep', 'vol18_sns': 'card-sns', 'vol19_study': 'card-study', 'vol20_interior': 'card-interior', 'survey': 'card-survey' };
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;

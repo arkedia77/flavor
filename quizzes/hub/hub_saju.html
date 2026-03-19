@@ -230,6 +230,56 @@ body {
       <div class="card-title">퇴근하면 사라지는 사주 (라이프스타일)</div>
       <div class="card-desc">팔자가 아는 네 일상,<br>맞나 까보자</div>
     </a>
+    <a class="quiz-card" href="/spending-saju" id="card-spending-saju">
+      <span class="card-icon">💸</span>
+      <div class="card-title">탕진잼 사주 (소비)</div>
+      <div class="card-desc">팔자가 아는 네 소비,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/drink-saju" id="card-drink-saju">
+      <span class="card-icon">🍺</span>
+      <div class="card-title">필름 끊기는 사주 (술자리)</div>
+      <div class="card-desc">팔자가 아는 네 주량,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/red-flag-saju" id="card-redflag-saju">
+      <span class="card-icon">🚩</span>
+      <div class="card-title">이러면 차인다 사주 (연애지뢰)</div>
+      <div class="card-desc">팔자가 아는 네 지뢰밭,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/home-saju" id="card-home-saju">
+      <span class="card-icon">🏡</span>
+      <div class="card-title">자취하면 다 그래 사주 (혼살림)</div>
+      <div class="card-desc">팔자가 아는 네 자취,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/fandom-saju" id="card-fandom-saju">
+      <span class="card-icon">🔥</span>
+      <div class="card-title">최애 앞에서 사주 (덕질)</div>
+      <div class="card-desc">팔자가 아는 네 덕질,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/cafe-saju" id="card-cafe-saju">
+      <span class="card-icon">☕</span>
+      <div class="card-title">카페 안 가면 죽는 사주 (카페)</div>
+      <div class="card-desc">팔자가 아는 네 카페,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/sleep-saju" id="card-sleep-saju">
+      <span class="card-icon">😴</span>
+      <div class="card-title">알람 10개 맞춰도 사주 (수면)</div>
+      <div class="card-desc">팔자가 아는 네 수면,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/sns-saju" id="card-sns-saju">
+      <span class="card-icon">📱</span>
+      <div class="card-title">스토리 올리기 전 사주 (SNS)</div>
+      <div class="card-desc">팔자가 아는 네 SNS,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/study-saju" id="card-study-saju">
+      <span class="card-icon">📚</span>
+      <div class="card-title">시험 전날 사주 (공부)</div>
+      <div class="card-desc">팔자가 아는 네 공부법,<br>맞나 까보자</div>
+    </a>
+    <a class="quiz-card" href="/interior-saju" id="card-interior-saju">
+      <span class="card-icon">🛋️</span>
+      <div class="card-title">집 꾸미는데 통장 텅 사주 (인테리어)</div>
+      <div class="card-desc">팔자가 아는 네 인테리어,<br>맞나 까보자</div>
+    </a>
   </div>
 
   <a class="dna-link" href="/">🧬 DNA 버전으로 보고 싶으면 여기</a>
@@ -366,7 +416,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju', 'vol7_health_saju': 'card-health-saju', 'vol8_music_saju': 'card-music-saju', 'vol9_social_saju': 'card-social-saju', 'vol10_lifestyle_saju': 'card-lifestyle-saju' };
+  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju', 'vol7_health_saju': 'card-health-saju', 'vol8_music_saju': 'card-music-saju', 'vol9_social_saju': 'card-social-saju', 'vol10_lifestyle_saju': 'card-lifestyle-saju', 'vol11_spending_saju': 'card-spending-saju', 'vol12_drink_saju': 'card-drink-saju', 'vol13_redflag_saju': 'card-redflag-saju', 'vol14_home_saju': 'card-home-saju', 'vol15_fandom_saju': 'card-fandom-saju', 'vol16_cafe_saju': 'card-cafe-saju', 'vol17_sleep_saju': 'card-sleep-saju', 'vol18_sns_saju': 'card-sns-saju', 'vol19_study_saju': 'card-study-saju', 'vol20_interior_saju': 'card-interior-saju' };
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;

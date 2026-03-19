@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>자취하면 다 그래 DNA (혼살림) — 타고난 자취 스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🏠</span>
+    <div class="intro-title">타고난 자취 스타일은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 혼살림 DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🏠</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 살림 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 자취 DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🏠 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🏠</div>
+  <div class="loading-text">자취 DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 혼살림 스타일이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🏠 DNA 살림</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🧹 진짜 살림</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 혼살림 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — 살림 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA 살림</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 살림</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 자취템 추천하셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 자취 스타일도 까볼까? 🏠</div>
+    <div class="cta-sub">보내서 누가 더 살림 잘하는지 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol14_home',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '🏠', text: '자취 DNA vs 현실 대조 중...', sub: '타고난 혼살림 스타일이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/home',
+    shareConfirm: '✅ 복사 완료! 보내서 자취 스타일 비교해봐 🏠',
+  },
+
+  questions: [
+    // social — 집에 사람 부르기
+    { id:'h1', dimension:'social',
+      highText:'집에 사람 잘 부르는', lowText:'집은 나만의 성인',
+      A:{emoji:'🎉', label:'맞아, 자취방이 곧 아지트지~ "오늘 우리집 와" 일주일에 3번은 하는 듯 ㅋㅋ', val:0.85},
+      B:{emoji:'🔐', label:'아닌데? 내 방은 내 왕국이거든? 택배기사님도 문 앞에 놓고 가주세요...', val:0.15} },
+    { id:'h2', dimension:'social',
+      highText:'룸메이트 환영파', lowText:'혼자 사는 게 최고인',
+      A:{emoji:'👯', label:'맞아, 같이 살면 반반이니까 이득이지~ 넷플릭스도 나눠 쓰고 배민도 같이 시키고', val:0.8},
+      B:{emoji:'😌', label:'아닌데? 화장실 눈치 안 보고 새벽 3시에 라면 끓여먹는 자유... 이게 자취의 의미야', val:0.2} },
+
+    // adventurous — 요리 도전
+    { id:'h3', dimension:'adventurous',
+      highText:'자취 요리 도전파', lowText:'배달이 정답인',
+      A:{emoji:'👨‍🍳', label:'맞아, 유튜브 보고 파스타 만들어봤는데 의외로 맛있어서 인스타에 올림 ㅋㅋ #자취요리', val:0.85},
+      B:{emoji:'🛵', label:'아닌데? 배민 골드회원인 거 자랑은 아닌데... 쿠폰 5장 있으면 그게 요리지', val:0.15} },
+    { id:'h4', dimension:'adventurous',
+      highText:'인테리어 바꾸는 재미인', lowText:'처음 그대로 사는',
+      A:{emoji:'🛋️', label:'맞아, 오늘의집 3시간 보다가 협탁 하나 질렀어 ㅋㅋ 배치 바꾸면 새 집 같잖아', val:0.85},
+      B:{emoji:'📦', label:'아닌데? 이사 올 때 놓은 그 자리 그대로야... 바꿀 에너지가 없어', val:0.15} },
+
+    // aesthetic — 집 꾸미기 감성
+    { id:'h5', dimension:'aesthetic',
+      highText:'집 꾸미기에 진심인', lowText:'실용이 최고인',
+      A:{emoji:'🕯️', label:'맞아, 캔들이랑 드라이플라워는 기본이고 조명도 무드등으로 바꿨어~ 감성 자취 완성', val:0.85},
+      B:{emoji:'💡', label:'아닌데? 형광등 밝으면 됐지 무슨 무드등... 밝아야 뭐라도 찾지', val:0.2} },
+    { id:'h6', dimension:'aesthetic',
+      highText:'집 사진 올리는', lowText:'절대 안 보여주는',
+      A:{emoji:'📸', label:'맞아, 방 정리하고 사진 찍어서 인스타 올리면 "와 여기 어디야?" 댓글 오는 맛에 사는 거지', val:0.8},
+      B:{emoji:'🙈', label:'아닌데? 우리 집 보여주면 안 돼... 옷 산이랑 택배 박스 숲이 있어서...', val:0.2} },
+
+    // comfort — 편안함/귀차니즘
+    { id:'h7', dimension:'comfort',
+      highText:'설거지 바로 하는', lowText:'싱크대에 쌓아두는',
+      A:{emoji:'🧽', label:'맞아, 밥 먹고 바로 설거지 안 하면 잠이 안 와 ㅋㅋ 싱크대 깨끗해야 마음이 편해', val:0.85},
+      B:{emoji:'🍳', label:'아닌데? 프라이팬에 물 받아놓고 "불려야 잘 닦여~" 하면서 3일째... 아직 거기 있어', val:0.15} },
+    { id:'h8', dimension:'comfort',
+      highText:'빨래 바로 하는', lowText:'빨래 쌓아두는',
+      A:{emoji:'👕', label:'맞아, 빨래 바구니 반만 차도 돌려야지~ 냄새나기 전에 하는 게 기본이잖아', val:0.85},
+      B:{emoji:'🧺', label:'아닌데? 입을 옷이 없어질 때가 빨래할 때야... 바구니에서 골라 입는 게 효율적임 ㅋㅋ', val:0.15} },
+
+    // budget — 자취 비용
+    { id:'h9', dimension:'budget',
+      highText:'자취에 돈 쓰는', lowText:'최소 비용 자취파',
+      A:{emoji:'💳', label:'맞아, 다이슨 청소기에 커피머신에 식세기까지... 자취 템은 투자야 투자', val:0.85},
+      B:{emoji:'💰', label:'아닌데? 다이소 가면 뭐든 다 있어~ 3000원짜리 행거가 10만원짜리랑 뭐가 달라', val:0.15} },
+
+    // maximalist — 살림 꼼꼼함
+    { id:'h10', dimension:'maximalist',
+      highText:'분리수거 철저한', lowText:'대충 버리는',
+      A:{emoji:'♻️', label:'맞아, 비닐은 비닐끼리 캔은 캔끼리... 라벨 떼고 헹구고 분류하는 거 당연한 거 아냐?', val:0.85},
+      B:{emoji:'🗑️', label:'아닌데? 일반쓰레기 봉투에 다 넣으면 안 되나... 분리수거장까지 가기 귀찮아', val:0.15} },
+    { id:'h11', dimension:'maximalist',
+      highText:'냉장고 관리 철저한', lowText:'냉장고가 블랙홀인',
+      A:{emoji:'🥬', label:'맞아, 유통기한 체크하고 밀폐용기에 넣고 라벨까지 붙여~ 쿠팡 새벽배송 올 때마다 정리함', val:0.8},
+      B:{emoji:'🧟', label:'아닌데? 냉장고 안쪽에 정체불명 반찬통이 3개... 열기가 무서워서 안 열어봄 ㅋㅋ', val:0.2} },
+
+    // energetic — 활동/청소 에너지
+    { id:'h12', dimension:'energetic',
+      highText:'청소에 에너지 쓰는', lowText:'최소한의 청소만',
+      A:{emoji:'🧹', label:'맞아, 주말마다 대청소하고 먼지 한 톨도 안 남겨~ 청소 끝나면 뿌듯해서 셀카 찍음', val:0.85},
+      B:{emoji:'🤧', label:'아닌데? 먼지가 보이면 그때 하는 거지... 안 보이면 없는 거야 (눈 감으면 깨끗)', val:0.15} },
+    { id:'h13', dimension:'energetic',
+      highText:'아침형 자취러', lowText:'올빼미형 자취러',
+      A:{emoji:'🌅', label:'맞아, 아침에 일어나서 커피 내리고 토스트 구워먹는 모닝루틴이 있어~ 자취의 로망이지', val:0.8},
+      B:{emoji:'🌙', label:'아닌데? 새벽 3시에 라면 끓여먹고 유튜브 보다 기절하는 게 진짜 자취생활이지', val:0.2} },
+
+    // urban — 외식 vs 집밥
+    { id:'h14', dimension:'urban',
+      highText:'외식/배달 라이프', lowText:'집밥 라이프',
+      A:{emoji:'🍔', label:'맞아, 쿠팡이츠 즐겨찾기만 30개야 ㅋㅋ 오늘 뭐 먹지? = 오늘 뭐 시키지?', val:0.85},
+      B:{emoji:'🍚', label:'아닌데? 밥솥에 밥 해놓고 계란후라이에 김 올리면 그게 최고의 한 끼야', val:0.15} },
+
+    // bitter — 살림 철학
+    { id:'h15', dimension:'bitter',
+      highText:'미니멀리스트', lowText:'맥시멀리스트',
+      A:{emoji:'📦', label:'맞아, 안 쓰는 건 바로 당근마켓에 올려~ 물건은 적을수록 좋아 정리가 곧 인생', val:0.85},
+      B:{emoji:'🛒', label:'아닌데? "이거 언젠가 쓸 거야~" 하면서 모아둔 종이백이 50장... 버리면 아까워!!', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.aesthetic>0.6 && p.maximalist>0.6 && p.energetic>0.5,
+      type: '집순이 프로', emoji: '🏡', tagline: '집이 곧 놀이터이자 카페이자 천국',
+      detail: '캔들 켜고 넷플릭스 틀고 소파에 누우면 세상 부러울 게 없는 타입. 오늘의집 앱 사용시간 주 10시간 이상.' },
+    { cond: p => p.adventurous>0.6 && p.aesthetic>0.5 && p.budget>0.5,
+      type: '자취 셰프', emoji: '👨‍🍳', tagline: '유튜브 보고 오마카세급 파스타를 만든다',
+      detail: '냉장고에 항상 재료가 있고, 밀키트는 절대 안 사는 타입. 인스타에 #자취요리 올리면 좋아요 200개 오는 실력.' },
+    { cond: p => p.urban>0.6 && p.comfort<0.5,
+      type: '배달의 민족', emoji: '🛵', tagline: '주방은 택배 정리대로 쓰고 있습니다',
+      detail: '배민 골드에 쿠팡이츠 다이아에 요기요 VIP. 가스레인지 위에 먼지 쌓인 거 보면 요리는 포기한 지 오래.' },
+    { cond: p => p.energetic>0.6 && p.maximalist>0.6,
+      type: '청소 강박러', emoji: '🧹', tagline: '먼지 한 톨도 용서 못 하는 깔끔 전사',
+      detail: '주말마다 대청소, 화장실 물때 제거, 싱크대 찐 때 케어. 다이슨 3종 세트 보유하고 로봇청소기 이름도 지어줌.' },
+    { cond: p => p.bitter>0.6 && p.budget<0.5,
+      type: '미니멀리스트', emoji: '📦', tagline: '물건 10개로 사는 게 인생 목표',
+      detail: '당근마켓 판매왕, 안 쓰는 건 바로 아웃. "비우면 마음도 비워진다"가 좌우명. 이사할 때 짐 3박스면 끝.' },
+    { cond: p => p.social>0.6 && p.adventurous>0.5,
+      type: '홈파티 호스트', emoji: '🎊', tagline: '자취방이 곧 클럽이자 레스토랑',
+      detail: '"오늘 우리집 와~" 일주일에 2번은 외치는 타입. 접이식 테이블이랑 여분 이불 항상 준비되어 있음.' },
+    { cond: p => p.comfort<0.4 && p.energetic<0.4,
+      type: '귀차니즘 끝판왕', emoji: '🦥', tagline: '설거지는 내일의 나에게... 빨래도 내일...',
+      detail: '싱크대에 설거지 3일치, 빨래 바구니에서 골라 입기, 바닥 청소는 발에 밟힐 때만. 근데 이게 편해서 행복함.' },
+    { cond: p => p.aesthetic>0.6 && p.budget>0.6,
+      type: '인테리어 덕후', emoji: '🪴', tagline: '오늘의집 스크랩만 500개인 사람',
+      detail: '가구 배치 시뮬레이션 돌리고, 조명 색온도까지 따지는 타입. 이사하면 인테리어 완성까지 3주는 걸림.' },
+    { cond: p => p.budget>0.6 && p.maximalist>0.5,
+      type: '자취 테크 덕후', emoji: '🤖', tagline: '스마트홈 구축하다 월세보다 더 쓴 사람',
+      detail: 'AI 스피커로 불 끄고, 로봇청소기 스케줄 돌리고, 에어프라이어 타이머까지. 자취방이 곧 IoT 쇼룸.' },
+    { cond: p => p.comfort>0.6 && p.urban<0.5,
+      type: '집밥 장인', emoji: '🍚', tagline: '밥솥이 제일 비싼 가전인 진짜 살림꾼',
+      detail: '주말에 밑반찬 5개 만들어놓고 평일에 꺼내 먹는 타입. 냉동실에 소분해둔 고기가 항상 있음.' },
+    { cond: p => p.social<0.4 && p.aesthetic>0.5,
+      type: '은둔 자취러', emoji: '🐚', tagline: '아무도 모르는 나만의 아지트가 최고',
+      detail: '집에 아무도 안 부르고 혼자만의 공간을 완벽하게 꾸미는 타입. 방문자 연간 0명인데 인테리어는 호텔급.' },
+    { cond: () => true,
+      type: '밸런스 자취러', emoji: '⚖️', tagline: '적당히 치우고 적당히 시키고 적당히 사는',
+      detail: '완벽하진 않지만 그럭저럭 굴러가는 자취 생활. 가끔 요리도 하고 가끔 배달도 시키고, 인생은 밸런스지~' },
+  ],
+
+  traits: [
+    { dim:'social', label:'집 개방도', low:'나만의 성', high:'아지트 오픈' },
+    { dim:'adventurous', label:'요리 도전', low:'배달이 정답', high:'자취 셰프 도전' },
+    { dim:'aesthetic', label:'인테리어 감성', low:'실용 우선', high:'감성 꾸미기' },
+    { dim:'comfort', label:'살림 근면성', low:'귀차니즘', high:'바로바로 처리' },
+    { dim:'maximalist', label:'관리 꼼꼼함', low:'대충 살자', high:'완벽 관리' },
+    { dim:'energetic', label:'청소 에너지', low:'최소한만', high:'주말 대청소' },
+    { dim:'bitter', label:'물건 철학', low:'모아두는 편', high:'미니멀 라이프' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

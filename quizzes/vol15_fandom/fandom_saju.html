@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>최애 앞에서 사주 (덕질) — 팔자가 아는 내 덕질 스타일</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🔥</span>
+    <div class="intro-title">팔자가 아는 <span>내 덕질 스타일</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주가 말해주는 타고난 덕질 팔자,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 덕질 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 덕질 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🔥</div>
+  <div class="loading-text">사주쌤이 덕질 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 덕질하는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 덕질</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">💜 진짜 덕질</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <!-- 사주 팔주 표시 -->
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 덕질 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 덕질 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 덕질</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 덕질</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 덕질 해보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">친구 덕질 팔자도 까볼까? 🔥</div>
+    <div class="cta-sub">보내서 상대방 덕질 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol15_fandom_saju',
+  storageKey: 'flavor_profile_saju',
+
+  loading: { emoji: '🔥', text: '사주쌤이 덕질 팔자 감정 중...', sub: '팔자대로 덕질하는 건지 거역하는 건지 보는 중' },
+  result: {
+    shareUrl: '/fandom-saju',
+    shareConfirm: '✅ 복사 완료! 보내서 덕질 팔자 비교해봐 🔥',
+  },
+
+  questions: [
+    // devotion (헌신도)
+    { id:'f1', dimension:'devotion',
+      highText:'컴백하면 올인하는', lowText:'컴백해도 일상 유지하는',
+      A:{emoji:'📱', label:'맞아, 컴백 당일엔 알람 5개 맞추고 멜론+스포티파이+뮤비 동시 재생이 기본이지', val:0.85},
+      B:{emoji:'😌', label:'아닌데? 타임라인에 뜨면 "오 컴백했네~" 하고 나중에 들어봄', val:0.15} },
+    { id:'f2', dimension:'devotion',
+      highText:'최애 스케줄 외우는', lowText:'알림 떠야 아는',
+      A:{emoji:'📅', label:'맞아, 위버스 라이브 시간, 음방 출연 시간 다 외우고 있지... 내 일정보다 정확함', val:0.8},
+      B:{emoji:'🔔', label:'아닌데? 트위터 알림 안 왔으면 몰랐을 듯 ㅋㅋ', val:0.2} },
+
+    // spending (소비)
+    { id:'f3', dimension:'spending',
+      highText:'덕질비 통장 따로 있는', lowText:'무료 컨텐츠로 충분한',
+      A:{emoji:'💳', label:'맞아, 앨범 4버전 다 사고 포카 뽑기 3세트는 기본... 이번 달도 텅장이다', val:0.85},
+      B:{emoji:'📺', label:'아닌데? 유튜브 무료 컨텐츠만으로도 행복한데 뭘 더 사 ㅋㅋ', val:0.15} },
+    { id:'f4', dimension:'spending',
+      highText:'굿즈에 진심인', lowText:'굿즈는 관심 없는',
+      A:{emoji:'🧸', label:'맞아, 포카 바인더 3개째고 아크릴 스탠드 책상에 7개 있는데 또 사고 싶어', val:0.85},
+      B:{emoji:'🤷', label:'아닌데? 포카가 뭐 그리 중요해... 음악이 좋으면 된 거 아냐?', val:0.15} },
+
+    // social_fan (팬 소셜)
+    { id:'f5', dimension:'social_fan',
+      highText:'덕질 친구 많은', lowText:'혼덕이 편한',
+      A:{emoji:'👯', label:'맞아, 트위터 덕계정 팔로워 500명이고 오프 모임도 매달 가지', val:0.85},
+      B:{emoji:'🎧', label:'아닌데? 혼자 이어폰 꽂고 듣는 게 제일 좋아... 남이 뭘 알아', val:0.15} },
+    { id:'f6', dimension:'social_fan',
+      highText:'포교 활동 열심인', lowText:'조용히 좋아하는',
+      A:{emoji:'📢', label:'맞아, 친구한테 "이 직캠 봐봐 제발" 하루에 3번은 보내는 듯', val:0.8},
+      B:{emoji:'🤐', label:'아닌데? 내가 좋아하는 거 남한테 굳이 알리고 싶진 않아', val:0.2} },
+
+    // streaming (스밍/투표)
+    { id:'f7', dimension:'streaming',
+      highText:'스밍 장인인', lowText:'스밍은 안 하는',
+      A:{emoji:'🎵', label:'맞아, 멜론 스밍 계정 3개 돌리면서 1위 총공 참여하는 게 나의 사명이야', val:0.85},
+      B:{emoji:'🙅', label:'아닌데? 좋아하지만 스밍까지는... 그냥 듣고 싶을 때 듣지', val:0.15} },
+
+    // field (현장)
+    { id:'f8', dimension:'field',
+      highText:'콘서트 필참인', lowText:'영상으로 보는 게 편한',
+      A:{emoji:'🎤', label:'맞아, 티켓팅 전쟁에서 살아남는 게 내 특기야... 인터파크 서버 다운돼도 새로고침 300번 함', val:0.85},
+      B:{emoji:'💻', label:'아닌데? 집에서 4K 직캠 보는 게 더 잘 보이고 편하지 않아?', val:0.15} },
+    { id:'f9', dimension:'field',
+      highText:'공항 마중 가는', lowText:'그건 좀 오바인',
+      A:{emoji:'✈️', label:'맞아, 인천공항 입국장에서 3시간 기다리는 거 별거 아니지... 최애 실물은 실물이야', val:0.8},
+      B:{emoji:'😅', label:'아닌데? 공항까지는 좀... 컨텐츠로 충분해', val:0.2} },
+
+    // loyalty (충성도/최애 고정)
+    { id:'f10', dimension:'loyalty',
+      highText:'최애 한 번 정하면 안 바뀌는', lowText:'관심 가는 대로 옮기는',
+      A:{emoji:'💍', label:'맞아, 데뷔 때부터 지금까지 최애 안 바꿨어... 이건 운명이야 진짜', val:0.85},
+      B:{emoji:'🦋', label:'아닌데? 요즘 다른 그룹 영상 보다가 또 빠질 것 같아 ㅋㅋ', val:0.15} },
+    { id:'f11', dimension:'loyalty',
+      highText:'그룹 전체를 사랑하는', lowText:'최애만 보이는',
+      A:{emoji:'👨‍👩‍👧‍👦', label:'맞아, 올멤 다 좋아해... 유닛 활동도 솔로도 다 챙기는 게 팬의 도리지', val:0.8},
+      B:{emoji:'👤', label:'아닌데? 솔직히 최애 직캠만 보고 최애 파트만 들어 ㅋㅋ', val:0.2} },
+
+    // creative (창작)
+    { id:'f12', dimension:'creative',
+      highText:'팬아트/편집 하는', lowText:'감상만 하는',
+      A:{emoji:'🎨', label:'맞아, 최애 생일에 팬아트 그려서 올리고 축하 영상 편집하는 게 내 연례행사야', val:0.85},
+      B:{emoji:'👀', label:'아닌데? 다른 분들이 만든 거 감상하는 게 나의 역할이야', val:0.15} },
+
+    // global (해외 원정)
+    { id:'f13', dimension:'global',
+      highText:'해외 콘서트도 가는', lowText:'국내만으로 충분한',
+      A:{emoji:'🌏', label:'맞아, 일본 팬미팅이요? 항공권 바로 질렀지... 오사카 콘 + 도쿄 콘 연달아 가는 거 국룰', val:0.85},
+      B:{emoji:'🇰🇷', label:'아닌데? 한국 공연만으로도 벅찬데 해외까지는 좀...', val:0.15} },
+
+    // multifandom (잡덕)
+    { id:'f14', dimension:'multifandom',
+      highText:'여러 그룹 동시에 좋아하는', lowText:'하나에만 집중하는',
+      A:{emoji:'🌈', label:'맞아, 위버스 앱에 5개 그룹 가입돼 있고 다 컴백하면 멘붕옴 ㅋㅋ 시간이 부족해', val:0.85},
+      B:{emoji:'🎯', label:'아닌데? 최애 그룹 하나에 올인하는 게 진정한 팬이지', val:0.15} },
+
+    // emotional (감성)
+    { id:'f15', dimension:'emotional',
+      highText:'최애 보면 울컥하는', lowText:'쿨하게 좋아하는',
+      A:{emoji:'😭', label:'맞아, 수상소감에서 울면 나도 울고, 컨셉 포토 나오면 가슴이 벅차... 감정이입 미쳤음', val:0.85},
+      B:{emoji:'😎', label:'아닌데? 좋아하지만 울 정도는 아니야 ㅋㅋ 쿨하게 응원하는 편', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.devotion>0.6 && p.spending>0.6 && p.field>0.6 && p.streaming>0.5,
+      type: '올라운더 덕후', emoji: '👑', tagline: '스밍, 총공, 현장, 굿즈 다 하는 풀코스 덕후',
+      detail: '앨범 사고, 스밍 돌리고, 콘서트 가고, 포카 수집하고. 덕질의 모든 루트를 마스터한 전설의 덕후. 통장만 텅텅.' },
+    { cond: p => p.field>0.6 && p.global>0.5,
+      type: '현장 덕후', emoji: '🎤', tagline: '티켓팅 전쟁의 승자, 콘서트장이 내 집',
+      detail: '인터파크 서버와 싸워 이긴 자. 콘서트, 팬미팅, 음방 녹화... 현장에서 직접 봐야 직성이 풀리는 타입.' },
+    { cond: p => p.spending>0.6 && p.loyalty>0.5,
+      type: '수집 덕후', emoji: '🃏', tagline: '포카 컴플리트가 인생 목표',
+      detail: '앨범 4버전 풀구매는 기본, 포카 트레이딩 실력은 프로급. 굿즈 정리함이 방 한 칸을 차지하는 타입.' },
+    { cond: p => p.streaming>0.6 && p.devotion>0.5,
+      type: '스밍 장인', emoji: '🎵', tagline: '멜론 차트 1위가 내 존재 이유',
+      detail: '스밍 계정 여러 개 돌리면서 총공 시간표 지키는 충성파. "1일 1스밍은 팬의 기본 소양"이 인생 좌우명.' },
+    { cond: p => p.multifandom>0.6 && p.emotional>0.5,
+      type: '잡덕', emoji: '🦋', tagline: '이 그룹도 저 그룹도 다 좋아 어쩔 건데',
+      detail: '컴백 시즌엔 위버스 앱 알림이 쉴 틈이 없음. 여러 그룹을 동시에 사랑하는 멀티태스킹의 달인.' },
+    { cond: p => p.social_fan<0.4 && p.emotional>0.5,
+      type: '조용한 덕후', emoji: '🌙', tagline: '남들은 모르지만 나만의 우주가 있다',
+      detail: '덕계정 없이 본계로 직캠만 조용히 봄. 좋아하는 마음은 깊은데 티를 안 내는 은둔형 덕후.' },
+    { cond: p => p.global>0.6 && p.spending>0.5,
+      type: '해외원정 덕후', emoji: '✈️', tagline: '최애 있는 곳이 곧 여행지',
+      detail: '일본 팬미, 태국 콘서트, 미국 투어까지. 항공권 특가 알림 설정 완료. 여권 도장이 다 덕질 도장인 타입.' },
+    { cond: p => p.creative>0.6,
+      type: '크리에이터 덕후', emoji: '🎨', tagline: '최애를 위한 콘텐츠를 직접 만든다',
+      detail: '팬아트, 편집 영상, 자막 작업까지. 덕질이 곧 창작 활동인 타입. 최애 생일엔 며칠 밤새워서 영상 만듦.' },
+    { cond: p => p.loyalty>0.6 && p.devotion>0.5,
+      type: '원픽 수호자', emoji: '🛡️', tagline: '데뷔 때부터 지금까지, 내 최애는 하나',
+      detail: '최애가 바뀐 적이 없는 철벽 덕후. "입덕 몇 년차?"하면 자랑스럽게 연도를 말하는 타입.' },
+    { cond: p => p.social_fan>0.6 && p.multifandom>0.5,
+      type: '팬덤 사교왕', emoji: '🫂', tagline: '오프 모임의 중심, 덕질 친구가 100명',
+      detail: '트위터 덕계정 팔로워 많고, 오프 모임 정기 참석. 덕질이 곧 소셜 라이프인 인싸 덕후.' },
+    { cond: p => p.emotional>0.6 && p.devotion>0.5,
+      type: '감성 덕후', emoji: '💜', tagline: '최애 웃으면 웃고, 울면 같이 운다',
+      detail: '뮤비 티저만 봐도 눈물 글썽, 수상소감에 펑펑. 감정이입 200%로 최애와 함께 울고 웃는 타입.' },
+    { cond: () => true,
+      type: '캐주얼 팬', emoji: '✌️', tagline: '좋아하지만 무리는 안 해~ 건강한 덕질',
+      detail: '컴백하면 듣고, 예능 나오면 보고, 콘서트 가고 싶으면 가고. 무리 없이 즐기는 힐링형 팬.' },
+  ],
+
+  traits: [
+    { dim:'devotion', label:'덕질 몰입도', low:'가볍게 즐김', high:'올인 모드' },
+    { dim:'spending', label:'덕질 소비', low:'무료로 충분', high:'통장 텅텅' },
+    { dim:'social_fan', label:'팬 활동', low:'혼덕 마스터', high:'팬덤 인싸' },
+    { dim:'streaming', label:'스밍/총공', low:'안 함', high:'스밍 장인' },
+    { dim:'field', label:'현장 참여', low:'영상으로 봄', high:'현장 필참' },
+    { dim:'loyalty', label:'최애 고정', low:'관심 따라 이동', high:'평생 원픽' },
+    { dim:'emotional', label:'감정 몰입', low:'쿨하게', high:'울면 같이 울어' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

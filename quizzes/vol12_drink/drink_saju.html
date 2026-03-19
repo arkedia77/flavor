@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>필름 끊기는 사주 (술자리) — 팔자가 아는 내 술자리 스타일</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #f59e0b;
+  --primary-rgb: 245,158,11;
+  --secondary: #d97706;
+  --secondary-rgb: 217,119,6;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">🍺</span>
+    <div class="intro-title">팔자가 아는 <span>내 술자리 스타일</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      사주가 말해주는 타고난 술자리 팔자,<br>
+      간이 웃는지 우는지 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">🔮</span> 팔자 vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> 술자리 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">사주쌤이 봐줄게, 정보 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">태어난 시간</div>
+      <div class="info-row">
+        <select id="birth_hour" onchange="checkFormReady()"><option value="">시간 선택</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 술자리 팔자 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">🔮 팔자가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">🍺</div>
+  <div class="loading-text">사주쌤이 술자리 팔자 감정 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">팔자대로 마시는 건지 거역하는 건지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">🔮 팔자 술자리</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🥂 진짜 술자리</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <!-- 사주 팔주 표시 -->
+    <div class="pillars-wrap" id="r-pillars"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">팔자 × 15문항 분석 — <strong id="r-name"></strong>님의 술자리 감정서</div>
+  </div>
+  <div class="section-label">팔자 vs 현실 — 술자리 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> 팔자 술자리</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 술자리</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 술자리 가보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 술자리 팔자도 까볼까? 🍺</div>
+    <div class="cta-sub">보내서 상대방 술자리 팔자도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/saju" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'saju',
+  quizType: 'vol12_drink_saju',
+  storageKey: 'flavor_profile_saju',
+
+  loading: { emoji: '🍺', text: '사주쌤이 술자리 팔자 감정 중...', sub: '팔자대로 마시는 건지 거역하는 건지 보는 중' },
+  result: {
+    shareUrl: '/drink-saju',
+    shareConfirm: '✅ 복사 완료! 보내서 술자리 팔자 비교해봐 🍺',
+  },
+
+  questions: [
+    // social
+    { id:'d1', dimension:'social',
+      highText:'술자리 분위기 메이커인', lowText:'조용히 마시는 편인',
+      A:{emoji:'🎤', label:'맞아, 술 세 잔이면 노래방 마이크 잡고 있음. "야 한 곡만 더!" 가 세 곡 됨 ㅋㅋ', val:0.85},
+      B:{emoji:'🤫', label:'아닌데? 구석에서 조용히 안주 먹으면서 듣고 있는 게 편해. 관종은 못 해', val:0.15} },
+    { id:'d2', dimension:'social',
+      highText:'사람 많을수록 좋은', lowText:'소수 모임이 좋은',
+      A:{emoji:'👯', label:'맞아, 단톡방에 "오늘 술 한잔?" 올리면 10명 모이는 그 맛이지', val:0.8},
+      B:{emoji:'🍷', label:'아닌데? 찐친 2~3명이랑 와인바에서 깊은 얘기 하는 게 진짜 술자리야', val:0.2} },
+
+    // adventurous
+    { id:'d3', dimension:'adventurous',
+      highText:'2차 3차 가는', lowText:'1차에서 칼퇴하는',
+      A:{emoji:'🏃', label:'맞아, "한 잔만 더" 가 새벽 3시까지 가는 거 나야 나. 택시 타고 집 가면서 후회함', val:0.85},
+      B:{emoji:'🚪', label:'아닌데? 11시 되면 "나 내일 일 있어~" 하고 깔끔하게 빠지는 타입', val:0.15} },
+    { id:'d4', dimension:'adventurous',
+      highText:'새로운 술집 개척하는', lowText:'단골집만 가는',
+      A:{emoji:'🗺️', label:'맞아, 인스타에서 "분위기 좋은 바" 저장해놓고 하나씩 정복하는 중', val:0.8},
+      B:{emoji:'🏠', label:'아닌데? 사장님이 내 취향 아는 단골집이 최고야. 왜 모험을 해', val:0.2} },
+
+    // aesthetic
+    { id:'d5', dimension:'aesthetic',
+      highText:'분위기 중시하는', lowText:'술맛이 중요한',
+      A:{emoji:'🕯️', label:'맞아, 조명 어둡고 재즈 나오는 바에서 칵테일 홀짝이는 그 감성... 인스타 필수', val:0.85},
+      B:{emoji:'🍶', label:'아닌데? 포장마차에서 소주 한 잔이 분위기 100배야. 감성은 배부르면 나와', val:0.15} },
+    { id:'d6', dimension:'aesthetic',
+      highText:'칵테일/와인 감성인', lowText:'소맥이 진리인',
+      A:{emoji:'🍸', label:'맞아, 칵테일 이름 예쁘면 일단 시키고 보는 편. "이거 뭔 맛이야?" 하면서도 또 시킴', val:0.8},
+      B:{emoji:'🍺', label:'아닌데? 소맥 황금비율 3:7이 세상에서 제일 완벽한 술이야. 복잡한 거 싫어', val:0.2} },
+
+    // comfort
+    { id:'d7', dimension:'comfort',
+      highText:'안주에 진심인', lowText:'술만 있으면 되는',
+      A:{emoji:'🍖', label:'맞아, 술자리에서 안주 메뉴판 30분 고민하는 거 나야. "골뱅이 소면이랑 닭발이랑..."', val:0.85},
+      B:{emoji:'🥜', label:'아닌데? 마른안주에 소주면 충분해. 안주는 분위기야 분위기', val:0.15} },
+    { id:'d8', dimension:'comfort',
+      highText:'편하게 마시는', lowText:'텐션 높게 마시는',
+      A:{emoji:'🛋️', label:'맞아, 집에서 넷플릭스 틀어놓고 혼술하는 게 세상에서 제일 편해', val:0.85},
+      B:{emoji:'🎉', label:'아닌데? 술은 시끄러운 데서 사람들이랑 마셔야 제맛이지!', val:0.15} },
+
+    // budget
+    { id:'d9', dimension:'budget',
+      highText:'술값에 돈 아끼지 않는', lowText:'가성비 술자리파',
+      A:{emoji:'💳', label:'맞아, "오늘 내가 쏜다" 한 마디에 카드값 30만원. 근데 기분은 좋아 ㅋㅋ', val:0.85},
+      B:{emoji:'🏷️', label:'아닌데? 편의점 4캔 만원이 가성비 최고야. 굳이 비싼 데 갈 필요 없음', val:0.15} },
+
+    // maximalist
+    { id:'d10', dimension:'maximalist',
+      highText:'술 종류 다 섭렵하는', lowText:'내 술만 마시는',
+      A:{emoji:'🍹', label:'맞아, 소주, 맥주, 와인, 위스키, 하이볼... 안 마셔본 술이 없어야 직성이 풀림', val:0.85},
+      B:{emoji:'🍺', label:'아닌데? 난 맥주만 마셔. 10년째 맥주만. 이게 내 인생 술이야', val:0.15} },
+    { id:'d11', dimension:'maximalist',
+      highText:'술게임 좋아하는', lowText:'게임 없이 마시는',
+      A:{emoji:'🎲', label:'맞아, 텔레파시, 바니바니, 딸기게임 레파토리 10개는 있어. 분위기 책임진다', val:0.8},
+      B:{emoji:'💬', label:'아닌데? 그냥 대화하면서 마시는 게 좋아. 게임은 정신없어', val:0.2} },
+
+    // energetic
+    { id:'d12', dimension:'energetic',
+      highText:'주량이 센 편인', lowText:'약한 편인',
+      A:{emoji:'💪', label:'맞아, 소주 2병까지는 기본이고 그 이후부터가 진짜 시작이야', val:0.85},
+      B:{emoji:'🥴', label:'아닌데? 소주 반 병이면 얼굴 빨개지고 세상이 빙글빙글. 근데 분위기는 좋아', val:0.15} },
+    { id:'d13', dimension:'energetic',
+      highText:'해장에 진심인', lowText:'해장은 잠이 약인',
+      A:{emoji:'🍜', label:'맞아, 다음 날 해장 코스 이미 정해놨어. 열라면 → 콩나물국밥 → 이온음료 루틴', val:0.8},
+      B:{emoji:'😴', label:'아닌데? 해장은 12시간 수면이 최고야. 일어나면 괜찮아지더라', val:0.2} },
+
+    // urban
+    { id:'d14', dimension:'urban',
+      highText:'핫플 술집 가는', lowText:'동네 술집 가는',
+      A:{emoji:'🌃', label:'맞아, 을지로, 연남동, 성수동 신상 바는 다 가봐야 직성이 풀려', val:0.85},
+      B:{emoji:'🏘️', label:'아닌데? 집 앞 치킨집에서 생맥주 한 잔이 세상에서 제일 행복해', val:0.15} },
+
+    // bitter
+    { id:'d15', dimension:'bitter',
+      highText:'술 문화/역사에 관심 많은', lowText:'취하면 장땡인',
+      A:{emoji:'📖', label:'맞아, 위스키 원산지, 와인 빈티지, 사케 종류... 아는 만큼 맛있어지는 거야', val:0.85},
+      B:{emoji:'🥳', label:'아닌데? 맛있으면 됐지 뭘 그렇게까지 파? 취하면 다 맛있어 ㅋㅋ', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.social>0.6 && p.energetic>0.6 && p.adventurous>0.5,
+      type: '분위기 메이커', emoji: '🎤', tagline: '내가 없으면 술자리가 안 돌아간다',
+      detail: '건배사 장인, 술게임 MC, 2차 이동 총무. 술자리의 심장이자 엔진. 다음 날 목이 쉬어도 후회 없음.' },
+    { cond: p => p.social<0.4 && p.comfort>0.5,
+      type: '조용한 음주러', emoji: '🌙', tagline: '혼술이 최고의 힐링이다',
+      detail: '넷플릭스 틀어놓고 맥주 한 캔, 혹은 단골 바에서 혼자 위스키. 말 없이 마시는 그 여유가 진짜 럭셔리.' },
+    { cond: p => p.adventurous<0.4 && p.comfort>0.5,
+      type: '1차 칼퇴러', emoji: '🚪', tagline: '11시 넘기면 호박이 되는 사람',
+      detail: '"나 내일 일 있어~" 가 만능 퇴장 멘트. 1차에서 깔끔하게 빠지는 센스. 다음 날 컨디션 최고.' },
+    { cond: p => p.energetic>0.6 && p.maximalist>0.5,
+      type: '해장의 신', emoji: '🍜', tagline: '해장 루틴이 과학 논문 수준',
+      detail: '열라면, 콩나물국밥, 이온음료 3단 콤보. 숙취 해소제는 미리 챙기고, 해장국집은 즐겨찾기 해놨음.' },
+    { cond: p => p.aesthetic>0.6 && p.bitter>0.5,
+      type: '와인 감성러', emoji: '🍷', tagline: '잔을 기울이며 인생을 논하는 사람',
+      detail: '와인 빈티지, 테이스팅 노트, 페어링 안주까지 줄줄 꿰는 타입. 술이 아니라 문화를 마신다.' },
+    { cond: p => p.energetic>0.5 && p.budget>0.5 && p.social>0.5,
+      type: '소맥 장인', emoji: '🍺', tagline: '황금비율 3:7은 내가 만든 공식이다',
+      detail: '소맥 제조의 달인, 폭탄주 장인. 치맥, 삼겹살에 소주, 회에 소맥... 한국 술 문화의 정수를 아는 사람.' },
+    { cond: p => p.adventurous>0.6 && p.urban>0.5,
+      type: '2차 헌터', emoji: '🏃', tagline: '"한 잔만 더" 가 새벽 4시까지 간다',
+      detail: '1차 고깃집 → 2차 포차 → 3차 노래방 → 4차 라면. 밤새 술자리 풀코스를 완주하는 체력의 소유자.' },
+    { cond: p => p.budget<0.4 && p.comfort>0.4,
+      type: '편의점 혼술러', emoji: '🏪', tagline: '편의점 4캔 만원이 인생 최고의 가성비',
+      detail: 'CU 앞 플라스틱 의자에서 캔맥주 까는 그 맛. 안주는 삼각김밥이면 충분. 가성비 술자리의 정석.' },
+    { cond: p => p.aesthetic>0.6 && p.urban>0.6,
+      type: '바 투어러', emoji: '🍸', tagline: '이 동네 숨은 바는 내가 다 안다',
+      detail: '을지로 골목 스피크이지, 연남동 루프탑 바, 성수동 크래프트 맥주집. 새로운 술집 찾는 게 취미.' },
+    { cond: p => p.maximalist>0.6 && p.social>0.5,
+      type: '술게임 마스터', emoji: '🎲', tagline: '게임 레파토리만 20개 보유',
+      detail: '텔레파시, 바니바니, 딸기, 업다운... 분위기 죽으면 게임으로 살리는 술자리 구원자.' },
+    { cond: p => p.comfort>0.6 && p.aesthetic>0.5,
+      type: '안주 미식가', emoji: '🍖', tagline: '술보다 안주가 메인인 사람',
+      detail: '메뉴판 30분 고민, 안주 조합에 진심. "골뱅이 소면이랑 닭발이랑 감자전이랑..." 술은 안주 먹으려고 마시는 거.' },
+    { cond: () => true,
+      type: '밸런스 음주러', emoji: '⚖️', tagline: '때와 장소에 따라 달라지는 만능 술꾼',
+      detail: '혼술도 좋고 회식도 좋고, 와인도 좋고 소맥도 좋고. 어디서든 즐기는 축복받은 술자리 타입.' },
+  ],
+
+  traits: [
+    { dim:'social', label:'술자리 텐션', low:'조용히 마시기', high:'분위기 메이커' },
+    { dim:'adventurous', label:'2차 의지', low:'1차 칼퇴', high:'끝까지 간다' },
+    { dim:'aesthetic', label:'술자리 감성', low:'소맥이면 됨', high:'분위기 중시' },
+    { dim:'comfort', label:'안주 집착도', low:'마른안주 OK', high:'안주에 진심' },
+    { dim:'maximalist', label:'술 다양성', low:'내 술만', high:'다 마셔봐야' },
+    { dim:'energetic', label:'주량 레벨', low:'반 병이면 끝', high:'무한리필' },
+    { dim:'bitter', label:'술 지식', low:'취하면 장땡', high:'술 문화 탐구' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>

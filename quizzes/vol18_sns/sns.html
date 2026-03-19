@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>스토리 올리기 전 DNA (SNS) — 타고난 SNS 스타일, 진짜 그래?</title>
+<link rel="stylesheet" href="/static/shared/quiz-base.css">
+<style>
+:root {
+  --primary: #c084fc;
+  --primary-rgb: 192,132,252;
+  --secondary: #a855f7;
+  --secondary-rgb: 168,85,247;
+}
+</style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="screen-intro">
+  <div class="intro-bg"></div>
+  <div class="intro-bg-ring"></div>
+
+  <div class="intro-hero">
+    <span class="intro-icon">📱</span>
+    <div class="intro-title">타고난 SNS 스타일은 <span>이런데</span>,<br>진짜 그래?</div>
+    <div class="intro-sub">
+      생년월일이 말해주는 너의 SNS DNA,<br>
+      맞는지 틀리는지 한번 까보자!
+    </div>
+  </div>
+
+  <div class="intro-chips">
+    <div class="intro-chip"><span class="chip-icon">⏱</span> 2분이면 끝</div>
+    <div class="intro-chip"><span class="chip-icon">📱</span> DNA vs 현실</div>
+    <div class="intro-chip"><span class="chip-icon">📊</span> SNS 폭로</div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">일단 정보부터 내놔</div>
+    <div class="field-group">
+      <div class="field-label">닉네임</div>
+      <div class="info-row">
+        <input type="text" id="name" placeholder="뭐라고 부를까?" maxlength="10" oninput="checkFormReady()">
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">생년월일</div>
+      <div class="info-row">
+        <select id="birth_year" onchange="checkFormReady()"><option value="">년도</option></select>
+      </div>
+      <div class="info-row" style="margin-top:8px;">
+        <select id="birth_month" onchange="checkFormReady()"><option value="">월</option></select>
+        <select id="birth_day" onchange="checkFormReady()"><option value="">일</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">성별</div>
+      <div class="gender-row">
+        <button class="gender-btn" data-gender="male" onclick="selectGender(this)">🙋‍♂️ 남성</button>
+        <button class="gender-btn" data-gender="female" onclick="selectGender(this)">🙋‍♀️ 여성</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-start disabled" id="btn-start" onclick="startQuiz()" disabled>내 SNS DNA 까보기 →</button>
+  <div class="intro-footer">flavor by arkedia</div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="screen-quiz" style="display:none; flex-direction:column; min-height:100vh;">
+  <div class="quiz-top">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">1 / 15</div>
+  </div>
+  <div class="innate-banner">
+    <div class="innate-label" id="innate-label">📱 DNA가 그러는데...</div>
+    <div class="innate-text" id="innate-text"></div>
+  </div>
+  <div class="vs-label">그래서 진짜야?</div>
+  <div class="ab-wrap" id="ab-wrap">
+    <div class="ab-option" id="opt-a" onclick="choose('A')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-a"></div>
+      <div class="ab-text" id="text-a"></div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="ab-option" id="opt-b" onclick="choose('B')">
+      <div class="ab-check">✓</div>
+      <div class="ab-emoji" id="emoji-b"></div>
+      <div class="ab-text" id="text-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px;">
+  <div class="loading-emoji">📱</div>
+  <div class="loading-text">SNS DNA vs 현실 대조 중...</div>
+  <div class="loading-sub" style="margin-top:8px;">타고난 SNS 스타일이랑 실제가 얼마나 다른지 보는 중</div>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="screen-result" style="display:none; min-height:100vh; padding-bottom:80px;">
+  <div class="result-hero">
+    <div class="dual-type">
+      <div class="type-card innate">
+        <div class="type-card-badge">📱 DNA SNS</div>
+        <span class="type-card-emoji" id="r-innate-emoji"></span>
+        <div class="type-card-name" id="r-innate-type"></div>
+      </div>
+      <div class="type-card actual">
+        <div class="type-card-badge">🤳 진짜 SNS</div>
+        <span class="type-card-emoji" id="r-actual-emoji"></span>
+        <div class="type-card-name" id="r-actual-type"></div>
+      </div>
+    </div>
+    <div class="result-persona" id="r-persona"></div>
+    <div class="gap-banner" id="r-gap-banner">
+      <div class="gap-title" id="r-gap-title"></div>
+      <div class="gap-detail" id="r-gap-detail"></div>
+    </div>
+    <div class="result-name-sub">DNA × 15문항 분석 — <strong id="r-name"></strong>님의 SNS 감정서</div>
+  </div>
+  <div class="section-label">DNA vs 현실 — SNS 비교</div>
+  <div class="trait-legend">
+    <div class="trait-legend-item"><span class="legend-diamond"></span> DNA SNS</div>
+    <div class="trait-legend-item"><span class="legend-circle"></span> 진짜 SNS</div>
+  </div>
+  <div class="traits-grid" id="r-traits"></div>
+  <div class="section-label" style="margin-top:12px;">이런 SNS 활동 해보셈</div>
+  <div class="domain-grid" id="r-domains"></div>
+  <div class="cta-box">
+    <div class="cta-lead">상대방 SNS 스타일도 까볼까? 📱</div>
+    <div class="cta-sub">보내서 상대방 SNS DNA도 비교해보셈!</div>
+    <button class="btn-primary" onclick="copyResult()">🔗 결과 보내서 도발하기</button>
+    <a class="btn-secondary" href="/" style="text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">🔥 다른 테스트도 해보기</a>
+    <button class="btn-secondary" id="btn-retry" onclick="location.reload()">↩ 다시 까보기</button>
+  </div>
+</div>
+
+<script src="/static/shared/lunar.js"></script>
+<script src="/static/shared/saju-engine.js"></script>
+<script>
+/* ═══ QUIZ_CONFIG ═══ */
+window.QUIZ_CONFIG = {
+  mode: 'dna',
+  quizType: 'vol18_sns',
+  storageKey: 'flavor_profile_dna',
+
+  loading: { emoji: '📱', text: 'SNS DNA vs 현실 대조 중...', sub: '타고난 SNS 스타일이랑 실제가 얼마나 다른지 보는 중' },
+  result: {
+    shareUrl: '/sns',
+    shareConfirm: '✅ 복사 완료! 보내서 SNS 스타일 비교해봐 📱',
+  },
+
+  questions: [
+    // posting
+    { id:'n1', dimension:'posting',
+      highText:'매일 올리는', lowText:'구경만 하는',
+      A:{emoji:'📸', label:'맞아, 카페 가면 음료 사진 찍고 스토리 올리고 피드 올리고... 안 올리면 안 간 거나 마찬가지ㅋㅋ', val:0.85},
+      B:{emoji:'👀', label:'아닌데? 남이 올린 거 구경하는 게 재밌지 내가 올릴 건 없어... 6개월째 피드 공백', val:0.15} },
+    { id:'n2', dimension:'posting',
+      highText:'스토리 폭격하는', lowText:'스토리 안 올리는',
+      A:{emoji:'🔥', label:'맞아, 하루에 스토리 10개는 기본이지ㅋㅋ 아침 커피부터 잠들기 전 셀카까지 다 올림', val:0.85},
+      B:{emoji:'🫥', label:'아닌데? 스토리 올리는 거 자체가 부담스러워... 누가 볼까봐 무서움', val:0.15} },
+
+    // aesthetic_feed
+    { id:'n3', dimension:'aesthetic_feed',
+      highText:'피드 꾸미기에 진심인', lowText:'피드 신경 안 쓰는',
+      A:{emoji:'🎨', label:'맞아, 색감 맞추고 필터 통일하고 그리드 배치까지 신경 쓰는데... 올리기 전에 30분은 고민함', val:0.85},
+      B:{emoji:'🤷', label:'아닌데? 그냥 찍은 대로 올리지 뭐ㅋㅋ 피드 통일감? 그게 뭔데 먹는 건데?', val:0.15} },
+
+    // follower
+    { id:'n4', dimension:'follower',
+      highText:'팔로워 신경 쓰는', lowText:'팔로워 관심 없는',
+      A:{emoji:'📊', label:'맞아, 팔로워 수 줄면 "누가 언팔했지?" 하고 앱 깔아서 확인하는 타입ㅋㅋ 소름 돋지?', val:0.85},
+      B:{emoji:'😌', label:'아닌데? 팔로워 50명이든 500명이든 상관없어 난 내가 좋아서 올리는 거니까', val:0.15} },
+    { id:'n5', dimension:'follower',
+      highText:'좋아요에 민감한', lowText:'좋아요 신경 안 쓰는',
+      A:{emoji:'❤️', label:'맞아, 올리고 5분마다 좋아요 수 확인하다가 10개 안 넘으면 삭제 고민함ㅋㅋ 자존감이 좋아요에 달림', val:0.8},
+      B:{emoji:'🤙', label:'아닌데? 좋아요 알림 꺼놨어 숫자에 휘둘리기 싫어서... 근데 가끔 궁금하긴 해', val:0.2} },
+
+    // platform
+    { id:'n6', dimension:'platform',
+      highText:'인스타파', lowText:'틱톡파',
+      A:{emoji:'📷', label:'맞아, 인스타가 본진이지 릴스도 보고 스토리도 올리고 DM으로 수다도 떨고ㅋㅋ 인스타 없으면 못 삼', val:0.85},
+      B:{emoji:'🎵', label:'아닌데? 틱톡 알고리즘이 나를 너무 잘 알아서 무서워ㅋㅋ 하루에 2시간은 틱톡에 녹아', val:0.15} },
+
+    // stalking
+    { id:'n7', dimension:'stalking',
+      highText:'염탐 마스터', lowText:'남 피드 관심 없는',
+      A:{emoji:'🔍', label:'맞아, 친구의 친구의 남친 인스타까지 타고 들어가는 게 특기야ㅋㅋ FBI 뺨치는 염탐력', val:0.85},
+      B:{emoji:'🙈', label:'아닌데? 팔로우한 사람 피드만 대충 보고 끝이야 남의 인스타 뭐가 재밌어', val:0.15} },
+
+    // accounts
+    { id:'n8', dimension:'accounts',
+      highText:'계정 여러 개인', lowText:'계정 하나인',
+      A:{emoji:'🎭', label:'맞아, 본계 + 부계 + 비공개 계정까지 3개는 기본ㅋㅋ 각 계정마다 다른 나를 보여줌', val:0.85},
+      B:{emoji:'1️⃣', label:'아닌데? 계정 하나도 관리 못 하는데 여러 개를 왜 만들어ㅋㅋ 하나로 충분해', val:0.15} },
+
+    // comment
+    { id:'n9', dimension:'comment',
+      highText:'댓글 활발한', lowText:'조용히 보는',
+      A:{emoji:'💬', label:'맞아, 친구 피드에 댓글 안 달면 섭섭하지 않아? "미쳤다 이거 어디야!" 류의 리액션 장인ㅋㅋ', val:0.85},
+      B:{emoji:'👻', label:'아닌데? 좋아요만 누르고 넘기지 댓글까지 쓰기엔 귀찮아... 마음으로 응원해', val:0.15} },
+
+    // selfie
+    { id:'n10', dimension:'selfie',
+      highText:'셀카에 진심인', lowText:'셀카 안 찍는',
+      A:{emoji:'🤳', label:'맞아, 화장 잘 된 날은 셀카 50장 찍어서 제일 잘 나온 거 골라 올림ㅋㅋ 각도가 생명이야', val:0.85},
+      B:{emoji:'🌅', label:'아닌데? 셀카보다 풍경 사진이 좋아 내 얼굴보다 하늘이 예쁘잖아', val:0.15} },
+
+    // dm
+    { id:'n11', dimension:'dm',
+      highText:'DM으로 소통하는', lowText:'DM 잘 안 쓰는',
+      A:{emoji:'✉️', label:'맞아, 릴스 보다가 웃기면 바로 친구한테 DM 공유ㅋㅋ 하루에 DM 50개는 보내는 듯', val:0.8},
+      B:{emoji:'🔕', label:'아닌데? DM 읽씹 장인이야... 확인은 하는데 답장이 3일 뒤ㅋㅋ 미안 그냥 귀찮아', val:0.2} },
+
+    // tmi
+    { id:'n12', dimension:'tmi',
+      highText:'TMI 공유하는', lowText:'프라이버시 지키는',
+      A:{emoji:'🗣️', label:'맞아, 오늘 뭐 먹었는지, 어디 갔는지, 무슨 노래 듣는지 다 올려ㅋㅋ 내 일상 = 콘텐츠', val:0.85},
+      B:{emoji:'🔒', label:'아닌데? SNS에 사생활 올리는 거 무서워... 이름도 닉네임이고 사진도 안 올림', val:0.15} },
+
+    // trend
+    { id:'n13', dimension:'trend',
+      highText:'트렌드 빠른', lowText:'유행 관심 없는',
+      A:{emoji:'⚡', label:'맞아, 틱톡 챌린지 뜨면 바로 따라하고 인스타 새 기능 나오면 첫날에 써봄ㅋㅋ 얼리어답터야 나는', val:0.85},
+      B:{emoji:'🐌', label:'아닌데? 남들 다 한 밈을 3개월 뒤에 알게 됨ㅋㅋ 유행에 관심이 없는 건 아닌데 느려', val:0.15} },
+
+    // compare
+    { id:'n14', dimension:'compare',
+      highText:'SNS 보고 비교하는', lowText:'남 신경 안 쓰는',
+      A:{emoji:'😔', label:'맞아, 친구 여행 사진 보면 "나는 왜..." 하고 우울해지는데 그래도 계속 봄ㅋㅋ 자해 행위인 듯', val:0.8},
+      B:{emoji:'💪', label:'아닌데? 남이 뭘 하든 내 인생이 더 중요하지 비교해봤자 의미 없어', val:0.2} },
+
+    // detox
+    { id:'n15', dimension:'detox',
+      highText:'SNS 중독인', lowText:'디톡스 하는',
+      A:{emoji:'🫠', label:'맞아, 폰 스크린타임 보면 인스타+틱톡 합쳐서 4시간은 나옴ㅋㅋ 끊고 싶은데 못 끊어 마약이야', val:0.85},
+      B:{emoji:'🧘', label:'아닌데? 주기적으로 앱 삭제하고 디톡스 해 정신건강에 진심이거든', val:0.15} },
+  ],
+
+  types: [
+    { cond: p => p.posting>0.6 && p.aesthetic_feed>0.6 && p.selfie>0.5,
+      type: '인스타 감성러', emoji: '📷', tagline: '피드가 곧 나의 갤러리다',
+      detail: '색감 통일, 그리드 배치, 필터 선택까지 완벽한 피드 관리자. 올리기 전 30분 고민은 기본이고 삭제→재업도 서슴지 않는 타입.' },
+    { cond: p => p.detox>0.6 && p.platform<0.4 && p.trend>0.5,
+      type: '틱톡 중독자', emoji: '🎵', tagline: '알고리즘이 나보다 나를 더 잘 안다',
+      detail: '"한 개만 더 보고 자야지" 하다가 2시간 지나있는 타입. 틱톡 알고리즘의 노예이자 밈 전파자.' },
+    { cond: p => p.posting<0.4 && p.stalking>0.5,
+      type: '잠수 계정', emoji: '👻', tagline: '올리는 건 없는데 다 보고 있다',
+      detail: '6개월째 피드 공백인데 남의 스토리는 다 봄ㅋㅋ 존재감은 없지만 모든 걸 알고 있는 SNS 유령.' },
+    { cond: p => p.posting>0.7 && p.tmi>0.6,
+      type: '스토리 폭격기', emoji: '🔥', tagline: '하루 스토리 10개는 기본이지',
+      detail: '아침 커피부터 잠들기 전 셀카까지 일상의 모든 순간을 스토리로. 24시간 안에 안 보면 놓치는 콘텐츠 폭포.' },
+    { cond: p => p.follower>0.6 && p.compare>0.5,
+      type: '좋아요 수집가', emoji: '❤️', tagline: '좋아요 10개 미만이면 삭제 고민 시작',
+      detail: '올리고 5분마다 좋아요 확인하는 타입. 팔로워 수 변동에 민감하고 언팔 체크 앱 깔아본 적 있음ㅋㅋ' },
+    { cond: p => p.comment>0.6 && p.dm>0.6,
+      type: '댓글 요정', emoji: '💬', tagline: '리액션은 나의 힘, 댓글은 나의 의무',
+      detail: '친구 피드마다 "미쳤다 여기 어디야!" 남기고, 릴스 공유 DM 하루 50개 보내는 소통왕.' },
+    { cond: p => p.stalking>0.7 && p.accounts>0.5,
+      type: '염탐 고수', emoji: '🔍', tagline: 'FBI도 울고 갈 인스타 수사력',
+      detail: '친구의 친구의 남친 인스타까지 타고 들어가는 프로 염탐러. 부계정으로 몰래 구경하는 건 기본 스킬.' },
+    { cond: p => p.accounts>0.6 && p.tmi>0.5,
+      type: '부캐 장인', emoji: '🎭', tagline: '본계 부계 비공계 3개는 기본',
+      detail: '각 계정마다 다른 페르소나를 운영하는 타입. 본계는 깔끔하게, 부계는 TMI 폭발, 비공계는 찐친만.' },
+    { cond: p => p.trend>0.6 && p.posting>0.5,
+      type: '트렌드 선도자', emoji: '⚡', tagline: '새 기능 나오면 첫날에 써봐야 직성이 풀림',
+      detail: '틱톡 챌린지 1일차 참여, 인스타 새 기능 얼리어답터. 유행을 따라가는 게 아니라 만드는 타입.' },
+    { cond: p => p.selfie>0.6 && p.aesthetic_feed>0.5,
+      type: '셀카 장인', emoji: '🤳', tagline: '각도가 생명이고 조명이 운명이다',
+      detail: '화장 잘 된 날 셀카 50장 찍어서 베스트 1장 올리는 타입. 셀카봉은 필수 아이템.' },
+    { cond: p => p.detox<0.4 && p.compare<0.4,
+      type: 'SNS 미니멀리스트', emoji: '🧘', tagline: '디톡스가 라이프스타일이다',
+      detail: '주기적으로 앱 삭제하고 정신건강 챙기는 타입. SNS 없어도 잘 살 수 있다는 걸 증명하는 중.' },
+    { cond: () => true,
+      type: '밸런스 SNS러', emoji: '⚖️', tagline: '적당히 올리고 적당히 보는 무난한 타입',
+      detail: '극단적이지 않은 건강한 SNS 생활. 올리고 싶을 때 올리고, 보고 싶을 때 보는 자유로운 영혼.' },
+  ],
+
+  traits: [
+    { dim:'posting', label:'게시 빈도', low:'구경만 함', high:'매일 업로드' },
+    { dim:'aesthetic_feed', label:'피드 감성', low:'아무렇게나', high:'완벽 큐레이션' },
+    { dim:'follower', label:'팔로워 집착', low:'숫자 무관심', high:'팔로워 민감' },
+    { dim:'stalking', label:'염탐 레벨', low:'관심 없음', high:'FBI급 염탐' },
+    { dim:'comment', label:'소통 활발도', low:'조용히 봄', high:'댓글 폭격' },
+    { dim:'tmi', label:'TMI 레벨', low:'프라이버시 철벽', high:'일상 풀공개' },
+    { dim:'detox', label:'SNS 의존도', low:'디톡스 생활', high:'중독 수준' },
+  ],
+};
+</script>
+<script src="/static/shared/quiz-engine.js"></script>
+</body>
+</html>
