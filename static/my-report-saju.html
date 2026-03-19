@@ -8,7 +8,7 @@
 <meta property="og:description" content="사주로 보는 나의 진짜 취향 지도">
 <style>
 :root {
-  --bg: #080810;
+  --bg: #080612;
   --card: #111118;
   --border: #2a2218;
   --text: #e8e8f0;
@@ -23,7 +23,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', Pretendard, 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
@@ -231,7 +231,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
   font-size: 0.82rem;
 }
 .gap-row:last-child { border-bottom: none; }
@@ -344,6 +344,32 @@ a:hover { text-decoration: underline; }
   .grid { grid-template-columns: repeat(3, 1fr); }
   .gap-row { font-size: 0.75rem; }
   .gap-cat { width: 55px; }
+}
+
+/* ═══════════════════════════════════════════
+   Aurora Glassmorphism Theme (2025)
+   ═══════════════════════════════════════════ */
+
+/* Aurora 그라디언트 배경 레이어 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 90% 60% at -10% 0%,  rgba(120, 40, 200, 0.55) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 80% at 110% 0%,  rgba(236, 72, 153, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 20%  110%, rgba(34, 211, 238, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85%  85%,  rgba(120, 40, 200, 0.35) 0%, transparent 55%);
+  animation: auroraFloat 16s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes auroraFloat {
+  0%   { transform: scale(1)    translate(0%,   0%)   rotate(0deg); }
+  33%  { transform: scale(1.06) translate(-3%,  1.5%) rotate(1deg); }
+  66%  { transform: scale(0.97) translate(2%,  -1%)   rotate(-1deg); }
+  100% { transform: scale(1.08) translate(-2%,  3%)   rotate(2deg); }
 }
 </style>
 </head>

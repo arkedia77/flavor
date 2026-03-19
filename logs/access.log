@@ -405,3 +405,6 @@
 127.0.0.1 - - [19/Mar/2026:20:07:30 +0900] "GET /romance-v2 HTTP/1.1" 200 49373 "https://flavor.arkedia.work/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
 127.0.0.1 - - [19/Mar/2026:20:07:31 +0900] "GET /static/shared/saju-engine.js HTTP/1.1" 200 0 "https://flavor.arkedia.work/romance-v2" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
 127.0.0.1 - - [19/Mar/2026:20:07:31 +0900] "GET /static/shared/lunar.js HTTP/1.1" 200 0 "https://flavor.arkedia.work/romance-v2" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+127.0.0.1 - - [19/Mar/2026:20:13:54 +0900] "GET /health HTTP/1.1" 200 40 "-" "curl/8.7.1"
+127.0.0.1 - - [19/Mar/2026:20:14:02 +0900] "GET / HTTP/1.1" 200 31178 "-" "curl/8.7.1"
+127.0.0.1 - - [19/Mar/2026:20:14:03 +0900] "GET /survey HTTP/1.1" 200 44414 "-" "curl/8.7.1"

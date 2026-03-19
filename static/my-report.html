@@ -9,9 +9,9 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
-  background: #080810;
+  background: #080612;
   color: #e8e8f0;
-  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', Pretendard, 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
 }
 .wrap { max-width: 480px; margin: 0 auto; padding: 0 16px 100px; }
@@ -35,7 +35,7 @@ body {
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #c084fc, #a855f7);
+  background: linear-gradient(135deg, #c084fc, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 12px;
@@ -50,7 +50,7 @@ body {
 }
 .user-info {
   font-size: 0.88rem;
-  color: #8888aa;
+  color: #9988bb;
   position: relative;
 }
 .user-info span { color: #c084fc; font-weight: 700; }
@@ -59,8 +59,8 @@ body {
 .lock-wrap {
   text-align: center;
   padding: 60px 20px;
-  background: #111124;
-  border: 1px solid #1e1e38;
+  background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(192,132,252,0.18);
   border-radius: 20px;
   margin-top: 12px;
 }
@@ -76,13 +76,13 @@ body {
 }
 .lock-count {
   font-size: 0.85rem;
-  color: #8888aa;
+  color: #9988bb;
   margin-bottom: 24px;
 }
 .lock-cta {
   display: inline-block;
   padding: 12px 28px;
-  background: linear-gradient(135deg, #c084fc, #a855f7);
+  background: linear-gradient(135deg, #c084fc, #ec4899);
   color: #fff;
   font-weight: 700;
   font-size: 0.92rem;
@@ -144,7 +144,7 @@ body {
 }
 .card-label {
   font-size: 0.65rem;
-  color: #8888aa;
+  color: #9988bb;
   font-weight: 600;
   letter-spacing: 0.03em;
 }
@@ -156,16 +156,16 @@ body {
 }
 .card.locked .card-emoji { opacity: 0.25; }
 .card.locked .card-type {
-  color: #444466;
+  color: #6655aa;
   font-weight: 600;
 }
-.card.locked .card-label { color: #333355; }
+.card.locked .card-label { color: #5544aa; }
 
 /* ── PROGRESS ── */
 .progress-section {
   margin-top: 28px;
-  background: #111124;
-  border: 1px solid #1e1e38;
+  background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(192,132,252,0.18);
   border-radius: 20px;
   padding: 24px 20px;
   text-align: center;
@@ -181,7 +181,7 @@ body {
 }
 .progress-bg {
   fill: none;
-  stroke: #1e1e38;
+  stroke: rgba(192,132,252,0.18);
   stroke-width: 8;
 }
 .progress-fill {
@@ -204,7 +204,7 @@ body {
 }
 .progress-denom {
   font-size: 0.7rem;
-  color: #8888aa;
+  color: #9988bb;
 }
 .progress-msg {
   font-size: 0.9rem;
@@ -213,14 +213,14 @@ body {
 }
 .progress-sub {
   font-size: 0.78rem;
-  color: #8888aa;
+  color: #9988bb;
 }
 
 /* ── GAP ANALYSIS ── */
 .gap-section {
   margin-top: 28px;
-  background: #111124;
-  border: 1px solid #1e1e38;
+  background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(192,132,252,0.18);
   border-radius: 20px;
   padding: 24px 20px;
 }
@@ -250,7 +250,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
-  color: #8888aa;
+  color: #9988bb;
 }
 .gap-dot {
   width: 8px; height: 8px;
@@ -275,7 +275,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #c084fc, #a855f7);
+  background: linear-gradient(135deg, #c084fc, #ec4899);
   color: #fff;
   font-weight: 700;
   font-size: 0.92rem;
@@ -329,14 +329,14 @@ body {
 }
 .cta-btn:active { transform: scale(0.97); }
 .cta-primary {
-  background: #111124;
+  background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1.5px solid #c084fc;
   color: #c084fc;
 }
 .cta-secondary {
-  background: #111124;
-  border: 1.5px solid #1e1e38;
-  color: #8888aa;
+  background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1.5px solid rgba(192,132,252,0.22);
+  color: #9988bb;
 }
 
 /* ── SEASON DIVIDER ── */
@@ -346,7 +346,7 @@ body {
   padding: 8px 0 4px;
   font-size: 0.68rem;
   font-weight: 700;
-  color: #555577;
+  color: #7766aa;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -366,6 +366,32 @@ body {
 .fade-in:nth-child(4) { animation-delay: 0.2s; }
 .fade-in:nth-child(5) { animation-delay: 0.25s; }
 .fade-in:nth-child(6) { animation-delay: 0.3s; }
+
+/* ═══════════════════════════════════════════
+   Aurora Glassmorphism Theme (2025)
+   ═══════════════════════════════════════════ */
+
+/* Aurora 그라디언트 배경 레이어 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 90% 60% at -10% 0%,  rgba(120, 40, 200, 0.55) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 80% at 110% 0%,  rgba(236, 72, 153, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 20%  110%, rgba(34, 211, 238, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85%  85%,  rgba(120, 40, 200, 0.35) 0%, transparent 55%);
+  animation: auroraFloat 16s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes auroraFloat {
+  0%   { transform: scale(1)    translate(0%,   0%)   rotate(0deg); }
+  33%  { transform: scale(1.06) translate(-3%,  1.5%) rotate(1deg); }
+  66%  { transform: scale(0.97) translate(2%,  -1%)   rotate(-1deg); }
+  100% { transform: scale(1.08) translate(-2%,  3%)   rotate(2deg); }
+}
 </style>
 </head>
 <body>
