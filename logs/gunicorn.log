@@ -1,0 +1,172 @@
+[2026-03-06 12:31:51 +0900] [88453] [INFO] Starting gunicorn 25.1.0
+[2026-03-06 12:31:51 +0900] [88453] [INFO] Listening at: http://0.0.0.0:8082 (88453)
+[2026-03-06 12:31:51 +0900] [88453] [INFO] Using worker: sync
+[2026-03-06 12:31:51 +0900] [88453] [INFO] Control socket listening at /Users/mushin/projects/flavor/gunicorn.ctl
+[2026-03-06 12:31:51 +0900] [88456] [INFO] Booting worker with pid: 88456
+[2026-03-06 12:31:51 +0900] [88458] [INFO] Booting worker with pid: 88458
+[2026-03-06 12:43:51 +0900] [88453] [INFO] Handling signal: term
+[2026-03-06 12:43:51 +0900] [88458] [INFO] Worker exiting (pid: 88458)
+[2026-03-06 12:43:51 +0900] [88456] [INFO] Worker exiting (pid: 88456)
+[2026-03-06 12:43:51 +0900] [88453] [INFO] Worker (pid:88458) was sent SIGTERM!
+[2026-03-06 12:43:51 +0900] [88453] [INFO] Worker (pid:88456) was sent SIGTERM!
+[2026-03-06 12:43:52 +0900] [88453] [INFO] Shutting down: Master
+[2026-03-06 12:43:52 +0900] [89804] [INFO] Starting gunicorn 25.1.0
+[2026-03-06 12:43:52 +0900] [89804] [INFO] Listening at: http://0.0.0.0:8082 (89804)
+[2026-03-06 12:43:52 +0900] [89804] [INFO] Using worker: sync
+[2026-03-06 12:43:52 +0900] [89804] [INFO] Control socket listening at /Users/mushin/projects/flavor/gunicorn.ctl
+[2026-03-06 12:43:52 +0900] [89806] [INFO] Booting worker with pid: 89806
+[2026-03-06 12:43:52 +0900] [89807] [INFO] Booting worker with pid: 89807
+[2026-03-12 15:22:26 +0900] [89804] [INFO] Handling signal: hup
+[2026-03-12 15:22:26 +0900] [89804] [INFO] Hang up: Master
+[2026-03-12 15:22:26 +0900] [61773] [INFO] Booting worker with pid: 61773
+[2026-03-12 15:22:26 +0900] [61774] [INFO] Booting worker with pid: 61774
+[2026-03-12 15:22:26 +0900] [89807] [INFO] Worker exiting (pid: 89807)
+[2026-03-12 15:22:26 +0900] [89806] [INFO] Worker exiting (pid: 89806)
+[2026-03-12 17:58:36 +0900] [89804] [INFO] Handling signal: hup
+[2026-03-12 17:58:36 +0900] [89804] [INFO] Hang up: Master
+[2026-03-12 17:58:36 +0900] [72309] [INFO] Booting worker with pid: 72309
+[2026-03-12 17:58:36 +0900] [72310] [INFO] Booting worker with pid: 72310
+[2026-03-12 17:58:36 +0900] [61773] [INFO] Worker exiting (pid: 61773)
+[2026-03-12 17:58:36 +0900] [61774] [INFO] Worker exiting (pid: 61774)
+[2026-03-12 21:01:42 +0900] [89804] [INFO] Handling signal: term
+[2026-03-12 21:01:42 +0900] [72309] [INFO] Worker exiting (pid: 72309)
+[2026-03-12 21:01:42 +0900] [72310] [INFO] Worker exiting (pid: 72310)
+[2026-03-12 21:01:42 +0900] [89804] [INFO] Shutting down: Master
+[2026-03-14 12:35:43 +0900] [33990] [INFO] Starting gunicorn 25.1.0
+[2026-03-14 12:35:43 +0900] [33990] [INFO] Listening at: http://0.0.0.0:8082 (33990)
+[2026-03-14 12:35:43 +0900] [33990] [INFO] Using worker: sync
+[2026-03-14 12:35:43 +0900] [33990] [INFO] Control socket listening at /Users/mushin/projects/flavor/gunicorn.ctl
+[2026-03-14 12:35:43 +0900] [33991] [INFO] Booting worker with pid: 33991
+[2026-03-14 12:35:43 +0900] [33992] [INFO] Booting worker with pid: 33992
+[2026-03-14 12:58:16 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 12:58:16 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 12:58:16 +0900] [33992] [INFO] Worker exiting (pid: 33992)
+[2026-03-14 12:58:16 +0900] [33991] [INFO] Worker exiting (pid: 33991)
+[2026-03-14 12:58:16 +0900] [35974] [INFO] Booting worker with pid: 35974
+[2026-03-14 12:58:16 +0900] [35975] [INFO] Booting worker with pid: 35975
+[2026-03-14 13:04:08 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 13:04:08 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 13:04:08 +0900] [35974] [INFO] Worker exiting (pid: 35974)
+[2026-03-14 13:04:08 +0900] [36366] [INFO] Booting worker with pid: 36366
+[2026-03-14 13:04:08 +0900] [36367] [INFO] Booting worker with pid: 36367
+[2026-03-14 13:04:08 +0900] [35975] [INFO] Worker exiting (pid: 35975)
+[2026-03-14 13:06:22 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 13:06:22 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 13:06:22 +0900] [36485] [INFO] Booting worker with pid: 36485
+[2026-03-14 13:06:22 +0900] [36367] [INFO] Worker exiting (pid: 36367)
+[2026-03-14 13:06:22 +0900] [36486] [INFO] Booting worker with pid: 36486
+[2026-03-14 13:06:22 +0900] [36366] [INFO] Worker exiting (pid: 36366)
+[2026-03-14 18:27:11 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 18:27:11 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 18:27:11 +0900] [36485] [INFO] Worker exiting (pid: 36485)
+[2026-03-14 18:27:11 +0900] [53260] [INFO] Booting worker with pid: 53260
+[2026-03-14 18:27:11 +0900] [53261] [INFO] Booting worker with pid: 53261
+[2026-03-14 18:27:11 +0900] [36486] [INFO] Worker exiting (pid: 36486)
+[2026-03-14 18:34:59 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 18:34:59 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 18:34:59 +0900] [53260] [INFO] Worker exiting (pid: 53260)
+[2026-03-14 18:34:59 +0900] [53673] [INFO] Booting worker with pid: 53673
+[2026-03-14 18:34:59 +0900] [53674] [INFO] Booting worker with pid: 53674
+[2026-03-14 18:34:59 +0900] [53261] [INFO] Worker exiting (pid: 53261)
+[2026-03-14 19:04:15 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 19:04:15 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 19:04:15 +0900] [55509] [INFO] Booting worker with pid: 55509
+[2026-03-14 19:04:15 +0900] [53674] [INFO] Worker exiting (pid: 53674)
+[2026-03-14 19:04:15 +0900] [53673] [INFO] Worker exiting (pid: 53673)
+[2026-03-14 19:04:15 +0900] [55511] [INFO] Booting worker with pid: 55511
+[2026-03-14 20:03:05 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 20:03:05 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 20:03:05 +0900] [55511] [INFO] Worker exiting (pid: 55511)
+[2026-03-14 20:03:05 +0900] [59164] [INFO] Booting worker with pid: 59164
+[2026-03-14 20:03:05 +0900] [59165] [INFO] Booting worker with pid: 59165
+[2026-03-14 20:03:05 +0900] [55509] [INFO] Worker exiting (pid: 55509)
+[2026-03-14 20:25:53 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 20:25:53 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 20:25:53 +0900] [59165] [INFO] Worker exiting (pid: 59165)
+[2026-03-14 20:25:53 +0900] [60714] [INFO] Booting worker with pid: 60714
+[2026-03-14 20:25:53 +0900] [60715] [INFO] Booting worker with pid: 60715
+[2026-03-14 20:25:53 +0900] [59164] [INFO] Worker exiting (pid: 59164)
+[2026-03-14 20:56:42 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 20:56:42 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 20:56:42 +0900] [60714] [INFO] Worker exiting (pid: 60714)
+[2026-03-14 20:56:42 +0900] [62740] [INFO] Booting worker with pid: 62740
+[2026-03-14 20:56:42 +0900] [62741] [INFO] Booting worker with pid: 62741
+[2026-03-14 20:56:42 +0900] [60715] [INFO] Worker exiting (pid: 60715)
+[2026-03-14 22:36:58 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-14 22:36:58 +0900] [33990] [INFO] Hang up: Master
+[2026-03-14 22:36:58 +0900] [71628] [INFO] Booting worker with pid: 71628
+[2026-03-14 22:36:58 +0900] [71629] [INFO] Booting worker with pid: 71629
+[2026-03-14 22:36:58 +0900] [62740] [INFO] Worker exiting (pid: 62740)
+[2026-03-14 22:36:58 +0900] [62741] [INFO] Worker exiting (pid: 62741)
+[2026-03-15 19:01:45 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-15 19:01:45 +0900] [33990] [INFO] Hang up: Master
+[2026-03-15 19:01:45 +0900] [40505] [INFO] Booting worker with pid: 40505
+[2026-03-15 19:01:45 +0900] [40506] [INFO] Booting worker with pid: 40506
+[2026-03-15 19:01:45 +0900] [71628] [INFO] Worker exiting (pid: 71628)
+[2026-03-15 19:01:45 +0900] [71629] [INFO] Worker exiting (pid: 71629)
+[2026-03-15 19:15:24 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-15 19:15:24 +0900] [33990] [INFO] Hang up: Master
+[2026-03-15 19:15:24 +0900] [40506] [INFO] Worker exiting (pid: 40506)
+[2026-03-15 19:15:24 +0900] [40505] [INFO] Worker exiting (pid: 40505)
+[2026-03-15 19:15:24 +0900] [41428] [INFO] Booting worker with pid: 41428
+[2026-03-15 19:15:24 +0900] [41429] [INFO] Booting worker with pid: 41429
+[2026-03-15 23:12:37 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-15 23:12:37 +0900] [33990] [INFO] Hang up: Master
+[2026-03-15 23:12:37 +0900] [55286] [INFO] Booting worker with pid: 55286
+[2026-03-15 23:12:37 +0900] [55287] [INFO] Booting worker with pid: 55287
+[2026-03-15 23:12:37 +0900] [41429] [INFO] Worker exiting (pid: 41429)
+[2026-03-15 23:12:37 +0900] [41428] [INFO] Worker exiting (pid: 41428)
+[2026-03-16 12:17:20 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-16 12:17:20 +0900] [33990] [INFO] Hang up: Master
+[2026-03-16 12:17:20 +0900] [99032] [INFO] Booting worker with pid: 99032
+[2026-03-16 12:17:20 +0900] [55286] [INFO] Worker exiting (pid: 55286)
+[2026-03-16 12:17:20 +0900] [99033] [INFO] Booting worker with pid: 99033
+[2026-03-16 12:17:20 +0900] [55287] [INFO] Worker exiting (pid: 55287)
+[2026-03-16 18:53:55 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-16 18:53:55 +0900] [33990] [INFO] Hang up: Master
+[2026-03-16 18:53:55 +0900] [99033] [INFO] Worker exiting (pid: 99033)
+[2026-03-16 18:53:55 +0900] [22232] [INFO] Booting worker with pid: 22232
+[2026-03-16 18:53:55 +0900] [22233] [INFO] Booting worker with pid: 22233
+[2026-03-16 18:53:55 +0900] [99032] [INFO] Worker exiting (pid: 99032)
+[2026-03-17 10:08:57 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-17 10:08:57 +0900] [33990] [INFO] Hang up: Master
+[2026-03-17 10:08:57 +0900] [64675] [INFO] Booting worker with pid: 64675
+[2026-03-17 10:08:57 +0900] [22232] [INFO] Worker exiting (pid: 22232)
+[2026-03-17 10:08:57 +0900] [64676] [INFO] Booting worker with pid: 64676
+[2026-03-17 10:08:57 +0900] [22233] [INFO] Worker exiting (pid: 22233)
+[2026-03-17 10:20:55 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-17 10:20:55 +0900] [33990] [INFO] Hang up: Master
+[2026-03-17 10:20:55 +0900] [65391] [INFO] Booting worker with pid: 65391
+[2026-03-17 10:20:55 +0900] [64675] [INFO] Worker exiting (pid: 64675)
+[2026-03-17 10:20:55 +0900] [65392] [INFO] Booting worker with pid: 65392
+[2026-03-17 10:20:55 +0900] [64676] [INFO] Worker exiting (pid: 64676)
+[2026-03-17 10:22:55 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-17 10:22:55 +0900] [33990] [INFO] Hang up: Master
+[2026-03-17 10:22:55 +0900] [65501] [INFO] Booting worker with pid: 65501
+[2026-03-17 10:22:55 +0900] [65392] [INFO] Worker exiting (pid: 65392)
+[2026-03-17 10:22:55 +0900] [65502] [INFO] Booting worker with pid: 65502
+[2026-03-17 10:22:55 +0900] [65391] [INFO] Worker exiting (pid: 65391)
+[2026-03-17 16:18:57 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-17 16:18:57 +0900] [33990] [INFO] Hang up: Master
+[2026-03-17 16:18:57 +0900] [82075] [INFO] Booting worker with pid: 82075
+[2026-03-17 16:18:57 +0900] [65501] [INFO] Worker exiting (pid: 65501)
+[2026-03-17 16:18:57 +0900] [82076] [INFO] Booting worker with pid: 82076
+[2026-03-17 16:18:57 +0900] [65502] [INFO] Worker exiting (pid: 65502)
+[2026-03-17 18:09:47 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-17 18:09:47 +0900] [33990] [INFO] Hang up: Master
+[2026-03-17 18:09:47 +0900] [89091] [INFO] Booting worker with pid: 89091
+[2026-03-17 18:09:47 +0900] [89092] [INFO] Booting worker with pid: 89092
+[2026-03-17 18:09:47 +0900] [82076] [INFO] Worker exiting (pid: 82076)
+[2026-03-17 18:09:47 +0900] [82075] [INFO] Worker exiting (pid: 82075)
+[2026-03-19 13:19:01 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-19 13:19:01 +0900] [33990] [INFO] Hang up: Master
+[2026-03-19 13:19:01 +0900] [89091] [INFO] Worker exiting (pid: 89091)
+[2026-03-19 13:19:01 +0900] [10854] [INFO] Booting worker with pid: 10854
+[2026-03-19 13:19:01 +0900] [10855] [INFO] Booting worker with pid: 10855
+[2026-03-19 13:19:01 +0900] [89092] [INFO] Worker exiting (pid: 89092)
+[2026-03-19 19:18:51 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-19 19:18:51 +0900] [33990] [INFO] Hang up: Master
+[2026-03-19 19:18:51 +0900] [27707] [INFO] Booting worker with pid: 27707
+[2026-03-19 19:18:51 +0900] [27708] [INFO] Booting worker with pid: 27708
+[2026-03-19 19:18:51 +0900] [10855] [INFO] Worker exiting (pid: 10855)
+[2026-03-19 19:18:51 +0900] [10854] [INFO] Worker exiting (pid: 10854)
