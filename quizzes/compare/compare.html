@@ -8,7 +8,9 @@
 <meta property="og:image" content="https://flavor.arkedia.work/static/og_compare.png">
 <title>취향 테스트 3종 비교</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   :root {
     --bg: #0C0C10;
@@ -96,7 +98,7 @@
   .vol-card.v2::before { background: var(--c2); }
   .vol-card.v3::before { background: linear-gradient(90deg, var(--c2), var(--c3)); }
 
-  .vol-card.done { border-color: rgba(255,255,255,0.15); }
+  .vol-card.done { border-color: rgba(255,255,255,0.3); }
   .vol-card.done .card-cta { opacity: 0.5; }
 
   .card-top {
@@ -259,7 +261,7 @@
   .comment-wrap label { font-size: 13px; color: var(--sub); display: block; margin-bottom: 8px; }
   .comment-input {
     width: 100%;
-    background: rgba(255,255,255,0.04);
+    background: rgba(139,92,246,0.04);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px 14px;
@@ -312,7 +314,7 @@
   .dot {
     width: 8px; height: 8px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.3);
     transition: background 0.3s;
   }
   .dot.done { background: #5ecd7f; }

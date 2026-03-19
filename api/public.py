@@ -399,9 +399,9 @@ def result_page(result_id):
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{
-  background: #080810;
-  color: #e8e8f0;
-  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #f5f3ff;
+  color: #1e1b4b;
+  font-family: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
 }}
 .wrap {{ max-width: 480px; margin: 0 auto; padding: 0 0 80px; }}
@@ -411,7 +411,7 @@ body {{
   position: relative;
   text-align: center;
   padding: 48px 24px 36px;
-  background: linear-gradient(180deg, #13132b 0%, #080810 100%);
+  background: linear-gradient(180deg, #f0eeff 0%, #f5f3ff 100%);
   overflow: hidden;
 }}
 .hero::before {{
@@ -420,7 +420,7 @@ body {{
   top: -60px; left: 50%;
   transform: translateX(-50%);
   width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(255,137,6,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
   pointer-events: none;
 }}
 .hero-badge {{
@@ -428,8 +428,8 @@ body {{
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #ff8906;
-  border: 1px solid rgba(255,137,6,0.3);
+  color: #7c3aed;
+  border: 1px solid rgba(139,92,246,0.25);
   border-radius: 20px;
   padding: 5px 14px;
   margin-bottom: 20px;
@@ -440,7 +440,7 @@ body {{
   line-height: 1;
   margin-bottom: 12px;
   display: block;
-  filter: drop-shadow(0 0 24px rgba(255,137,6,0.5));
+  filter: drop-shadow(0 0 24px rgba(139,92,246,0.4));
 }}
 .type-name {{
   font-size: 2rem;
@@ -453,20 +453,20 @@ body {{
 .type-tagline {{
   font-size: 1rem;
   font-weight: 700;
-  color: #ff8906;
+  color: #7c3aed;
   margin-bottom: 14px;
   line-height: 1.4;
 }}
 .type-detail {{
   font-size: 0.85rem;
-  color: #8888aa;
+  color: #6d6d8a;
   line-height: 1.7;
   max-width: 320px;
   margin: 0 auto 20px;
 }}
 .hero-name-line {{
   font-size: 0.8rem;
-  color: #555577;
+  color: #8b8bab;
   margin-top: 4px;
 }}
 .hero-name-line strong {{
@@ -479,7 +479,7 @@ body {{
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #555577;
+  color: #8b8bab;
   text-transform: uppercase;
   padding: 24px 20px 12px;
 }}
@@ -492,13 +492,16 @@ body {{
   padding: 0 16px;
 }}
 .domain-card {{
-  background: #111124;
-  border: 1px solid #1e1e38;
+  background: #ffffff;
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  border: 1px solid #ddd6fe;
   border-radius: 16px;
   padding: 14px;
   transition: border-color 0.2s;
 }}
-.domain-card:active {{ border-color: #ff890633; }}
+.domain-card:active {{ border-color: #7c3aed33; }}
 .d-head {{
   display: flex;
   align-items: center;
@@ -509,14 +512,14 @@ body {{
 .d-label {{
   font-size: 0.68rem;
   font-weight: 700;
-  color: #555577;
+  color: #8b8bab;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }}
 .d-item {{
   font-size: 0.95rem;
   font-weight: 800;
-  color: #e8e8f0;
+  color: #1e1b4b;
   margin-bottom: 5px;
   line-height: 1.3;
 }}
@@ -536,8 +539,11 @@ body {{
 /* ─── CTA ─── */
 .cta-box {{
   margin: 20px 16px 0;
-  background: #111124;
-  border: 1px solid #1e1e38;
+  background: #ffffff;
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  box-shadow: 0 2px 16px rgba(139,92,246,0.08), 0 1px 4px rgba(139,92,246,0.04);
+  border: 1px solid #ddd6fe;
   border-radius: 20px;
   padding: 24px 20px;
   text-align: center;
@@ -545,13 +551,13 @@ body {{
 .cta-lead {{
   font-size: 1.05rem;
   font-weight: 800;
-  color: #e8e8f0;
+  color: #1e1b4b;
   margin-bottom: 6px;
   line-height: 1.4;
 }}
 .cta-sub {{
   font-size: 0.82rem;
-  color: #666688;
+  color: #7c7c9a;
   margin-bottom: 20px;
   line-height: 1.6;
 }}
@@ -559,7 +565,7 @@ body {{
   display: block;
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #ff8906 0%, #ff5f40 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   color: #fff;
   font-weight: 900;
   font-size: 1rem;
@@ -569,24 +575,24 @@ body {{
   cursor: pointer;
   font-family: inherit;
   letter-spacing: -0.01em;
-  box-shadow: 0 8px 24px rgba(255,137,6,0.3);
+  box-shadow: 0 8px 24px rgba(139,92,246,0.25);
 }}
 .btn-secondary {{
   display: block;
   width: 100%;
   padding: 14px;
   background: transparent;
-  color: #666688;
+  color: #7c7c9a;
   font-size: 0.88rem;
   font-weight: 600;
-  border: 1.5px solid #1e1e38;
+  border: 1.5px solid #ddd6fe;
   border-radius: 12px;
   cursor: pointer;
   margin-top: 10px;
   font-family: inherit;
   transition: all 0.2s;
 }}
-.btn-secondary:active {{ border-color: #ff8906; color: #ff8906; }}
+.btn-secondary:active {{ border-color: #7c3aed; color: #7c3aed; }}
 .copied {{ color: #4ade80 !important; border-color: #4ade80 !important; }}
 </style>
 </head>

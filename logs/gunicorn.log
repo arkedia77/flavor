@@ -170,3 +170,15 @@
 [2026-03-19 19:18:51 +0900] [27708] [INFO] Booting worker with pid: 27708
 [2026-03-19 19:18:51 +0900] [10855] [INFO] Worker exiting (pid: 10855)
 [2026-03-19 19:18:51 +0900] [10854] [INFO] Worker exiting (pid: 10854)
+[2026-03-19 20:03:03 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-19 20:03:03 +0900] [33990] [INFO] Hang up: Master
+[2026-03-19 20:03:03 +0900] [30528] [INFO] Booting worker with pid: 30528
+[2026-03-19 20:03:03 +0900] [30529] [INFO] Booting worker with pid: 30529
+[2026-03-19 20:03:03 +0900] [27707] [INFO] Worker exiting (pid: 27707)
+[2026-03-19 20:03:03 +0900] [27708] [INFO] Worker exiting (pid: 27708)
+[2026-03-19 20:04:48 +0900] [33990] [INFO] Handling signal: hup
+[2026-03-19 20:04:48 +0900] [33990] [INFO] Hang up: Master
+[2026-03-19 20:04:48 +0900] [30730] [INFO] Booting worker with pid: 30730
+[2026-03-19 20:04:48 +0900] [30731] [INFO] Booting worker with pid: 30731
+[2026-03-19 20:04:48 +0900] [30528] [INFO] Worker exiting (pid: 30528)
+[2026-03-19 20:04:48 +0900] [30529] [INFO] Worker exiting (pid: 30529)
