@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta property="og:title" content="flavor — 내 취향 리포트">
+<meta property="og:description" content="퀴즈로 모은 내 취향 DNA 총정리">
+<title>flavor — 내 취향 리포트</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: #080810;
+  color: #e8e8f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+}
+.wrap { max-width: 480px; margin: 0 auto; padding: 0 16px 100px; }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  padding: 48px 0 28px;
+  position: relative;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(192,132,252,0.15) 0%, rgba(168,85,247,0.05) 40%, transparent 70%);
+  pointer-events: none;
+}
+.logo {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+  position: relative;
+}
+.main-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+  position: relative;
+}
+.user-info {
+  font-size: 0.88rem;
+  color: #8888aa;
+  position: relative;
+}
+.user-info span { color: #c084fc; font-weight: 700; }
+
+/* ── LOCK STATE ── */
+.lock-wrap {
+  text-align: center;
+  padding: 60px 20px;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  margin-top: 12px;
+}
+.lock-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+.lock-msg {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.lock-count {
+  font-size: 0.85rem;
+  color: #8888aa;
+  margin-bottom: 24px;
+}
+.lock-cta {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+.lock-cta:active { transform: scale(0.96); }
+
+/* ── SECTION TITLES ── */
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c084fc;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* ── COLLECTION GRID ── */
+.collection-section {
+  margin-top: 24px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(192,132,252,0.08), rgba(17,17,36,0.9));
+  border: 1px solid rgba(192,132,252,0.15);
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.15s, border-color 0.2s;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 70px; height: 70px;
+  background: radial-gradient(circle, rgba(192,132,252,0.1), transparent 70%);
+  pointer-events: none;
+}
+.card:active { transform: scale(0.97); }
+.card-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+.card-type {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.card-label {
+  font-size: 0.65rem;
+  color: #8888aa;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* locked card */
+.card.locked {
+  background: rgba(17,17,36,0.6);
+  border-color: rgba(30,30,56,0.6);
+}
+.card.locked .card-emoji { opacity: 0.25; }
+.card.locked .card-type {
+  color: #444466;
+  font-weight: 600;
+}
+.card.locked .card-label { color: #333355; }
+
+/* ── PROGRESS ── */
+.progress-section {
+  margin-top: 28px;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.progress-ring-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+}
+.progress-ring-wrap svg {
+  transform: rotate(-90deg);
+}
+.progress-bg {
+  fill: none;
+  stroke: #1e1e38;
+  stroke-width: 8;
+}
+.progress-fill {
+  fill: none;
+  stroke: url(#grad);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.progress-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.progress-num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+.progress-denom {
+  font-size: 0.7rem;
+  color: #8888aa;
+}
+.progress-msg {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.progress-sub {
+  font-size: 0.78rem;
+  color: #8888aa;
+}
+
+/* ── GAP ANALYSIS ── */
+.gap-section {
+  margin-top: 28px;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  padding: 24px 20px;
+}
+.gap-bars {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  align-items: flex-end;
+  height: 60px;
+}
+.gap-bar {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  min-height: 8px;
+  transition: height 0.5s ease;
+}
+.gap-bar.match { background: linear-gradient(180deg, #22c55e, #16a34a); }
+.gap-bar.diff { background: linear-gradient(180deg, #c084fc, #a855f7); }
+.gap-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+.gap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #8888aa;
+}
+.gap-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.gap-dot.match { background: #22c55e; }
+.gap-dot.diff { background: #c084fc; }
+.gap-text {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #aaaacc;
+  text-align: center;
+}
+
+/* ── SHARE ── */
+.share-section {
+  margin-top: 28px;
+  text-align: center;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, opacity 0.15s;
+  width: 100%;
+  justify-content: center;
+}
+.share-btn:active { transform: scale(0.96); opacity: 0.9; }
+.share-btn svg { width: 18px; height: 18px; }
+.share-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #22c55e;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}
+.share-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── CTA ── */
+.cta-section {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cta-btn {
+  display: block;
+  text-align: center;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+.cta-btn:active { transform: scale(0.97); }
+.cta-primary {
+  background: #111124;
+  border: 1.5px solid #c084fc;
+  color: #c084fc;
+}
+.cta-secondary {
+  background: #111124;
+  border: 1.5px solid #1e1e38;
+  color: #8888aa;
+}
+
+/* ── SEASON DIVIDER ── */
+.season-divider {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 8px 0 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #555577;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+}
+.fade-in:nth-child(1) { animation-delay: 0.05s; }
+.fade-in:nth-child(2) { animation-delay: 0.1s; }
+.fade-in:nth-child(3) { animation-delay: 0.15s; }
+.fade-in:nth-child(4) { animation-delay: 0.2s; }
+.fade-in:nth-child(5) { animation-delay: 0.25s; }
+.fade-in:nth-child(6) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div class="share-toast" id="toast">클립보드에 복사했어!</div>
+
+<script>
+(function() {
+  // ── Quiz definitions ──
+  const QUIZ_MAP = [
+    { key: 'vol2_romance_v2', label: '연애', season: 1 },
+    { key: 'vol3_food', label: '식도락', season: 1 },
+    { key: 'vol4_travel', label: '여행', season: 1 },
+    { key: 'vol5_work', label: '직장', season: 1 },
+    { key: 'vol6_fashion', label: '패션', season: 1 },
+    { key: 'vol7_health', label: '건강', season: 1 },
+    { key: 'vol8_music', label: '음악', season: 1 },
+    { key: 'vol9_social', label: '인간관계', season: 1 },
+    { key: 'vol10_lifestyle', label: '라이프스타일', season: 1 },
+    { key: 'vol11_spending', label: '소비', season: 2 },
+    { key: 'vol12_drink', label: '술자리', season: 2 },
+    { key: 'vol13_redflag', label: '연애지뢰', season: 2 },
+    { key: 'vol14_home', label: '혼살림', season: 2 },
+    { key: 'vol15_fandom', label: '덕질', season: 2 },
+    { key: 'vol16_cafe', label: '카페', season: 2 },
+    { key: 'vol17_sleep', label: '수면', season: 2 },
+    { key: 'vol18_sns', label: 'SNS', season: 2 },
+    { key: 'vol19_study', label: '공부', season: 2 },
+    { key: 'vol20_interior', label: '인테리어', season: 2 },
+  ];
+  const TOTAL = QUIZ_MAP.length;
+
+  // ── Load profile ──
+  let raw = localStorage.getItem('flavor_profile_dna');
+  if (!raw) { location.href = '/'; return; }
+
+  let profile;
+  try { profile = JSON.parse(raw); } catch(e) { location.href = '/'; return; }
+
+  const name = profile.name || '익명';
+  const results = profile.quiz_results || {};
+  const completed = profile.completed_quizzes || [];
+  const doneCount = completed.length;
+  const isLocked = doneCount < 3;
+
+  const app = document.getElementById('app');
+
+  // ── Header ──
+  let html = `
+    <div class="header">
+      <div class="logo">flavor</div>
+      <div class="main-title">내 취향 리포트</div>
+      <div class="user-info"><span>${esc(name)}</span>님의 취향 프로필 (${doneCount}/${TOTAL} 완료)</div>
+    </div>
+  `;
+
+  // ── Lock state ──
+  if (isLocked) {
+    html += `
+      <div class="lock-wrap">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-msg">퀴즈 3개 이상 풀면 리포트가 해금돼!</div>
+        <div class="lock-count">현재 ${doneCount}/3</div>
+        <a href="/" class="lock-cta">퀴즈 풀러 가기 →</a>
+      </div>
+    `;
+    app.innerHTML = html;
+    return;
+  }
+
+  // ── Collection Grid ──
+  html += `<div class="collection-section"><div class="section-label">수집한 유형들</div><div class="grid">`;
+
+  let currentSeason = 0;
+  QUIZ_MAP.forEach(function(q, i) {
+    if (q.season !== currentSeason) {
+      currentSeason = q.season;
+      html += `<div class="season-divider">Season ${q.season}</div>`;
+    }
+    const r = results[q.key];
+    if (r) {
+      html += `
+        <div class="card fade-in">
+          <div class="card-emoji">${r.actual_emoji || '🧬'}</div>
+          <div class="card-type">${esc(r.actual_type || '???')}</div>
+          <div class="card-label">${esc(q.label)}</div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="card locked fade-in">
+          <div class="card-emoji">?</div>
+          <div class="card-type">미완료</div>
+          <div class="card-label">${esc(q.label)}</div>
+        </div>
+      `;
+    }
+  });
+
+  html += `</div></div>`;
+
+  // ── Progress Ring ──
+  const pct = doneCount / TOTAL;
+  const radius = 48;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - pct);
+
+  let motivMsg = '';
+  if (doneCount >= 19) motivMsg = '올클 달성!!';
+  else if (doneCount >= 16) motivMsg = '마지막 스퍼트!!';
+  else if (doneCount >= 11) motivMsg = '거의 다 왔어!!';
+  else if (doneCount >= 6) motivMsg = '절반 왔다 화이팅!';
+  else motivMsg = '시작이 반이야!';
+
+  html += `
+    <div class="progress-section fade-in">
+      <div class="section-label">완료 현황</div>
+      <div class="progress-ring-wrap">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#c084fc"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+          <circle class="progress-bg" cx="60" cy="60" r="${radius}"/>
+          <circle class="progress-fill" cx="60" cy="60" r="${radius}"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="progress-text">
+          <div class="progress-num">${doneCount}</div>
+          <div class="progress-denom">/ ${TOTAL}</div>
+        </div>
+      </div>
+      <div class="progress-msg">${motivMsg}${doneCount >= 19 ? ' 🎉' : ''}</div>
+      <div class="progress-sub">${doneCount < 19 ? '19개 올클하면 풀 리포트 완성!' : '취향 DNA 완전체 달성!'}</div>
+    </div>
+  `;
+
+  // ── Gap Analysis ──
+  let matchCount = 0;
+  let diffCount = 0;
+  completed.forEach(function(key) {
+    const r = results[key];
+    if (!r) return;
+    if (r.innate_type === r.actual_type) matchCount++;
+    else diffCount++;
+  });
+
+  const matchH = doneCount > 0 ? Math.max(8, Math.round((matchCount / doneCount) * 52)) : 8;
+  const diffH = doneCount > 0 ? Math.max(8, Math.round((diffCount / doneCount) * 52)) : 8;
+
+  let gapComment = '';
+  if (diffCount === 0) {
+    gapComment = '타고난 거랑 실제가 완전 일치해 ㅋㅋ 솔직한 사람이네';
+  } else if (diffCount <= Math.floor(doneCount * 0.3)) {
+    gapComment = '대체로 타고난 대로 사는 편이야. 꽤 솔직한 듯?';
+  } else if (diffCount <= Math.floor(doneCount * 0.6)) {
+    gapComment = `${doneCount}개 중 ${diffCount}개에서 타고난 거랑 실제가 달랐어 ㅋㅋ 겉바속촉인 듯?`;
+  } else {
+    gapComment = `${doneCount}개 중 ${diffCount}개가 달라 ㅋㅋ 완전 반전매력 소유자잖아`;
+  }
+
+  html += `
+    <div class="gap-section fade-in">
+      <div class="section-label">타고난 나 vs 진짜 나</div>
+      <div class="gap-legend">
+        <div class="gap-legend-item"><div class="gap-dot match"></div>일치 (${matchCount})</div>
+        <div class="gap-legend-item"><div class="gap-dot diff"></div>다름 (${diffCount})</div>
+      </div>
+      <div class="gap-bars">
+        <div class="gap-bar match" style="height:${matchH}px"></div>
+        <div class="gap-bar diff" style="height:${diffH}px"></div>
+      </div>
+      <div class="gap-text">${gapComment}</div>
+    </div>
+  `;
+
+  // ── Share ──
+  html += `
+    <div class="share-section fade-in">
+      <button class="share-btn" onclick="shareReport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        내 취향 리포트 공유하기
+      </button>
+    </div>
+  `;
+
+  // ── CTA ──
+  html += `
+    <div class="cta-section fade-in">
+      <a href="/" class="cta-btn cta-primary">더 많은 퀴즈 풀기</a>
+      <a href="/my-report-saju" class="cta-btn cta-secondary">사주 버전 리포트</a>
+    </div>
+  `;
+
+  app.innerHTML = html;
+
+  // ── Share function ──
+  window.shareReport = function() {
+    const labelMap = {};
+    QUIZ_MAP.forEach(function(q) { labelMap[q.key] = q.label; });
+
+    let lines = [`🧬 내 취향 DNA 리포트 (${doneCount}/${TOTAL} 완료)`];
+    completed.forEach(function(key) {
+      const r = results[key];
+      const label = labelMap[key] || key;
+      if (r && r.actual_type) {
+        lines.push(`${label}: ${r.actual_type}`);
+      }
+    });
+    lines.push('');
+    lines.push('👉 너도 해봐: flavor.arkedia.work');
+
+    const text = lines.join('\n');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(showToast).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+
+    function fallbackCopy() {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast(); }
+      catch(e) { alert(text); }
+      document.body.removeChild(ta);
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2000);
+    }
+  };
+
+  // ── Helper ──
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+})();
+</script>
+</body>
+</html>

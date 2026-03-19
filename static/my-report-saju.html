@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 사주 취향 리포트 | flavor</title>
+<meta property="og:title" content="내 사주 취향 리포트 | flavor">
+<meta property="og:description" content="사주로 보는 나의 진짜 취향 지도">
+<style>
+:root {
+  --bg: #080810;
+  --card: #111118;
+  --border: #2a2218;
+  --text: #e8e8f0;
+  --dim: #9999aa;
+  --muted: #666677;
+  --gold: #f59e0b;
+  --gold-dark: #d97706;
+  --gold-light: #fbbf24;
+  --gold-dim: #92640d;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px 100px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+.logo {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.header .user-line {
+  color: var(--dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.header .user-line strong {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ===== LOCK STATE ===== */
+.lock-screen {
+  text-align: center;
+  padding: 60px 20px;
+}
+.lock-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+.lock-screen h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--gold);
+}
+.lock-screen p {
+  color: var(--dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.btn-gold {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #000;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+  text-decoration: none;
+  color: #000;
+}
+
+/* ===== SECTION CARD ===== */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 20px;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+/* ===== COLLECTION GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.grid-item {
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 6px 12px;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.grid-item.done {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.06);
+}
+.grid-item.done:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+}
+.grid-item.locked {
+  opacity: 0.4;
+}
+.grid-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.grid-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+.grid-type {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  word-break: keep-all;
+}
+.grid-item.locked .grid-type {
+  color: var(--muted);
+}
+
+/* ===== PROGRESS ===== */
+.progress-wrap {
+  margin-bottom: 12px;
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.progress-count {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+.progress-msg {
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-weight: 500;
+}
+
+/* ===== GAP ANALYSIS ===== */
+.gap-summary {
+  text-align: center;
+  padding: 8px 0;
+}
+.gap-big-num {
+  font-size: 2.4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.gap-label {
+  font-size: 0.8rem;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+.gap-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.82rem;
+}
+.gap-row:last-child { border-bottom: none; }
+.gap-cat {
+  width: 70px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--dim);
+}
+.gap-innate, .gap-actual {
+  flex: 1;
+  font-weight: 600;
+}
+.gap-innate { color: var(--gold-light); }
+.gap-actual { color: var(--text); }
+.gap-match {
+  width: 28px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* ===== SHARE ===== */
+.share-card {
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.04));
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 8px;
+}
+.share-preview {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--dim);
+  white-space: pre-line;
+  margin-bottom: 14px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.btn-share {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #000;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.btn-share:hover {
+  transform: translateY(-1px);
+}
+.copy-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gold);
+  color: #000;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 100;
+}
+.copy-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== CTA ===== */
+.cta-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.cta-btn {
+  flex: 1;
+  display: block;
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: transform 0.15s;
+}
+.cta-btn:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+.cta-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #000;
+}
+.cta-secondary {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: var(--gold);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 380px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+  .gap-row { font-size: 0.75rem; }
+  .gap-cat { width: 55px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div class="copy-toast" id="copy-toast">복사 완료!</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'flavor_profile_saju';
+  const TOTAL_QUIZZES = 19;
+
+  const QUIZ_MAP = {
+    vol2_romance_v2_saju: '연애',
+    vol3_food_saju: '식도락',
+    vol4_travel_saju: '여행',
+    vol5_work_saju: '직장',
+    vol6_fashion_saju: '패션',
+    vol7_health_saju: '건강',
+    vol8_music_saju: '음악',
+    vol9_social_saju: '인간관계',
+    vol10_lifestyle_saju: '라이프스타일',
+    vol11_spending_saju: '소비',
+    vol12_drink_saju: '술자리',
+    vol13_redflag_saju: '연애지뢰',
+    vol14_home_saju: '혼살림',
+    vol15_fandom_saju: '덕질',
+    vol16_cafe_saju: '카페',
+    vol17_sleep_saju: '수면',
+    vol18_sns_saju: 'SNS',
+    vol19_study_saju: '공부',
+    vol20_interior_saju: '인테리어'
+  };
+
+  const QUIZ_ORDER = Object.keys(QUIZ_MAP);
+
+  // Load profile
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    window.location.href = '/saju';
+    return;
+  }
+
+  let profile;
+  try {
+    profile = JSON.parse(raw);
+  } catch(e) {
+    window.location.href = '/saju';
+    return;
+  }
+
+  const name = profile.name || '익명';
+  const results = profile.quiz_results || {};
+  const completed = profile.completed_quizzes || Object.keys(results);
+  const doneCount = completed.length;
+
+  const app = document.getElementById('app');
+
+  // ===== HEADER =====
+  let html = `
+    <div class="header">
+      <div class="logo">flavor 사주</div>
+      <h1>내 사주 취향 리포트</h1>
+      <div class="user-line">${name}님의 사주 프로필 (<strong>${doneCount}/${TOTAL_QUIZZES}</strong> 완료)</div>
+    </div>
+  `;
+
+  // ===== LOCK STATE =====
+  if (doneCount < 3) {
+    html += `
+      <div class="lock-screen">
+        <div class="lock-icon">🔒</div>
+        <h2>리포트 해금까지 ${3 - doneCount}개 남았어!</h2>
+        <p>퀴즈 3개 이상 풀면 리포트가 해금돼!<br>지금 ${doneCount}개 완료했으니까 조금만 더 하면 돼~</p>
+        <a href="/saju" class="btn-gold">사주 퀴즈 풀러 가기</a>
+      </div>
+    `;
+    app.innerHTML = html;
+    return;
+  }
+
+  // ===== COLLECTION GRID =====
+  html += `<div class="section"><div class="section-title">취향 컬렉션</div><div class="grid">`;
+
+  QUIZ_ORDER.forEach(function(qid) {
+    const label = QUIZ_MAP[qid];
+    const r = results[qid];
+    if (r) {
+      const emoji = r.innate_emoji || '🔮';
+      const typeName = r.innate_type || '???';
+      html += `
+        <div class="grid-item done">
+          <div class="grid-emoji">${emoji}</div>
+          <div class="grid-label">${label}</div>
+          <div class="grid-type">${typeName}</div>
+        </div>`;
+    } else {
+      html += `
+        <div class="grid-item locked">
+          <div class="grid-emoji">❓</div>
+          <div class="grid-label">${label}</div>
+          <div class="grid-type">미완료</div>
+        </div>`;
+    }
+  });
+
+  html += `</div></div>`;
+
+  // ===== PROGRESS =====
+  const pct = Math.round(doneCount / TOTAL_QUIZZES * 100);
+  let motivMsg = '';
+  if (doneCount >= TOTAL_QUIZZES) {
+    motivMsg = '올클리어! 너 진짜 대단하다 👏';
+  } else if (doneCount >= 15) {
+    motivMsg = '거의 다 왔어! 끝판왕이 보인다';
+  } else if (doneCount >= 10) {
+    motivMsg = '절반 넘겼어~ 이 정도면 취향 덕후';
+  } else if (doneCount >= 5) {
+    motivMsg = '슬슬 윤곽이 잡히는 중!';
+  } else {
+    motivMsg = '아직 시작 단계! 더 파보자~';
+  }
+
+  html += `
+    <div class="section">
+      <div class="section-title">완료 현황</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="progress-text">
+          <span class="progress-count">${doneCount} / ${TOTAL_QUIZZES}</span>
+          <span class="progress-msg">${motivMsg}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // ===== GAP ANALYSIS =====
+  var gapItems = [];
+  var matchCount = 0;
+  var totalGap = 0;
+
+  QUIZ_ORDER.forEach(function(qid) {
+    var r = results[qid];
+    if (!r) return;
+    var innate = r.innate_type || '';
+    var actual = r.actual_type || '';
+    if (!innate || !actual) return;
+    var isMatch = (innate === actual);
+    if (isMatch) matchCount++;
+    totalGap++;
+    gapItems.push({
+      label: QUIZ_MAP[qid],
+      innate: innate,
+      actual: actual,
+      innateEmoji: r.innate_emoji || '',
+      actualEmoji: r.actual_emoji || '',
+      match: isMatch
+    });
+  });
+
+  if (totalGap > 0) {
+    var gapPct = Math.round(matchCount / totalGap * 100);
+    var gapMsg = '';
+    if (gapPct >= 80) {
+      gapMsg = '타고난 기질이랑 실제 취향이 거의 같아! 본능에 충실한 타입~';
+    } else if (gapPct >= 50) {
+      gapMsg = '반은 본능, 반은 경험. 균형 잡힌 취향이야~';
+    } else {
+      gapMsg = '타고난 것과 실제가 꽤 달라! 살면서 많이 변했구나~';
+    }
+
+    html += `
+      <div class="section">
+        <div class="section-title">타고난 vs 실제 취향 갭 분석</div>
+        <div class="gap-summary">
+          <div class="gap-big-num">${gapPct}%</div>
+          <div class="gap-label">일치율 (${matchCount}/${totalGap})</div>
+          <div style="font-size:0.82rem;color:var(--dim);margin-bottom:16px;">${gapMsg}</div>
+        </div>
+    `;
+
+    gapItems.forEach(function(g) {
+      html += `
+        <div class="gap-row">
+          <div class="gap-cat">${g.label}</div>
+          <div class="gap-innate">${g.innateEmoji} ${g.innate}</div>
+          <div class="gap-actual">${g.actualEmoji} ${g.actual}</div>
+          <div class="gap-match">${g.match ? '✅' : '🔀'}</div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  // ===== SHARE CARD =====
+  var shareLines = [];
+  QUIZ_ORDER.forEach(function(qid) {
+    var r = results[qid];
+    if (!r) return;
+    var label = QUIZ_MAP[qid];
+    var innate = r.innate_type || '?';
+    var actual = r.actual_type || '?';
+    if (innate === actual) {
+      shareLines.push(label + ': ' + (r.innate_emoji || '') + ' ' + innate);
+    } else {
+      shareLines.push(label + ': ' + (r.innate_emoji || '') + ' ' + innate + ' → ' + (r.actual_emoji || '') + ' ' + actual);
+    }
+  });
+
+  var shareText = '🔮 내 사주 취향 리포트 (' + doneCount + '/' + TOTAL_QUIZZES + ' 완료)\n\n' +
+    shareLines.join('\n') +
+    '\n\n👉 너도 해봐: flavor.arkedia.work/saju';
+
+  html += `
+    <div class="section">
+      <div class="section-title">공유하기</div>
+      <div class="share-card">
+        <div class="share-preview" id="share-preview"></div>
+        <button class="btn-share" onclick="copyShare()">텍스트 복사하기</button>
+      </div>
+    </div>
+  `;
+
+  // ===== CTA =====
+  html += `
+    <div class="cta-group">
+      <a href="/saju" class="cta-btn cta-primary">더 많은 퀴즈 풀기</a>
+      <a href="/my-report" class="cta-btn cta-secondary">DNA 버전 리포트</a>
+    </div>
+  `;
+
+  app.innerHTML = html;
+
+  // Set share preview text safely
+  var previewEl = document.getElementById('share-preview');
+  if (previewEl) {
+    previewEl.textContent = shareText;
+  }
+
+  // Store share text for copy function
+  window._shareText = shareText;
+
+  // Copy function
+  window.copyShare = function() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window._shareText).then(function() {
+        showToast();
+      }).catch(function() {
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+  };
+
+  function fallbackCopy() {
+    var ta = document.createElement('textarea');
+    ta.value = window._shareText;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast();
+    } catch(e) {
+      alert('복사 실패 ㅠ 직접 복사해줘!');
+    }
+    document.body.removeChild(ta);
+  }
+
+  function showToast() {
+    var toast = document.getElementById('copy-toast');
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2000);
+  }
+})();
+</script>
+</body>
+</html>

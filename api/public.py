@@ -324,6 +324,20 @@ def interior_saju_quiz():
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
+@public.route("/my-report")
+def my_report():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "my-report.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
+@public.route("/my-report-saju")
+def my_report_saju():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "my-report-saju.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+
+
 @public.route("/dashboard")
 def dashboard():
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "dashboard.html")

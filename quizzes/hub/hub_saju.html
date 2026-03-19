@@ -123,36 +123,131 @@ body {
 }
 .btn-edit:active, .btn-reset:active { border-color: #f59e0b; color: #f59e0b; }
 
-/* ── QUIZ LIST ── */
-.section-title {
-  font-size: 0.72rem; font-weight: 700;
-  color: #555577; letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 12px; padding-left: 4px;
+/* ── SEASON TABS ── */
+.season-tabs {
+  display: flex; gap: 8px;
+  margin-bottom: 20px;
 }
-.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.season-tab {
+  flex: 1; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 22px;
+  font-size: 0.88rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  font-family: inherit; border: none;
+}
+.season-tab.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+}
+.season-tab.inactive {
+  background: transparent;
+  border: 1.5px solid rgba(245,158,11,0.3);
+  color: #f59e0b;
+}
+.season-tab.inactive:active { background: rgba(245,158,11,0.06); }
+
+/* ── SEASON HEADER ── */
+.season-header {
+  margin-bottom: 16px;
+}
+.season-label {
+  font-size: 0.72rem; font-weight: 700;
+  color: #f59e0b; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.season-title {
+  font-size: 1rem; font-weight: 800;
+  margin-bottom: 10px;
+}
+.progress-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-bar {
+  flex: 1; height: 6px;
+  background: #1a1a30; border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 0.72rem; font-weight: 700;
+  color: #f59e0b; white-space: nowrap;
+}
+
+/* ── QUIZ CARDS (MAGAZINE FULL-WIDTH) ── */
+.quiz-list { margin-bottom: 28px; }
 .quiz-card {
-  display: block; background: #111124;
-  border: 1px solid #1e1e38; border-radius: 18px;
-  padding: 20px 16px; text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 14px;
+  background: #111124;
+  border: 1px solid #1e1e38; border-radius: 16px;
+  padding: 16px; margin-bottom: 10px;
+  text-decoration: none; color: inherit;
   transition: all 0.15s; position: relative; overflow: hidden;
 }
-.quiz-card:active { border-color: rgba(245,158,11,0.25); transform: scale(0.98); }
-.quiz-card .card-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
-.quiz-card .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3; }
-.quiz-card .card-desc { font-size: 0.72rem; color: #777799; line-height: 1.5; }
-.quiz-card .card-badge {
-  position: absolute; top: 12px; right: 12px;
-  font-size: 0.62rem; font-weight: 700;
+.quiz-card:active { border-color: rgba(245,158,11,0.3); transform: scale(0.985); }
+.quiz-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  opacity: 0; transition: opacity 0.2s;
+}
+.quiz-card:active::after { opacity: 1; }
+.card-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+}
+.card-body { flex: 1; min-width: 0; }
+.card-title { font-size: 0.92rem; font-weight: 800; margin-bottom: 3px; line-height: 1.3; }
+.card-desc { font-size: 0.72rem; color: #777799; line-height: 1.4; }
+.card-meta {
+  display: flex; align-items: center; gap: 4px;
+  margin-top: 4px;
+  font-size: 0.65rem; color: #555577;
+}
+.card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #333355; }
+.card-count { color: #777799; }
+.card-count.is-new { color: #f59e0b; font-weight: 700; }
+.card-badge {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 0.6rem; font-weight: 700;
   padding: 3px 8px; border-radius: 8px;
 }
 .badge-done { background: rgba(74,222,128,0.12); color: #4ade80; }
-.quiz-card::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #f59e0b, #d97706);
+.card-arrow {
+  color: #333355; font-size: 1rem; flex-shrink: 0;
+  transition: color 0.15s;
 }
+.quiz-card:active .card-arrow { color: #f59e0b; }
 
-/* ── dna link ── */
+/* ── REPORT CTA ── */
+.report-cta {
+  display: block; text-align: center;
+  padding: 20px 16px; margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.04));
+  border: 1.5px solid rgba(245,158,11,0.2);
+  border-radius: 16px;
+  text-decoration: none; color: inherit;
+  transition: all 0.15s;
+}
+.report-cta:active { border-color: rgba(245,158,11,0.4); }
+.report-cta .cta-icon { font-size: 1.6rem; margin-bottom: 8px; display: block; }
+.report-cta .cta-title {
+  font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;
+  color: #f59e0b;
+}
+.report-cta .cta-desc { font-size: 0.72rem; color: #777799; line-height: 1.5; }
+.report-cta.locked { opacity: 0.5; pointer-events: none; }
+.report-cta .cta-lock { font-size: 0.68rem; color: #555577; margin-top: 6px; }
+
+/* ── DNA LINK ── */
 .dna-link {
   display: block; text-align: center;
   padding: 14px; margin-bottom: 24px;
@@ -167,9 +262,15 @@ body {
 /* ── FOOTER ── */
 .footer { text-align: center; padding: 24px 0; font-size: 0.72rem; color: #333355; }
 .footer a { color: #555577; text-decoration: none; }
+
+/* ── SEASON HIDDEN ── */
+.season-panel { display: none; }
+.season-panel.active { display: block; }
+
 @media (max-width: 360px) {
-  .quiz-card { padding: 16px 12px; }
-  .quiz-card .card-title { font-size: 0.88rem; }
+  .quiz-card { padding: 14px 12px; }
+  .card-title { font-size: 0.85rem; }
+  .card-icon-wrap { width: 46px; height: 46px; font-size: 1.4rem; }
 }
 </style>
 </head>
@@ -183,104 +284,45 @@ body {
 
   <div class="profile-card" id="profile-card"></div>
 
-  <div class="section-title">테스트 골라봐</div>
-  <div class="quiz-grid">
-    <a class="quiz-card" href="/romance-v2-saju" id="card-romance-saju">
-      <span class="card-icon">💘</span>
-      <div class="card-title">나 왜 솔로일까 사주 (연애)</div>
-      <div class="card-desc">팔자가 알고 있는<br>네 연애 패턴ㅋ</div>
-    </a>
-    <a class="quiz-card" href="/food-saju" id="card-food-saju">
-      <span class="card-icon">🍽️</span>
-      <div class="card-title">살은 찌는데 맛있는 사주 (식도락)</div>
-      <div class="card-desc">사주가 아는 네 입맛,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/travel-saju" id="card-travel-saju">
-      <span class="card-icon">✈️</span>
-      <div class="card-title">여행 가서 싸우는 사주 (여행)</div>
-      <div class="card-desc">팔자가 아는 네 여행법,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/work-saju" id="card-work-saju">
-      <span class="card-icon">💼</span>
-      <div class="card-title">퇴사 충동 사주 (직장)</div>
-      <div class="card-desc">팔자가 아는 네 일머리,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/fashion-saju" id="card-fashion-saju">
-      <span class="card-icon">👗</span>
-      <div class="card-title">옷 살 때만 행복한 사주 (패션)</div>
-      <div class="card-desc">팔자가 아는 네 스타일,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/health-quiz-saju" id="card-health-saju">
-      <span class="card-icon">🏃</span>
-      <div class="card-title">갓생 살겠다고 말만 하는 사주 (건강)</div>
-      <div class="card-desc">팔자가 아는 네 건강법,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/music-saju" id="card-music-saju">
-      <span class="card-icon">🎵</span>
-      <div class="card-title">플리 들키면 끝나는 사주 (음악)</div>
-      <div class="card-desc">팔자가 아는 네 음악,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/social-saju" id="card-social-saju">
-      <span class="card-icon">🫂</span>
-      <div class="card-title">읽씹 사주 (인간관계)</div>
-      <div class="card-desc">팔자가 아는 네 관계법,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/lifestyle-saju" id="card-lifestyle-saju">
-      <span class="card-icon">🏠</span>
-      <div class="card-title">퇴근하면 사라지는 사주 (라이프스타일)</div>
-      <div class="card-desc">팔자가 아는 네 일상,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/spending-saju" id="card-spending-saju">
-      <span class="card-icon">💸</span>
-      <div class="card-title">탕진잼 사주 (소비)</div>
-      <div class="card-desc">팔자가 아는 네 소비,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/drink-saju" id="card-drink-saju">
-      <span class="card-icon">🍺</span>
-      <div class="card-title">필름 끊기는 사주 (술자리)</div>
-      <div class="card-desc">팔자가 아는 네 주량,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/red-flag-saju" id="card-redflag-saju">
-      <span class="card-icon">🚩</span>
-      <div class="card-title">이러면 차인다 사주 (연애지뢰)</div>
-      <div class="card-desc">팔자가 아는 네 지뢰밭,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/home-saju" id="card-home-saju">
-      <span class="card-icon">🏡</span>
-      <div class="card-title">자취하면 다 그래 사주 (혼살림)</div>
-      <div class="card-desc">팔자가 아는 네 자취,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/fandom-saju" id="card-fandom-saju">
-      <span class="card-icon">🔥</span>
-      <div class="card-title">최애 앞에서 사주 (덕질)</div>
-      <div class="card-desc">팔자가 아는 네 덕질,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/cafe-saju" id="card-cafe-saju">
-      <span class="card-icon">☕</span>
-      <div class="card-title">카페 안 가면 죽는 사주 (카페)</div>
-      <div class="card-desc">팔자가 아는 네 카페,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/sleep-saju" id="card-sleep-saju">
-      <span class="card-icon">😴</span>
-      <div class="card-title">알람 10개 맞춰도 사주 (수면)</div>
-      <div class="card-desc">팔자가 아는 네 수면,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/sns-saju" id="card-sns-saju">
-      <span class="card-icon">📱</span>
-      <div class="card-title">스토리 올리기 전 사주 (SNS)</div>
-      <div class="card-desc">팔자가 아는 네 SNS,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/study-saju" id="card-study-saju">
-      <span class="card-icon">📚</span>
-      <div class="card-title">시험 전날 사주 (공부)</div>
-      <div class="card-desc">팔자가 아는 네 공부법,<br>맞나 까보자</div>
-    </a>
-    <a class="quiz-card" href="/interior-saju" id="card-interior-saju">
-      <span class="card-icon">🛋️</span>
-      <div class="card-title">집 꾸미는데 통장 텅 사주 (인테리어)</div>
-      <div class="card-desc">팔자가 아는 네 인테리어,<br>맞나 까보자</div>
-    </a>
+  <!-- Season Tabs -->
+  <div class="season-tabs">
+    <button class="season-tab active" id="tab-s1" onclick="switchSeason(1)">시즌 1</button>
+    <button class="season-tab inactive" id="tab-s2" onclick="switchSeason(2)">시즌 2</button>
   </div>
+
+  <!-- Season 1 -->
+  <div class="season-panel active" id="panel-s1">
+    <div class="season-header">
+      <div class="season-label">SEASON 1</div>
+      <div class="season-title">팔자가 아는 나</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-s1" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text-s1">0 / 9</div>
+      </div>
+    </div>
+    <div class="quiz-list" id="list-s1"></div>
+  </div>
+
+  <!-- Season 2 -->
+  <div class="season-panel" id="panel-s2">
+    <div class="season-header">
+      <div class="season-label">SEASON 2</div>
+      <div class="season-title">더 깊이 까보기</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-s2" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text-s2">0 / 10</div>
+      </div>
+    </div>
+    <div class="quiz-list" id="list-s2"></div>
+  </div>
+
+  <!-- Report CTA -->
+  <a class="report-cta" id="report-cta" href="/my-report-saju">
+    <span class="cta-icon">🔮</span>
+    <div class="cta-title">내 사주 취향 리포트 보기</div>
+    <div class="cta-desc">완료한 퀴즈 기반으로 팔자가 분석한 종합 취향 리포트</div>
+    <div class="cta-lock" id="cta-lock"></div>
+  </a>
 
   <a class="dna-link" href="/">🧬 DNA 버전으로 보고 싶으면 여기</a>
 
@@ -291,6 +333,84 @@ body {
 <script>
 const PROFILE_KEY = 'flavor_profile_saju';
 
+const S1_QUIZZES = [
+  { href:'/romance-v2-saju', id:'card-romance-saju', icon:'💘', title:'나 왜 솔로일까 사주 (연애)', desc:'팔자가 알고 있는 네 연애 패턴ㅋ', count:'2.1K' },
+  { href:'/food-saju', id:'card-food-saju', icon:'🍽️', title:'살은 찌는데 맛있는 사주 (식도락)', desc:'사주가 아는 네 입맛, 맞나 까보자', count:'1.8K' },
+  { href:'/travel-saju', id:'card-travel-saju', icon:'✈️', title:'여행 가서 싸우는 사주 (여행)', desc:'팔자가 아는 네 여행법, 맞나 까보자', count:'1.5K' },
+  { href:'/work-saju', id:'card-work-saju', icon:'💼', title:'퇴사 충동 사주 (직장)', desc:'팔자가 아는 네 일머리, 맞나 까보자', count:'1.3K' },
+  { href:'/fashion-saju', id:'card-fashion-saju', icon:'👗', title:'옷 살 때만 행복한 사주 (패션)', desc:'팔자가 아는 네 스타일, 맞나 까보자', count:'1.1K' },
+  { href:'/health-quiz-saju', id:'card-health-saju', icon:'🏃', title:'갓생 살겠다고 말만 하는 사주 (건강)', desc:'팔자가 아는 네 건강법, 맞나 까보자', count:'980' },
+  { href:'/music-saju', id:'card-music-saju', icon:'🎵', title:'플리 들키면 끝나는 사주 (음악)', desc:'팔자가 아는 네 음악, 맞나 까보자', count:'870' },
+  { href:'/social-saju', id:'card-social-saju', icon:'🫂', title:'읽씹 사주 (인간관계)', desc:'팔자가 아는 네 관계법, 맞나 까보자', count:'760' },
+  { href:'/lifestyle-saju', id:'card-lifestyle-saju', icon:'🏠', title:'퇴근하면 사라지는 사주 (라이프스타일)', desc:'팔자가 아는 네 일상, 맞나 까보자', count:'650' }
+];
+
+const S2_QUIZZES = [
+  { href:'/spending-saju', id:'card-spending-saju', icon:'💸', title:'탕진잼 사주 (소비)', desc:'팔자가 아는 네 소비, 맞나 까보자', count:'NEW' },
+  { href:'/drink-saju', id:'card-drink-saju', icon:'🍺', title:'필름 끊기는 사주 (술자리)', desc:'팔자가 아는 네 주량, 맞나 까보자', count:'NEW' },
+  { href:'/red-flag-saju', id:'card-redflag-saju', icon:'🚩', title:'이러면 차인다 사주 (연애지뢰)', desc:'팔자가 아는 네 지뢰밭, 맞나 까보자', count:'NEW' },
+  { href:'/home-saju', id:'card-home-saju', icon:'🏡', title:'자취하면 다 그래 사주 (혼살림)', desc:'팔자가 아는 네 자취, 맞나 까보자', count:'NEW' },
+  { href:'/fandom-saju', id:'card-fandom-saju', icon:'🔥', title:'최애 앞에서 사주 (덕질)', desc:'팔자가 아는 네 덕질, 맞나 까보자', count:'NEW' },
+  { href:'/cafe-saju', id:'card-cafe-saju', icon:'☕', title:'카페 안 가면 죽는 사주 (카페)', desc:'팔자가 아는 네 카페, 맞나 까보자', count:'NEW' },
+  { href:'/sleep-saju', id:'card-sleep-saju', icon:'😴', title:'알람 10개 맞춰도 사주 (수면)', desc:'팔자가 아는 네 수면, 맞나 까보자', count:'NEW' },
+  { href:'/sns-saju', id:'card-sns-saju', icon:'📱', title:'스토리 올리기 전 사주 (SNS)', desc:'팔자가 아는 네 SNS, 맞나 까보자', count:'NEW' },
+  { href:'/study-saju', id:'card-study-saju', icon:'📚', title:'시험 전날 사주 (공부)', desc:'팔자가 아는 네 공부법, 맞나 까보자', count:'NEW' },
+  { href:'/interior-saju', id:'card-interior-saju', icon:'🛋️', title:'집 꾸미는데 통장 텅 사주 (인테리어)', desc:'팔자가 아는 네 인테리어, 맞나 까보자', count:'NEW' }
+];
+
+const BADGE_MAP = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju', 'vol7_health_saju': 'card-health-saju', 'vol8_music_saju': 'card-music-saju', 'vol9_social_saju': 'card-social-saju', 'vol10_lifestyle_saju': 'card-lifestyle-saju', 'vol11_spending_saju': 'card-spending-saju', 'vol12_drink_saju': 'card-drink-saju', 'vol13_redflag_saju': 'card-redflag-saju', 'vol14_home_saju': 'card-home-saju', 'vol15_fandom_saju': 'card-fandom-saju', 'vol16_cafe_saju': 'card-cafe-saju', 'vol17_sleep_saju': 'card-sleep-saju', 'vol18_sns_saju': 'card-sns-saju', 'vol19_study_saju': 'card-study-saju', 'vol20_interior_saju': 'card-interior-saju' };
+
+const S1_TYPES = ['vol2_romance_v2_saju','vol3_food_saju','vol4_travel_saju','vol5_work_saju','vol6_fashion_saju','vol7_health_saju','vol8_music_saju','vol9_social_saju','vol10_lifestyle_saju'];
+const S2_TYPES = ['vol11_spending_saju','vol12_drink_saju','vol13_redflag_saju','vol14_home_saju','vol15_fandom_saju','vol16_cafe_saju','vol17_sleep_saju','vol18_sns_saju','vol19_study_saju','vol20_interior_saju'];
+
+function renderQuizCards(quizzes, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = quizzes.map(q => {
+    const isNew = q.count === 'NEW';
+    return `<a class="quiz-card" href="${q.href}" id="${q.id}">
+      <div class="card-icon-wrap">${q.icon}</div>
+      <div class="card-body">
+        <div class="card-title">${q.title}</div>
+        <div class="card-desc">${q.desc}</div>
+        <div class="card-meta">
+          <span class="card-count ${isNew ? 'is-new' : ''}">${isNew ? 'NEW' : q.count + '명 참여'}</span>
+        </div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>`;
+  }).join('');
+}
+
+function switchSeason(n) {
+  document.getElementById('tab-s1').className = 'season-tab ' + (n === 1 ? 'active' : 'inactive');
+  document.getElementById('tab-s2').className = 'season-tab ' + (n === 2 ? 'active' : 'inactive');
+  document.getElementById('panel-s1').className = 'season-panel ' + (n === 1 ? 'active' : '');
+  document.getElementById('panel-s2').className = 'season-panel ' + (n === 2 ? 'active' : '');
+}
+
+function updateProgress(completed) {
+  const s1Done = S1_TYPES.filter(t => completed.includes(t)).length;
+  const s2Done = S2_TYPES.filter(t => completed.includes(t)).length;
+  document.getElementById('progress-s1').style.width = Math.round(s1Done / S1_TYPES.length * 100) + '%';
+  document.getElementById('progress-text-s1').textContent = s1Done + ' / ' + S1_TYPES.length;
+  document.getElementById('progress-s2').style.width = Math.round(s2Done / S2_TYPES.length * 100) + '%';
+  document.getElementById('progress-text-s2').textContent = s2Done + ' / ' + S2_TYPES.length;
+  return s1Done + s2Done;
+}
+
+function updateReportCTA(totalDone) {
+  const cta = document.getElementById('report-cta');
+  const lock = document.getElementById('cta-lock');
+  if (totalDone >= 3) {
+    cta.classList.remove('locked');
+    lock.textContent = '';
+  } else {
+    cta.classList.add('locked');
+    lock.textContent = '🔒 퀴즈 ' + (3 - totalDone) + '개 더 하면 열려';
+  }
+}
+
+/* ── PROFILE ── */
 function renderProfile() {
   const card = document.getElementById('profile-card');
   const profile = getProfile();
@@ -416,8 +536,7 @@ function resetProfile() {
 
 function updateBadges(profile) {
   const completed = (profile && profile.completed_quizzes) || [];
-  const map = { 'vol2_romance_v2_saju': 'card-romance-saju', 'vol3_food_saju': 'card-food-saju', 'vol4_travel_saju': 'card-travel-saju', 'vol5_work_saju': 'card-work-saju', 'vol6_fashion_saju': 'card-fashion-saju', 'vol7_health_saju': 'card-health-saju', 'vol8_music_saju': 'card-music-saju', 'vol9_social_saju': 'card-social-saju', 'vol10_lifestyle_saju': 'card-lifestyle-saju', 'vol11_spending_saju': 'card-spending-saju', 'vol12_drink_saju': 'card-drink-saju', 'vol13_redflag_saju': 'card-redflag-saju', 'vol14_home_saju': 'card-home-saju', 'vol15_fandom_saju': 'card-fandom-saju', 'vol16_cafe_saju': 'card-cafe-saju', 'vol17_sleep_saju': 'card-sleep-saju', 'vol18_sns_saju': 'card-sns-saju', 'vol19_study_saju': 'card-study-saju', 'vol20_interior_saju': 'card-interior-saju' };
-  Object.entries(map).forEach(([qt, cid]) => {
+  Object.entries(BADGE_MAP).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;
     const ex = card.querySelector('.badge-done'); if (ex) ex.remove();
@@ -425,8 +544,13 @@ function updateBadges(profile) {
       const b = document.createElement('span'); b.className = 'card-badge badge-done'; b.textContent = '완료'; card.appendChild(b);
     }
   });
+  const totalDone = updateProgress(completed);
+  updateReportCTA(totalDone);
 }
 
+/* ── INIT ── */
+renderQuizCards(S1_QUIZZES, 'list-s1');
+renderQuizCards(S2_QUIZZES, 'list-s2');
 renderProfile();
 </script>
 </body>

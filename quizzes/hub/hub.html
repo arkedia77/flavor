@@ -53,7 +53,7 @@ body {
   border: 1px solid #1e1e38;
   border-radius: 20px;
   padding: 24px 20px;
-  margin: 0 0 24px;
+  margin: 0 0 28px;
 }
 .profile-card h3 {
   font-size: 0.75rem; font-weight: 700;
@@ -123,36 +123,184 @@ body {
 }
 .btn-edit:active, .btn-reset:active { border-color: #c084fc; color: #c084fc; }
 
-/* ── QUIZ LIST ── */
-.section-title {
-  font-size: 0.72rem; font-weight: 700;
-  color: #555577; letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 12px; padding-left: 4px;
+/* ── SEASON TABS ── */
+.season-tabs {
+  display: flex; gap: 10px; margin-bottom: 16px;
 }
-.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.season-tab {
+  flex: 1; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 22px;
+  font-size: 0.9rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  font-family: inherit; border: none;
+}
+.season-tab.active {
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(192,132,252,0.3);
+}
+.season-tab.inactive {
+  background: transparent;
+  border: 1.5px solid #2a2a48;
+  color: #777799;
+}
+.season-tab.inactive:active {
+  border-color: #c084fc; color: #c084fc;
+}
+
+/* ── SEASON HEADER ── */
+.season-header {
+  margin-bottom: 20px;
+}
+.season-subtitle {
+  font-size: 0.82rem;
+  color: #999;
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+.progress-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-bar-bg {
+  flex: 1; height: 6px;
+  background: #1a1a30;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c084fc, #a855f7);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 0.72rem;
+  color: #777799;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── QUIZ CARDS (Magazine) ── */
+.quiz-list { margin-bottom: 24px; }
 .quiz-card {
-  display: block; background: #111124;
-  border: 1px solid #1e1e38; border-radius: 18px;
-  padding: 20px 16px; text-decoration: none; color: inherit;
-  transition: all 0.15s; position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 16px;
+  background: #111124;
+  border: 1px solid #1e1e38;
+  border-radius: 20px;
+  padding: 20px 18px;
+  margin-bottom: 12px;
+  text-decoration: none; color: inherit;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
 }
-.quiz-card:active { border-color: rgba(192,132,252,0.25); transform: scale(0.98); }
-.quiz-card .card-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
-.quiz-card .card-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; line-height: 1.3; }
-.quiz-card .card-desc { font-size: 0.72rem; color: #777799; line-height: 1.5; }
-.quiz-card .card-badge {
-  position: absolute; top: 12px; right: 12px;
-  font-size: 0.62rem; font-weight: 700;
-  padding: 3px 8px; border-radius: 8px;
-}
-.badge-done { background: rgba(74,222,128,0.12); color: #4ade80; }
+.quiz-card:active { border-color: rgba(192,132,252,0.3); transform: scale(0.985); }
 .quiz-card::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
   background: linear-gradient(90deg, #c084fc, #a855f7);
+  opacity: 0.6;
+}
+.card-icon-wrap {
+  width: 56px; height: 56px; flex-shrink: 0;
+  background: rgba(192,132,252,0.06);
+  border: 1px solid rgba(192,132,252,0.1);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+}
+.card-body { flex: 1; min-width: 0; }
+.card-title {
+  font-size: 0.95rem; font-weight: 800;
+  margin-bottom: 4px; line-height: 1.35;
+}
+.card-desc {
+  font-size: 0.75rem; color: #777799;
+  line-height: 1.5; margin-bottom: 6px;
+}
+.card-meta {
+  font-size: 0.65rem; color: #555577; font-weight: 500;
+}
+.card-badges {
+  position: absolute; top: 12px; right: 14px;
+  display: flex; gap: 6px;
+}
+.card-badge {
+  font-size: 0.6rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 8px;
+}
+.badge-done { background: rgba(74,222,128,0.12); color: #4ade80; }
+.badge-new { background: rgba(192,132,252,0.12); color: #c084fc; }
+
+/* ── SURVEY CARD (full-width special) ── */
+.survey-card {
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, rgba(192,132,252,0.08), rgba(168,85,247,0.04));
+  border: 1.5px solid rgba(192,132,252,0.2);
+  border-radius: 20px;
+  padding: 22px 18px;
+  margin-bottom: 12px;
+  text-decoration: none; color: inherit;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.survey-card:active { border-color: rgba(192,132,252,0.4); transform: scale(0.985); }
+.survey-card .card-icon-wrap {
+  background: rgba(192,132,252,0.12);
+  border-color: rgba(192,132,252,0.2);
 }
 
-/* ── saju link ── */
+/* ── REPORT CTA ── */
+.report-cta {
+  display: block;
+  background: #111124;
+  border: 1.5px solid #1e1e38;
+  border-radius: 20px;
+  padding: 24px 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+.report-cta.active {
+  background: linear-gradient(135deg, rgba(192,132,252,0.1), rgba(168,85,247,0.06));
+  border-color: rgba(192,132,252,0.25);
+}
+.report-cta.active:active { transform: scale(0.98); }
+.report-cta-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.report-cta-title {
+  font-size: 1.05rem; font-weight: 800;
+  margin-bottom: 6px;
+}
+.report-cta.active .report-cta-title {
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.report-cta-desc {
+  font-size: 0.78rem; color: #777799;
+  margin-bottom: 14px; line-height: 1.5;
+}
+.report-cta-btn {
+  display: inline-block;
+  padding: 10px 28px;
+  border-radius: 12px;
+  font-size: 0.85rem; font-weight: 700;
+  transition: all 0.15s;
+}
+.report-cta.active .report-cta-btn {
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(192,132,252,0.3);
+}
+.report-cta.inactive .report-cta-btn {
+  background: #1a1a30;
+  color: #555577;
+}
+
+/* ── SAJU LINK ── */
 .saju-link {
   display: block; text-align: center;
   padding: 14px; margin-bottom: 24px;
@@ -167,9 +315,11 @@ body {
 /* ── FOOTER ── */
 .footer { text-align: center; padding: 24px 0; font-size: 0.72rem; color: #333355; }
 .footer a { color: #555577; text-decoration: none; }
+
 @media (max-width: 360px) {
-  .quiz-card { padding: 16px 12px; }
-  .quiz-card .card-title { font-size: 0.88rem; }
+  .quiz-card { padding: 16px 14px; gap: 12px; }
+  .card-title { font-size: 0.88rem; }
+  .card-icon-wrap { width: 48px; height: 48px; font-size: 1.5rem; }
 }
 </style>
 </head>
@@ -183,113 +333,221 @@ body {
 
   <div class="profile-card" id="profile-card"></div>
 
-  <div class="section-title">테스트 골라봐</div>
-  <div class="quiz-grid">
-    <a class="quiz-card" href="/romance-v2" id="card-romance">
-      <span class="card-icon">💘</span>
-      <div class="card-title">나 왜 솔로일까 DNA (연애)</div>
-      <div class="card-desc">타고난 연애 유형 vs<br>진짜 내 연애 스타일</div>
-    </a>
-    <a class="quiz-card" href="/food" id="card-food">
-      <span class="card-icon">🍽️</span>
-      <div class="card-title">살은 찌는데 맛있는 DNA (식도락)</div>
-      <div class="card-desc">타고난 입맛 vs<br>진짜 내 먹성</div>
-    </a>
-    <a class="quiz-card" href="/travel" id="card-travel">
-      <span class="card-icon">✈️</span>
-      <div class="card-title">여행 가서 싸우는 DNA (여행)</div>
-      <div class="card-desc">타고난 여행 스타일 vs<br>진짜 내 여행법</div>
-    </a>
-    <a class="quiz-card" href="/work" id="card-work">
-      <span class="card-icon">💼</span>
-      <div class="card-title">퇴사 충동 DNA (직장)</div>
-      <div class="card-desc">타고난 워크스타일 vs<br>진짜 내 일머리</div>
-    </a>
-    <a class="quiz-card" href="/fashion" id="card-fashion">
-      <span class="card-icon">👗</span>
-      <div class="card-title">옷 살 때만 행복한 DNA (패션)</div>
-      <div class="card-desc">타고난 패션 감각 vs<br>진짜 내 스타일</div>
-    </a>
-    <a class="quiz-card" href="/health-quiz" id="card-health">
-      <span class="card-icon">🏃</span>
-      <div class="card-title">갓생 살겠다고 말만 하는 DNA (건강)</div>
-      <div class="card-desc">타고난 건강 습관 vs<br>진짜 내 관리법</div>
-    </a>
-    <a class="quiz-card" href="/music" id="card-music">
-      <span class="card-icon">🎵</span>
-      <div class="card-title">플리 들키면 끝나는 DNA (음악)</div>
-      <div class="card-desc">타고난 음악 취향 vs<br>진짜 내 플리</div>
-    </a>
-    <a class="quiz-card" href="/social" id="card-social">
-      <span class="card-icon">🫂</span>
-      <div class="card-title">읽씹 DNA (인간관계)</div>
-      <div class="card-desc">타고난 사교 스타일 vs<br>진짜 내 관계법</div>
-    </a>
-    <a class="quiz-card" href="/lifestyle" id="card-lifestyle">
-      <span class="card-icon">🏠</span>
-      <div class="card-title">퇴근하면 사라지는 DNA (라이프스타일)</div>
-      <div class="card-desc">타고난 생활 패턴 vs<br>진짜 내 일상</div>
-    </a>
-    <a class="quiz-card" href="/spending" id="card-spending">
-      <span class="card-icon">💸</span>
-      <div class="card-title">탕진잼 DNA (소비)</div>
-      <div class="card-desc">타고난 소비 스타일 vs<br>진짜 내 지갑 사정</div>
-    </a>
-    <a class="quiz-card" href="/drink" id="card-drink">
-      <span class="card-icon">🍺</span>
-      <div class="card-title">필름 끊기는 DNA (술자리)</div>
-      <div class="card-desc">타고난 술자리 스타일 vs<br>진짜 내 주량</div>
-    </a>
-    <a class="quiz-card" href="/red-flag" id="card-redflag">
-      <span class="card-icon">🚩</span>
-      <div class="card-title">이러면 차인다 DNA (연애지뢰)</div>
-      <div class="card-desc">타고난 연애 지뢰밭 vs<br>진짜 내 지뢰</div>
-    </a>
-    <a class="quiz-card" href="/home" id="card-home">
-      <span class="card-icon">🏡</span>
-      <div class="card-title">자취하면 다 그래 DNA (혼살림)</div>
-      <div class="card-desc">타고난 자취 스타일 vs<br>진짜 내 혼살림</div>
-    </a>
-    <a class="quiz-card" href="/fandom" id="card-fandom">
-      <span class="card-icon">🔥</span>
-      <div class="card-title">최애 앞에서 DNA (덕질)</div>
-      <div class="card-desc">타고난 덕질 스타일 vs<br>진짜 내 최애 사랑</div>
-    </a>
-    <a class="quiz-card" href="/cafe" id="card-cafe">
-      <span class="card-icon">☕</span>
-      <div class="card-title">카페 안 가면 죽는 DNA (카페)</div>
-      <div class="card-desc">타고난 카페 스타일 vs<br>진짜 내 카페 루틴</div>
-    </a>
-    <a class="quiz-card" href="/sleep" id="card-sleep">
-      <span class="card-icon">😴</span>
-      <div class="card-title">알람 10개 맞춰도 DNA (수면)</div>
-      <div class="card-desc">타고난 수면 스타일 vs<br>진짜 내 잠버릇</div>
-    </a>
-    <a class="quiz-card" href="/sns" id="card-sns">
-      <span class="card-icon">📱</span>
-      <div class="card-title">스토리 올리기 전 DNA (SNS)</div>
-      <div class="card-desc">타고난 SNS 스타일 vs<br>진짜 내 피드</div>
-    </a>
-    <a class="quiz-card" href="/study" id="card-study">
-      <span class="card-icon">📚</span>
-      <div class="card-title">시험 전날 DNA (공부)</div>
-      <div class="card-desc">타고난 공부 스타일 vs<br>진짜 내 벼락치기</div>
-    </a>
-    <a class="quiz-card" href="/interior" id="card-interior">
-      <span class="card-icon">🛋️</span>
-      <div class="card-title">집 꾸미는데 통장 텅 DNA (인테리어)</div>
-      <div class="card-desc">타고난 인테리어 스타일 vs<br>진짜 내 집 꾸미기</div>
-    </a>
+  <!-- Season Tabs -->
+  <div class="season-tabs">
+    <button class="season-tab active" id="tab-s1" onclick="switchSeason(1)">시즌 1</button>
+    <button class="season-tab inactive" id="tab-s2" onclick="switchSeason(2)">시즌 2</button>
   </div>
 
-  <div class="section-title">종합 분석</div>
-  <div class="quiz-grid">
-    <a class="quiz-card" href="/survey" id="card-survey" style="grid-column: 1 / -1;">
-      <span class="card-icon">🔥</span>
-      <div class="card-title">종합 취향 테스트 (27문항)</div>
-      <div class="card-desc">커피부터 인테리어까지, 8개 도메인 한방에 분석 · 3분이면 끝남</div>
-    </a>
+  <!-- Season 1 -->
+  <div id="season-1">
+    <div class="season-header">
+      <div class="season-subtitle">나를 까보는 시간</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-s1" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text-s1">0/9 완료</div>
+      </div>
+    </div>
+    <div class="quiz-list" id="quiz-list-s1">
+      <a class="quiz-card" href="/romance-v2" id="card-romance">
+        <div class="card-icon-wrap">💘</div>
+        <div class="card-body">
+          <div class="card-title">나 왜 솔로일까 DNA (연애)</div>
+          <div class="card-desc">타고난 연애 유형 vs 진짜 내 연애 스타일</div>
+          <div class="card-meta">2.1K명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/food" id="card-food">
+        <div class="card-icon-wrap">🍽️</div>
+        <div class="card-body">
+          <div class="card-title">살은 찌는데 맛있는 DNA (식도락)</div>
+          <div class="card-desc">타고난 입맛 vs 진짜 내 먹성</div>
+          <div class="card-meta">1.8K명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/travel" id="card-travel">
+        <div class="card-icon-wrap">✈️</div>
+        <div class="card-body">
+          <div class="card-title">여행 가서 싸우는 DNA (여행)</div>
+          <div class="card-desc">타고난 여행 스타일 vs 진짜 내 여행법</div>
+          <div class="card-meta">1.5K명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/work" id="card-work">
+        <div class="card-icon-wrap">💼</div>
+        <div class="card-body">
+          <div class="card-title">퇴사 충동 DNA (직장)</div>
+          <div class="card-desc">타고난 워크스타일 vs 진짜 내 일머리</div>
+          <div class="card-meta">1.3K명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/fashion" id="card-fashion">
+        <div class="card-icon-wrap">👗</div>
+        <div class="card-body">
+          <div class="card-title">옷 살 때만 행복한 DNA (패션)</div>
+          <div class="card-desc">타고난 패션 감각 vs 진짜 내 스타일</div>
+          <div class="card-meta">1.1K명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/health-quiz" id="card-health">
+        <div class="card-icon-wrap">🏃</div>
+        <div class="card-body">
+          <div class="card-title">갓생 살겠다고 말만 하는 DNA (건강)</div>
+          <div class="card-desc">타고난 건강 습관 vs 진짜 내 관리법</div>
+          <div class="card-meta">980명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/music" id="card-music">
+        <div class="card-icon-wrap">🎵</div>
+        <div class="card-body">
+          <div class="card-title">플리 들키면 끝나는 DNA (음악)</div>
+          <div class="card-desc">타고난 음악 취향 vs 진짜 내 플리</div>
+          <div class="card-meta">870명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/social" id="card-social">
+        <div class="card-icon-wrap">🫂</div>
+        <div class="card-body">
+          <div class="card-title">읽씹 DNA (인간관계)</div>
+          <div class="card-desc">타고난 사교 스타일 vs 진짜 내 관계법</div>
+          <div class="card-meta">760명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <a class="quiz-card" href="/lifestyle" id="card-lifestyle">
+        <div class="card-icon-wrap">🏠</div>
+        <div class="card-body">
+          <div class="card-title">퇴근하면 사라지는 DNA (라이프스타일)</div>
+          <div class="card-desc">타고난 생활 패턴 vs 진짜 내 일상</div>
+          <div class="card-meta">650명 참여</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+      <!-- Survey (종합) at bottom of season 1 -->
+      <a class="survey-card" href="/survey" id="card-survey">
+        <div class="card-icon-wrap">🔥</div>
+        <div class="card-body">
+          <div class="card-title">종합 취향 테스트 (27문항)</div>
+          <div class="card-desc">커피부터 인테리어까지, 8개 도메인 한방에 분석 · 3분이면 끝남</div>
+          <div class="card-meta">종합 분석</div>
+        </div>
+        <div class="card-badges"></div>
+      </a>
+    </div>
   </div>
+
+  <!-- Season 2 -->
+  <div id="season-2" style="display:none;">
+    <div class="season-header">
+      <div class="season-subtitle">더 깊이 까보기</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-s2" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text-s2">0/10 완료</div>
+      </div>
+    </div>
+    <div class="quiz-list" id="quiz-list-s2">
+      <a class="quiz-card" href="/spending" id="card-spending">
+        <div class="card-icon-wrap">💸</div>
+        <div class="card-body">
+          <div class="card-title">탕진잼 DNA (소비)</div>
+          <div class="card-desc">타고난 소비 스타일 vs 진짜 내 지갑 사정</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/drink" id="card-drink">
+        <div class="card-icon-wrap">🍺</div>
+        <div class="card-body">
+          <div class="card-title">필름 끊기는 DNA (술자리)</div>
+          <div class="card-desc">타고난 술자리 스타일 vs 진짜 내 주량</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/red-flag" id="card-redflag">
+        <div class="card-icon-wrap">🚩</div>
+        <div class="card-body">
+          <div class="card-title">이러면 차인다 DNA (연애지뢰)</div>
+          <div class="card-desc">타고난 연애 지뢰밭 vs 진짜 내 지뢰</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/home" id="card-home">
+        <div class="card-icon-wrap">🏡</div>
+        <div class="card-body">
+          <div class="card-title">자취하면 다 그래 DNA (혼살림)</div>
+          <div class="card-desc">타고난 자취 스타일 vs 진짜 내 혼살림</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/fandom" id="card-fandom">
+        <div class="card-icon-wrap">🔥</div>
+        <div class="card-body">
+          <div class="card-title">최애 앞에서 DNA (덕질)</div>
+          <div class="card-desc">타고난 덕질 스타일 vs 진짜 내 최애 사랑</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/cafe" id="card-cafe">
+        <div class="card-icon-wrap">☕</div>
+        <div class="card-body">
+          <div class="card-title">카페 안 가면 죽는 DNA (카페)</div>
+          <div class="card-desc">타고난 카페 스타일 vs 진짜 내 카페 루틴</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/sleep" id="card-sleep">
+        <div class="card-icon-wrap">😴</div>
+        <div class="card-body">
+          <div class="card-title">알람 10개 맞춰도 DNA (수면)</div>
+          <div class="card-desc">타고난 수면 스타일 vs 진짜 내 잠버릇</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/sns" id="card-sns">
+        <div class="card-icon-wrap">📱</div>
+        <div class="card-body">
+          <div class="card-title">스토리 올리기 전 DNA (SNS)</div>
+          <div class="card-desc">타고난 SNS 스타일 vs 진짜 내 피드</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/study" id="card-study">
+        <div class="card-icon-wrap">📚</div>
+        <div class="card-body">
+          <div class="card-title">시험 전날 DNA (공부)</div>
+          <div class="card-desc">타고난 공부 스타일 vs 진짜 내 벼락치기</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+      <a class="quiz-card" href="/interior" id="card-interior">
+        <div class="card-icon-wrap">🛋️</div>
+        <div class="card-body">
+          <div class="card-title">집 꾸미는데 통장 텅 DNA (인테리어)</div>
+          <div class="card-desc">타고난 인테리어 스타일 vs 진짜 내 집 꾸미기</div>
+          <div class="card-meta">NEW</div>
+        </div>
+        <div class="card-badges"><span class="card-badge badge-new">NEW</span></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Report CTA -->
+  <div id="report-cta-wrap"></div>
 
   <a class="saju-link" href="/saju">🔮 사주/팔자 버전으로 보고 싶으면 여기</a>
 
@@ -299,6 +557,9 @@ body {
 
 <script>
 const PROFILE_KEY = 'flavor_profile_dna';
+
+const S1_TYPES = ['vol2_romance_v2','vol3_food','vol4_travel','vol5_work','vol6_fashion','vol7_health','vol8_music','vol9_social','vol10_lifestyle'];
+const S2_TYPES = ['vol11_spending','vol12_drink','vol13_redflag','vol14_home','vol15_fandom','vol16_cafe','vol17_sleep','vol18_sns','vol19_study','vol20_interior'];
 
 function renderProfile() {
   const card = document.getElementById('profile-card');
@@ -342,6 +603,8 @@ function renderProfile() {
     if (profile) prefillForm(profile);
   }
   updateBadges(profile);
+  updateProgress(profile);
+  updateReportCTA(profile);
 }
 
 function populateSelects() {
@@ -405,11 +668,60 @@ function updateBadges(profile) {
   Object.entries(map).forEach(([qt, cid]) => {
     const card = document.getElementById(cid);
     if (!card) return;
-    const ex = card.querySelector('.badge-done'); if (ex) ex.remove();
+    const badgesWrap = card.querySelector('.card-badges');
+    if (!badgesWrap) return;
+    const ex = badgesWrap.querySelector('.badge-done'); if (ex) ex.remove();
     if (completed.includes(qt)) {
-      const b = document.createElement('span'); b.className = 'card-badge badge-done'; b.textContent = '완료'; card.appendChild(b);
+      const b = document.createElement('span'); b.className = 'card-badge badge-done'; b.textContent = '완료'; badgesWrap.appendChild(b);
     }
   });
+}
+
+function updateProgress(profile) {
+  const completed = (profile && profile.completed_quizzes) || [];
+  const s1Count = S1_TYPES.filter(t => completed.includes(t)).length;
+  const s2Count = S2_TYPES.filter(t => completed.includes(t)).length;
+  document.getElementById('progress-s1').style.width = (s1Count / 9 * 100) + '%';
+  document.getElementById('progress-text-s1').textContent = s1Count + '/9 완료';
+  document.getElementById('progress-s2').style.width = (s2Count / 10 * 100) + '%';
+  document.getElementById('progress-text-s2').textContent = s2Count + '/10 완료';
+}
+
+function updateReportCTA(profile) {
+  const completed = (profile && profile.completed_quizzes) || [];
+  const total = completed.length;
+  const wrap = document.getElementById('report-cta-wrap');
+  if (total >= 3) {
+    wrap.innerHTML = `
+      <a class="report-cta active" href="/my-report">
+        <div class="report-cta-icon">🧬</div>
+        <div class="report-cta-title">내 취향 리포트 보기</div>
+        <div class="report-cta-desc">퀴즈 3개 이상 완료! (현재 ${total}개 완료)</div>
+        <div class="report-cta-btn">리포트 확인하기</div>
+      </a>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="report-cta inactive">
+        <div class="report-cta-icon">🧬</div>
+        <div class="report-cta-title">내 취향 리포트 보기</div>
+        <div class="report-cta-desc">퀴즈 3개 이상 하면 해금! (현재 ${total}개 완료)</div>
+        <div class="report-cta-btn">퀴즈 더 풀어봐!</div>
+      </div>`;
+  }
+}
+
+function switchSeason(n) {
+  const s1 = document.getElementById('season-1');
+  const s2 = document.getElementById('season-2');
+  const t1 = document.getElementById('tab-s1');
+  const t2 = document.getElementById('tab-s2');
+  if (n === 1) {
+    s1.style.display = ''; s2.style.display = 'none';
+    t1.className = 'season-tab active'; t2.className = 'season-tab inactive';
+  } else {
+    s1.style.display = 'none'; s2.style.display = '';
+    t1.className = 'season-tab inactive'; t2.className = 'season-tab active';
+  }
 }
 
 renderProfile();

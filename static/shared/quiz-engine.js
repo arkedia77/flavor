@@ -540,7 +540,7 @@ function showResult(data, actualProfile) {
     resultShareUrl = `${API_BASE}/result/${data.id}`;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  updateFlavorProfile(C.quizType);
+  updateFlavorProfile(C.quizType, innateProfile, actualProfile);
 }
 
 function showResultLocal(actualProfile) {
@@ -573,9 +573,10 @@ function showResultLocal(actualProfile) {
   if (C.mode === 'saju' && sipsinData.pillars) {
     renderPillars(sipsinData.pillars);
   }
+  updateFlavorProfile(C.quizType, innateProfile, actualProfile);
 }
 
-function updateFlavorProfile(quizType) {
+function updateFlavorProfile(quizType, innate, actual) {
   const C = window.QUIZ_CONFIG;
   try {
     let profile = JSON.parse(localStorage.getItem(C.storageKey)) || {};
@@ -587,6 +588,16 @@ function updateFlavorProfile(quizType) {
     }
     if (!profile.completed_quizzes) profile.completed_quizzes = [];
     if (!profile.completed_quizzes.includes(quizType)) profile.completed_quizzes.push(quizType);
+    if (!profile.quiz_results) profile.quiz_results = {};
+    if (innate && actual) {
+      const innateType = getQuizType(innate);
+      const actualType = getQuizType(actual);
+      profile.quiz_results[quizType] = {
+        innate_emoji: innateType.emoji, innate_type: innateType.type,
+        actual_emoji: actualType.emoji, actual_type: actualType.type,
+        done_at: new Date().toISOString()
+      };
+    }
     if (!profile.created_at) profile.created_at = new Date().toISOString();
     localStorage.setItem(C.storageKey, JSON.stringify(profile));
   } catch(e) {}
