@@ -414,8 +414,10 @@ function renderDomains(results) {
       <div class="d-reason">${rec.reason||''}</div>
       ${descHtml}
       <div class="d-feedback" data-domain="${domain}">
-        <button class="fb-btn fb-up" onclick="sendFeedback(this,'${domain}',1)">👍</button>
-        <button class="fb-btn fb-down" onclick="sendFeedback(this,'${domain}',-1)">👎</button>
+        <button class="fb-btn" data-v="2" onclick="sendFeedback(this,'${domain}',2)"><span class="fb-emoji">🎯</span><span class="fb-text">소름 나야 이거</span></button>
+        <button class="fb-btn" data-v="1" onclick="sendFeedback(this,'${domain}',1)"><span class="fb-emoji">👍</span><span class="fb-text">맞아맞아</span></button>
+        <button class="fb-btn" data-v="-1" onclick="sendFeedback(this,'${domain}',-1)"><span class="fb-emoji">🤷</span><span class="fb-text">글쎄...</span></button>
+        <button class="fb-btn" data-v="-2" onclick="sendFeedback(this,'${domain}',-2)"><span class="fb-emoji">👎</span><span class="fb-text">완전 아닌데</span></button>
       </div>`;
     grid.appendChild(card);
   });

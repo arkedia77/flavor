@@ -354,15 +354,19 @@ body.scrollable { overflow: auto; overflow-y: scroll; -webkit-overflow-scrolling
 .d-item { font-size: 0.92rem; font-weight: 800; margin-bottom: 4px; }
 .d-reason { font-size: 0.73rem; color: #666688; line-height: 1.5; }
 .d-desc { font-size: 0.7rem; color: rgba(192,132,252,0.55); font-style: italic; margin-top: 5px; line-height: 1.5; }
-.d-feedback { display:flex; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(192,132,252,0.18); }
-.fb-btn { flex:1; padding:6px 0; border:1px solid rgba(192,132,252,0.18); border-radius:10px; background:transparent; font-size:1rem; cursor:pointer; transition:all 0.2s; opacity:0.6; }
+.d-feedback { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(192,132,252,0.18); }
+.fb-btn { flex:1 1 calc(50% - 3px); min-width:0; padding:8px 4px; border:1px solid rgba(192,132,252,0.18); border-radius:12px; background:transparent; cursor:pointer; transition:all 0.2s; opacity:0.7; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.fb-emoji { font-size:1.2rem; line-height:1; }
+.fb-text { font-size:0.65rem; color:#999; white-space:nowrap; }
 .fb-btn:hover { opacity:1; }
 .fb-btn:active { transform:scale(0.92); }
 .fb-btn:disabled { cursor:default; }
-.d-feedback.voted .fb-btn { opacity:0.25; }
+.d-feedback.voted .fb-btn { opacity:0.2; }
 .d-feedback.voted .fb-btn.selected { opacity:1; }
-.fb-btn.fb-up.selected { background:rgba(34,197,94,0.15); border-color:#22c55e; }
-.fb-btn.fb-down.selected { background:rgba(239,68,68,0.15); border-color:#ef4444; }
+.d-feedback.voted .fb-btn.selected[data-v="2"] { background:rgba(234,179,8,0.15); border-color:#eab308; }
+.d-feedback.voted .fb-btn.selected[data-v="1"] { background:rgba(34,197,94,0.15); border-color:#22c55e; }
+.d-feedback.voted .fb-btn.selected[data-v="-1"] { background:rgba(156,163,175,0.15); border-color:#9ca3af; }
+.d-feedback.voted .fb-btn.selected[data-v="-2"] { background:rgba(239,68,68,0.15); border-color:#ef4444; }
 
 .cta-box {
   margin: 20px 16px 0; background: rgba(20,10,45,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -1109,8 +1113,10 @@ function renderDomains(results) {
       <div class="d-reason">${rec.reason||''}</div>
       ${descHtml}
       <div class="d-feedback" data-domain="${domain}">
-        <button class="fb-btn fb-up" onclick="sendFeedback(this,'${domain}',1)">👍</button>
-        <button class="fb-btn fb-down" onclick="sendFeedback(this,'${domain}',-1)">👎</button>
+        <button class="fb-btn" data-v="2" onclick="sendFeedback(this,'${domain}',2)"><span class="fb-emoji">🎯</span><span class="fb-text">소름 나야 이거</span></button>
+        <button class="fb-btn" data-v="1" onclick="sendFeedback(this,'${domain}',1)"><span class="fb-emoji">👍</span><span class="fb-text">맞아맞아</span></button>
+        <button class="fb-btn" data-v="-1" onclick="sendFeedback(this,'${domain}',-1)"><span class="fb-emoji">🤷</span><span class="fb-text">글쎄...</span></button>
+        <button class="fb-btn" data-v="-2" onclick="sendFeedback(this,'${domain}',-2)"><span class="fb-emoji">👎</span><span class="fb-text">완전 아닌데</span></button>
       </div>`;
     grid.appendChild(card);
   });

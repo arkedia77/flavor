@@ -127,7 +127,7 @@ def feedback():
         submission_id = data.get("submission_id", "")
         domain        = data.get("domain", "")
         thumb         = int(data.get("thumb", 0))
-        if not submission_id or not domain or thumb not in (1, -1):
+        if not submission_id or not domain or thumb not in (2, 1, -1, -2):
             return jsonify({"status": "error", "message": "invalid params"}), 400
         save_feedback(submission_id, domain, thumb, datetime.now().isoformat())
         return jsonify({"status": "ok"})
