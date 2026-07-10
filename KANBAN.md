@@ -1,7 +1,7 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-03-22
-**엔진**: Leoflavor v0.1
+**최종 수정**: 2026-07-10
+**엔진**: Leoflavor v0.2 (사주 검증 게이트)
 
 ---
 
@@ -9,7 +9,16 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 카카오 로그인 | High | reklcli+Leo | Leo가 3/21 아침 카카오 개발자 앱 등록 → REST API 키 받은 후 구현 |
+| v0.2 서버 배포 | High | Leo→reklcli | 구현·커밋 완료. Leo 배포 승인 후 admin deploy API 호출 |
+| 카카오 로그인 | High | reklcli+Leo | Leo가 카카오 개발자 앱 등록 → REST API 키 받은 후 구현 |
+
+---
+
+## 🚧 BLOCKED
+
+| 항목 | 담당 | 사유 |
+|------|------|------|
+| Stage 1 검증 리포트 (실데이터) | reklcli | 서버 502 (gunicorn 다운) — flavor2에 재시작 요청 발신 (7/10 21:02) |
 
 ---
 
@@ -18,9 +27,9 @@
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
 | 유통/바이럴 채널 결정 | High | Leo | 인스타, 에타, 카톡 등 — 현재 접속자 거의 없음 |
-| 적중률 재측정 | Medium | reklcli | 실 데이터 쌓인 후 `scripts/measure_accuracy.py` |
-| Phase B: 피드백 실시간 반영 | Medium | reklcli | submit.py에 get_feedback_data 연동 |
-| Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후 |
+| Stage 2 게이트 판정 | Medium | reklcli | n_persons 200 도달 시 `scripts/validate_saju_signal.py` → 통과 차원 Leo 승인 |
+| 적중률 재측정 | Medium | reklcli | 실 데이터 쌓인 후 `scripts/measure_accuracy.py` (thumb 버그 수정판) |
+| Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후, 하네스 Ridge CV 활성화 |
 
 ---
 
@@ -28,6 +37,12 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-10 | **Leoflavor v0.2 — 사주 검증 게이트** 설계+구현 (설계서 docs/ENGINE_V02_DESIGN.md) |
+| 2026-07-10 | engines/saju_features.py: 십신 강도(지장간·궁성 가중)/신강약/억부용신/격국+투간/상호작용 7종 |
+| 2026-07-10 | 검증 하네스 scripts/validate_saju_signal.py (Spearman+순열+BH-FDR, 기준 pre-registered) |
+| 2026-07-10 | 버그픽스: sipsin.py 지장간 본기(여기로 읽던 것), recommend.py 🎯→👎 집계, measure_accuracy 동일 |
+| 2026-07-10 | Phase B 배선: submit.py에 get_feedback_data 연동 (min_sim 0.3, min_contributors 3) |
+| 2026-07-10 | DB saju_json 컬럼 + admin export 확장, 테스트 31개 (tests/) |
 | 2026-03-22 | 피드백 UI 4단계 리액션 교체 (👍👎 → 🎯👍🤷👎, 2x2 그리드, thumb 2/1/-1/-2) |
 | 2026-03-20 | 시즌 매거진 허브 리디자인 (시즌 탭, 매거진 카드, 프로그레스바, 리포트 CTA) |
 | 2026-03-20 | 취향 리포트 페이지 (`/my-report`, `/my-report-saju`) — 수집 그리드, 갭분석, 공유 |

@@ -1,9 +1,9 @@
 """API Blueprint: /api/submit, /api/feedback, /api/results, /api/calibration-data, /api/ux-vote
 
-Leoflavor Engine v0.1
-- 설문 100% 기반 추천 (사주 blend 제거)
-- 사주는 페르소나(캐릭터명)만 생성
-- 피드백 학습 루프 준비
+Leoflavor Engine v0.2 — 검증 게이트 방식
+- 추천 = 설문 기반 + 사주 prior의 게이트 블렌드 (게이트 가중치 전부 0 = 설문 100%)
+- 사주 피처는 서버에서 계산·저장 (saju_json), 검증 하네스가 신호 확인 전까지 추천 무영향
+- 피드백 학습 경로 배선 (confidence/feedback_signal 주석 — 추천 아이템은 불변)
 """
 
 import json
@@ -11,11 +11,15 @@ import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 
-from config import ENGINE_VERSION
+from config import ENGINE_VERSION, SAJU_GATE
 from engines.survey import raw_to_survey
 from engines.persona import get_persona
 from engines.personality import get_personality_type
 from engines.recommend import recommend
+from engines.saju_features import (
+    extract_features_from_birth, saju_prior_9d, SCHEMA_VERSION as SAJU_SCHEMA_VERSION,
+)
+from engines.gated_blend import apply_gated_blend, any_weight_open
 from db.repository import (
     save_submission, save_feedback, get_recent_submissions,
     get_calibration_data, get_submission_count, check_and_record_milestone,
@@ -76,11 +80,42 @@ def submit():
         survey, raw_answers = _parse_survey(data)
         year, month, day = _parse_birth(data)
 
-        # 설문 = 프로필 (사주 blend 없음, 설문 100%)
-        profile = survey
+        # 사주 피처 계산 (실패해도 제출은 성공 — profile=survey 폴백)
+        # 사주 트랙 퀴즈만 birth_time=12를 실제 선택으로 신뢰
+        saju_record = None
+        prior = None
+        hour_known = False
+        try:
+            is_saju_quiz = quiz_type.endswith("_saju")
+            features = extract_features_from_birth(
+                f"{year:04d}-{month:02d}-{day:02d}", birth_time,
+                trust_default_noon=is_saju_quiz,
+            )
+            hour_known = features["input"]["hour_known"]
+            prior = saju_prior_9d(features)
+            saju_record = {
+                "feature_version": SAJU_SCHEMA_VERSION,
+                "hour_known": hour_known,
+                "features": features,
+                "prior_9d": prior,
+            }
+        except Exception:
+            pass
 
-        # 추천 (규칙 기반, 추후 피드백 학습 보정)
-        results = recommend(profile)
+        # 게이트 블렌드 (가중치 전부 0이면 profile == survey 정확 일치)
+        profile, applied_w = apply_gated_blend(survey, prior, SAJU_GATE, hour_known)
+        if saju_record is not None:
+            saju_record["gate"] = {
+                "gate_version": SAJU_GATE.get("gate_version"),
+                "applied_weights": applied_w,
+            }
+
+        # 추천 (규칙 기반 + 유사 유저 피드백 보정 — 아이템은 규칙 결과 그대로)
+        try:
+            all_profiles = get_feedback_data()
+        except Exception:
+            all_profiles = None
+        results = recommend(profile, all_profiles)
 
         # 취향 아키타입 (9차원 기반)
         personality = get_personality_type(profile)
@@ -90,15 +125,21 @@ def submit():
 
         result_id = str(uuid.uuid4())[:8]
 
-        # DB 저장 (elements_json에 persona 저장, 하위호환)
+        # 게이트가 열려 블렌드된 행만 profile_version에 표시 (옛 파싱 무영향)
+        profile_version = f"{ENGINE_VERSION}_{quiz_type}"
+        if any_weight_open(applied_w):
+            profile_version += f"_g{SAJU_GATE.get('gate_version')}"
+
+        # DB 저장 (elements_json에 persona 저장, 하위호환 / saju_json에 피처 벡터)
         save_submission(
             result_id, name, birth_date, birth_time, gender,
             {"persona": persona["name"], "element": persona["element"],
              "day_stem": persona["day_stem"]},
             raw_answers,
             survey, profile, results,
-            f"{ENGINE_VERSION}_{quiz_type}",
-            datetime.now().isoformat()
+            profile_version,
+            datetime.now().isoformat(),
+            saju=saju_record,
         )
 
         total = get_submission_count()

@@ -18,119 +18,19 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engines.domains import run_all_domains
-from engines.recommend import centered_cosine
+from engines.recommend import centered_cosine, THUMB_VALUE
 from config import DIMENSIONS
-
-
-def fetch_from_admin_api(base_url="https://flavor.arkedia.work", token=None):
-    """서버 admin export API에서 submissions + feedbacks fetch"""
-    import urllib.request
-
-    if not token:
-        token = os.environ.get("FLAVOR_ADMIN_TOKEN", "")
-    if not token:
-        print("[!] FLAVOR_ADMIN_TOKEN 환경변수 또는 --token 필요")
-        sys.exit(1)
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "User-Agent": "leoflavor-accuracy/1.0",
-    }
-
-    # submissions (profile_json, results_json 포함)
-    sub_url = f"{base_url}/api/admin/export?table=submissions&limit=1000"
-    print(f"[*] Fetching submissions from {sub_url}")
-    req = urllib.request.Request(sub_url, headers=headers)
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        sub_data = json.loads(resp.read())
-
-    submissions = []
-    for r in sub_data.get("data", []):
-        submissions.append({
-            "id": r["id"],
-            "birth_date": r.get("birth_date", ""),
-            "birth_time": r.get("birth_time", "12"),
-            "gender": r.get("gender", ""),
-            "elements": json.loads(r["elements_json"]) if r.get("elements_json") else {},
-            "raw_answers": json.loads(r["raw_survey_json"]) if r.get("raw_survey_json") else {},
-            "survey": json.loads(r["survey_json"]) if r.get("survey_json") else {},
-            "profile": json.loads(r["profile_json"]) if r.get("profile_json") else {},
-            "results": json.loads(r["results_json"]) if r.get("results_json") else {},
-            "profile_version": r.get("profile_version"),
-            "created_at": r.get("created_at", ""),
-        })
-
-    # feedbacks
-    fb_url = f"{base_url}/api/admin/export?table=feedbacks&limit=5000"
-    print(f"[*] Fetching feedbacks from {fb_url}")
-    req = urllib.request.Request(fb_url, headers=headers)
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        fb_data = json.loads(resp.read())
-
-    feedbacks = fb_data.get("data", [])
-
-    print(f"[*] Loaded {len(submissions)} submissions, {len(feedbacks)} feedbacks")
-    return submissions, feedbacks
-
-
-def fetch_from_db(db_path):
-    """로컬 SQLite DB에서 직접 로드"""
-    import sqlite3
-
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-
-    # submissions
-    c.execute("""
-        SELECT id, birth_date, birth_time, gender,
-               elements_json, raw_survey_json, survey_json,
-               profile_version, created_at, profile_json, results_json
-        FROM submissions ORDER BY created_at ASC
-    """)
-    submissions = []
-    for row in c.fetchall():
-        submissions.append({
-            "id": row[0],
-            "birth_date": row[1],
-            "birth_time": row[2],
-            "gender": row[3],
-            "elements": json.loads(row[4]) if row[4] else {},
-            "raw_answers": json.loads(row[5]) if row[5] else {},
-            "survey": json.loads(row[6]) if row[6] else {},
-            "profile_version": row[7],
-            "created_at": row[8],
-            "profile": json.loads(row[9]) if row[9] else {},
-            "results": json.loads(row[10]) if row[10] else {},
-        })
-
-    # feedbacks
-    c.execute("""
-        SELECT submission_id, domain, thumb, created_at
-        FROM feedbacks ORDER BY created_at ASC
-    """)
-    feedbacks = []
-    for row in c.fetchall():
-        feedbacks.append({
-            "submission_id": row[0],
-            "domain": row[1],
-            "thumb": row[2],
-            "created_at": row[3],
-        })
-
-    conn.close()
-
-    total = len(submissions)
-    print(f"[*] Loaded {total} submissions, {len(feedbacks)} feedbacks from {db_path}")
-
-    return submissions, feedbacks
+from scripts.data_io import fetch_from_admin_api, fetch_from_db, DUMMY_CUTOFF
 
 
 def measure_accuracy(submissions, feedbacks):
     """적중률 측정
 
-    적중률 = 피드백 중 👍(thumb=1)의 비율
+    적중률 = 피드백 중 긍정(thumb>=1, 🎯/👍)의 비율
+    가중 적중률 = THUMB_VALUE(2/1/-1/-2 → 1.0/0.5/-0.5/-1.0) 평균을 [0,1]로 스케일
+    (구버전은 thumb==1만 세어 🎯=2가 👎로 집계되는 버그가 있었음)
     + 도메인별 상세 분석
-    + v0.1 엔진으로 재계산한 추천 vs 저장된 추천 비교
+    + 엔진으로 재계산한 추천 vs 저장된 추천 비교
     """
     # 피드백을 submission_id → list로 그룹화
     fb_map = {}
@@ -142,17 +42,20 @@ def measure_accuracy(submissions, feedbacks):
 
     # 전체 적중률
     total_fb = len(feedbacks)
-    thumbs_up = sum(1 for fb in feedbacks if fb["thumb"] == 1)
+    thumbs_up = sum(1 for fb in feedbacks if fb["thumb"] >= 1)
     thumbs_down = total_fb - thumbs_up
     overall_accuracy = thumbs_up / total_fb * 100 if total_fb > 0 else 0
+    weighted_mean = (sum(THUMB_VALUE.get(fb["thumb"], 0.0) for fb in feedbacks) / total_fb
+                     if total_fb > 0 else 0)
+    weighted_accuracy = (weighted_mean + 1) / 2 * 100  # [-1,1] → [0,100]
 
     print(f"\n{'='*50}")
-    print(f"  Leoflavor v0.1 적중률 리포트")
+    print(f"  Leoflavor 적중률 리포트")
     print(f"{'='*50}")
     print(f"  제출 건수: {len(submissions)}")
     print(f"  피드백 총수: {total_fb}")
-    print(f"  👍: {thumbs_up}  👎: {thumbs_down}")
-    print(f"  전체 적중률: {overall_accuracy:.1f}%")
+    print(f"  긍정(🎯👍): {thumbs_up}  부정(🤷👎): {thumbs_down}")
+    print(f"  전체 적중률: {overall_accuracy:.1f}%  (가중: {weighted_accuracy:.1f}%)")
 
     # 도메인별 분석
     domain_stats = {}
@@ -160,7 +63,7 @@ def measure_accuracy(submissions, feedbacks):
         d = fb["domain"]
         if d not in domain_stats:
             domain_stats[d] = {"up": 0, "down": 0}
-        if fb["thumb"] == 1:
+        if fb["thumb"] >= 1:
             domain_stats[d]["up"] += 1
         else:
             domain_stats[d]["down"] += 1
@@ -181,7 +84,7 @@ def measure_accuracy(submissions, feedbacks):
     # 유저별 적중률 분포
     user_accs = []
     for sid, fbs in fb_map.items():
-        up = sum(1 for f in fbs if f["thumb"] == 1)
+        up = sum(1 for f in fbs if f["thumb"] >= 1)
         user_accs.append(up / len(fbs) * 100)
 
     if user_accs:
@@ -263,23 +166,26 @@ def measure_accuracy(submissions, feedbacks):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Leoflavor v0.1 적중률 측정")
+    parser = argparse.ArgumentParser(description="Leoflavor 적중률 측정")
     parser.add_argument("--db", type=str, help="로컬 SQLite DB 경로")
     parser.add_argument("--url", type=str, default="https://flavor.arkedia.work",
                         help="서버 API base URL")
     parser.add_argument("--token", type=str, help="Admin API 토큰 (또는 FLAVOR_ADMIN_TOKEN 환경변수)")
+    parser.add_argument("--since", type=str, default=None,
+                        help=f"이 날짜 이후만 (더미 제외는 {DUMMY_CUTOFF})")
     args = parser.parse_args()
 
     if args.db:
-        submissions, feedbacks = fetch_from_db(args.db)
+        submissions, feedbacks = fetch_from_db(args.db, since=args.since)
     else:
         try:
-            submissions, feedbacks = fetch_from_admin_api(args.url, args.token)
+            submissions, feedbacks = fetch_from_admin_api(args.url, args.token, since=args.since)
         except Exception as e:
             print(f"[!] API 접근 실패: {e}")
             print(f"    로컬 DB로 실행: python scripts/measure_accuracy.py --db /path/to/saju_submissions.db")
             sys.exit(1)
 
+    print(f"[*] Loaded {len(submissions)} submissions, {len(feedbacks)} feedbacks")
     measure_accuracy(submissions, feedbacks)
 
 

@@ -86,7 +86,7 @@ def export_data():
     c = conn.cursor()
 
     if table == "submissions":
-        query = "SELECT id, name, birth_date, birth_time, gender, elements_json, raw_survey_json, survey_json, profile_json, results_json, profile_version, created_at FROM submissions"
+        query = "SELECT id, name, birth_date, birth_time, gender, elements_json, raw_survey_json, survey_json, profile_json, results_json, profile_version, created_at, saju_json FROM submissions"
         params = []
         if since:
             query += " WHERE created_at >= ?"
@@ -98,7 +98,8 @@ def export_data():
         c.execute(query, params)
         cols = ["id", "name", "birth_date", "birth_time", "gender",
                 "elements_json", "raw_survey_json", "survey_json",
-                "profile_json", "results_json", "profile_version", "created_at"]
+                "profile_json", "results_json", "profile_version", "created_at",
+                "saju_json"]
     else:
         query = "SELECT submission_id, domain, thumb, created_at FROM feedbacks"
         params = []

@@ -1,0 +1,131 @@
+# Leoflavor Engine v0.2 설계서 — 사주 검증 게이트
+
+**작성**: 2026-07-10 | **승인**: Leo (설계 방향 + 산출물 범위, AskUserQuestion 확정)
+**전신**: Gemini 프로토타입 → v1.x~v1.5 blend 엔진 → v0.1 설문 100%
+
+---
+
+## 1. 왜 다시 사주인가
+
+v0.1은 2026-03-12 판정(오행 count 선형회귀, n=60, p=0.575, CV R²=-0.222)으로
+사주를 추천에서 완전히 제거했다. 그러나 그 판정에는 세 가지 한계가 있었다:
+
+1. **피처가 피상적**: 오행 개수 세기뿐 — 십신·용신·격국·신강약·생극·비선형 전부 누락.
+   "알파벳 빈도로 영어를 분석"한 수준 (당시 포스트모템의 자평).
+2. **데이터가 오염**: 60건 전부 birth_time=12(기본값) — 시주가 전부 가짜 오시(午時)로
+   계산되어 火 과대추정 노이즈. 지금은 사주 트랙 퀴즈가 실제 시주를 수집한다.
+3. **분석이 증발**: 검증 스크립트가 커밋되지 않아 재현 불가. 판정문만 CHANGELOG에 남음.
+
+학술 근거도 있다: 십신↔MBTI 상관 논문 유의 5쌍(p<0.05: 상관-EF, 정관-ET, 정재-IS,
+편재-ES, 식신-IF), 사주 복합변수→Big5 r=0.18~0.29 (engines/research/ 참조).
+우리의 차별점은 MBTI를 우회하지 않는 **십신→취향 직접 매핑**이다.
+
+## 2. 전신 3개 비교
+
+| | Gemini 원본 (saju.js/flavor.js) | v1.5 blend (아카이브) | v0.1 (현행) |
+|---|---|---|---|
+| 사주 사용 | 100% — 오행 top2 × 십신그룹 → 6카테고리 프리셋 텍스트 | 오행 비율 → 9차원 매핑, 설문 blend (고정 25% / 동적 15~50%) | 0% — 페르소나명만 |
+| 피처 | 오행 분포 + 십신 그룹 (질적) | 오행 비율, 십신 5그룹, 음양, 신강도 | — |
+| 검증 | 없음 | 오행 count 회귀 실패 → 폐기 | 설문 적중률 74.8% (테스트 데이터) |
+| 교훈 | 콘텐츠는 풍부하나 점수 없음 | **검증 없이 가중치를 먼저 열었다** | 사주 신호를 통째로 버렸다 |
+
+**v0.2의 원칙: v1.5의 반대 순서.** 가중치를 먼저 열지 않는다.
+피처를 제대로 뽑고 → 저장하고 → 커밋된 하네스로 검증하고 → 통과한 차원만 연다.
+
+## 3. 아키텍처 (3레이어 + 게이트)
+
+```
+[생년월일시] → engines/saju_features.extract_features()   ← L0 선천 prior
+                  ├─ saju_json 저장 (감사 기록 + 캐시)
+                  └─ sipsin_prior_delta() × MAP_V2 → saju_prior_9d()
+[설문]      → engines/survey.raw_to_survey()               ← L1 후천 관측
+                  ↓
+engines/gated_blend.apply_gated_blend(survey, prior, SAJU_GATE)
+                  ↓   가중치 전부 0 = profile == survey (비트 단위 동일, 테스트 보증)
+recommend(profile, get_feedback_data())                    ← L2 피드백 학습
+                  ↓   confidence/feedback_signal 주석만 — 추천 아이템 불변
+8도메인 결과
+```
+
+### 사주 피처 (engines/saju_features.py, SCHEMA_VERSION sf-1)
+
+- **가중 슬롯 전개**: 궁성 가중(년간1.0/월간1.2/시간1.0/년지1.0/**월지2.5**/일지1.5/시지1.0)
+  × 지장간 가중(lunar 순서 [본기,중기,여기] 기준 len3→[0.6,0.3,0.1], len2→[0.7,0.3], len1→[1.0])
+- **십신 강도** 10종 + 5그룹 (합=1), dominant + margin
+- **신강약 연속 점수**: 슬롯 지지율(비겁 1.0 / 인성 0.8 / 기타 0), 중화점 0.36
+  (균등분포 기대값) + 득령/득지/득세 분해
+- **억부용신**: 신약→인성/비겁 중 유력한 쪽, 신강→식상/재성/관성 중 유력한 것.
+  degree(억부 필요 강도), strength_in_chart(용신 유력도). 조후용신은 유파 이견으로 제외
+  (method 필드로 확장 여지).
+- **격국**: 월지 본기 + 투간 보정 (본기>중기>여기 투출 우선). 시간 미상 시 時干 제외.
+- **오행**: raw count(실패 베이스라인 대조군) + 가중 분포 + 엔트로피
+- **음양비**, **상호작용 7종** (식상관성비, 재성×신강, 관성×신강, 식상×신강,
+  인성식상비, 용신강도, 양기×비겁)
+- **시간 미상**: 시주 슬롯 자체를 제외하고 재정규화. **12시 가짜 주입 금지.**
+  비사주 트랙의 birth_time="12"는 하드코딩 기본값이므로 불신 (trust_default_noon=False).
+  hour_known / degraded_features 플래그로 하네스가 층화.
+
+### SIPSIN_FLAVOR_MAP_V2 (가설 테이블 — 검증 대상)
+
+십신→9차원 delta. 항목별 rationale + evidence 등급("MBTI-p05" = 논문 유의 5쌍 /
+"실무" = 아키타입 모델). **진폭(±0.08)은 방향성 가설일 뿐, 검증 후 회귀로 재추정.**
+
+### 검증 게이트 (config/saju_gate.json)
+
+- 9차원 가중치 전부 **0.0**에서 시작. max_weight 0.30, require_hour_known true.
+- 로더(config.load_saju_gate)는 파싱 실패/음수/초과 시 **전부 0 폴백** (fail-safe).
+- profile_version: 가중치가 하나라도 열린 행만 `_g{gate_version}` suffix.
+- 롤백 = saju_gate.json을 0으로 되돌리는 1줄 커밋. survey 원본이 항상 저장되므로
+  어떤 행이든 재계산 가능.
+
+## 4. 게이트 기준 (pre-registered — 사후 변경 금지)
+
+> **Stage 1 (n_persons < 200)**: 탐색 전용. 어떤 가중치도 열지 않는다.
+> **Stage 2 (n_persons ≥ 200)**: 차원 d "signal confirmed" ⇔
+> |Spearman ρ_d| ≥ 0.20 AND BH-FDR q_d < 0.05 (9검정) AND 순열검정 p < 0.01 (10,000회)
+> AND 시간분할 부호 일치. 통과 차원만 w_d = 0.15 (**Leo 승인 커밋**).
+> **Stage 3 (n_persons ≥ 500)**: Stage 2 판정 **이후 신규 데이터만으로** 동일 기준
+> 재확인 시 w_d ≤ 0.30 (cap).
+> 시주 의존 차원은 hour_known 부분집합 n으로 별도 충족 필요.
+
+근거: n=200에서 r=0.2는 α=0.05 양측 검정력 ~0.8. 기존 마일스톤(200/500명)과 일치.
+
+**주 타깃 = 사주 prior → 9차원 survey** (person 단위). 게이트가 열리면 prior가
+대체하는 대상이 정확히 survey 차원이므로 검증 대상과 배포 사용처가 일치한다.
+피드백 thumb은 규칙 엔진 품질과 교락되어 게이트 기준으로 쓰지 않는다 (모니터링만).
+
+## 5. 검증 하네스 (scripts/)
+
+- `data_io.py`: fetch(API/DB) + 위생 필터 — DUMMY_CUTOFF=2026-03-14 이전 제외,
+  person dedupe((name,birth_date,gender) 키, survey 평균, birth_time 모순 시 미상 강등)
+- `validate_saju_signal.py`: confirmatory 9검정(Spearman+순열+BH+부트스트랩CI+시간분할)
+  / exploratory 스크린(개별 피처 × 9차원, Fisher-z 근사 — **게이트 사용 금지**, 가설 개정용)
+  / 보조(innate 동의율 이항검정) / 모니터링(도메인별 피드백)
+- 출력: `reports/saju_signal/{날짜}_{gitsha}_{datahash}.json+.md` — **git 커밋 필수**.
+  판정만 남고 스크립트가 증발했던 2026-03-12의 재발 방지.
+
+## 6. 이번에 함께 수리한 것 (사주 무관)
+
+- `engines/sipsin.py:135`: 지장간 본기를 `arr[-1]`(여기)로 읽던 버그 → `arr[0]`
+  (lunar_python 순서 [본기,중기,여기] 실측 확인)
+- `engines/recommend.py`: thumb==1만 up으로 세어 🎯(2)가 👎로 집계되던 버그 →
+  THUMB_VALUE={2:1.0, 1:0.5, -1:-0.5, -2:-1.0} 가중 투표. min_sim 0.5→0.3,
+  min_contributors=3 미만이면 confidence=None.
+- `api/submit.py`: 피드백 학습 경로 배선 (recommend에 get_feedback_data 연결).
+  feedback_boost는 아이템을 바꾸지 못하므로(주석만) 최악에도 추천은 규칙 결과와 동일.
+- `scripts/measure_accuracy.py`: 동일 thumb 버그 수정 + 가중 적중률 병기.
+- DB: `submissions.saju_json` 컬럼 추가 (기존 ALTER 마이그레이션 패턴).
+  옛 행 NULL — /result/<id> 하위호환 유지, 백필 불필요(결정적 재계산 가능).
+
+## 7. 명시적 이월 (v0.3+)
+
+- 조후용신, 합충형해 생극 그래프 피처
+- 도메인별 대안 랭킹 (item swap — domains.py가 도메인당 1개 아이템 구조라 선행 리팩터 필요)
+- 클라이언트 saju-engine.js의 MAP_V2 패리티 (서버가 정본, 클라이언트는 표시용)
+- Ridge CV 회귀 (n≥150에서 하네스에 활성화), ML 전환 (Phase D, 200명+)
+
+## 8. 테스트 앵커
+
+- 1977-04-11 16시(신시) = 정사/갑진/무술/경신, 일간 무(토양) — 외부 만세력 검증 완료 명식
+- 야자시: lunar_python 기본 동작(23시 당일 일주 유지 + 자시)을 테스트로 고정
+- 핵심 보증 테스트: **게이트 전부 0 → profile == survey 정확 일치** (v0.1 동작 보존)

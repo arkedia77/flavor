@@ -1,0 +1,18 @@
+{
+  "gate_version": "2026-07-10",
+  "based_on_report": null,
+  "note": "검증 게이트: 모든 가중치 0 = v0.1과 동일 동작. scripts/validate_saju_signal.py Stage 2(n>=200) 통과 차원만 Leo 승인 커밋으로 개방. 게이트 기준 원문은 docs/ENGINE_V02_DESIGN.md.",
+  "max_weight": 0.30,
+  "require_hour_known": true,
+  "weights": {
+    "social": 0.0,
+    "adventurous": 0.0,
+    "aesthetic": 0.0,
+    "comfort": 0.0,
+    "budget": 0.0,
+    "maximalist": 0.0,
+    "energetic": 0.0,
+    "urban": 0.0,
+    "bitter": 0.0
+  }
+}

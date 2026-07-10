@@ -132,7 +132,7 @@ def calc_sipsin(year: int, month: int, day: int) -> dict:
     # 지지 십신 (년지, 월지, 일지) — 본기만 카운트
     for arr in [ba.getYearShiShenZhi(), ba.getMonthShiShenZhi(), ba.getDayShiShenZhi()]:
         if arr and len(arr) > 0:
-            kr = _sipsin_kr(arr[-1])  # 본기 = 마지막
+            kr = _sipsin_kr(arr[0])  # lunar 순서 = [본기, 중기, 여기] (실측 확인)
             if kr in dist:
                 dist[kr] += 1
 

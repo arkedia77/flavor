@@ -2,6 +2,39 @@
 
 ---
 
+## 2026-07-10 — Leoflavor Engine v0.2 (사주 검증 게이트)
+
+### New
+- `engines/saju_features.py` — 사주 피처 추출 v2 (십신 강도 지장간·궁성 가중,
+  신강약 연속 점수, 억부용신, 격국+투간, 상호작용 7종, 시간미상 처리). SCHEMA sf-1
+- `SIPSIN_FLAVOR_MAP_V2` — 십신→9차원 prior 가설 테이블 (근거 등급 명기, 검증 대상)
+- `engines/gated_blend.py` + `config/saju_gate.json` — 검증 게이트 블렌드.
+  **가중치 전부 0 = v0.1과 동일 동작** (테스트 보증). fail-safe 로더
+- `scripts/data_io.py` — 데이터 IO + 위생 필터 (더미 제외, person dedupe, hour 판정)
+- `scripts/validate_saju_signal.py` — 검증 하네스 (Spearman+순열검정+BH-FDR+부트스트랩,
+  게이트 기준 pre-registered). 리포트는 reports/saju_signal/에 git 커밋
+- `tests/` — 단위 테스트 31개 (만세력 앵커, 게이트 항등성, thumb 가중치 등)
+- `submissions.saju_json` 컬럼 — 사주 피처 벡터 저장 (옛 행 NULL, /result 하위호환)
+- 설계서: `docs/ENGINE_V02_DESIGN.md`
+
+### Fixed
+- `engines/sipsin.py` — 지장간 본기를 여기(餘氣)로 읽던 버그 (`arr[-1]`→`arr[0]`)
+- `engines/recommend.py` — 🎯(thumb=2)가 👎로 집계되던 버그 → THUMB_VALUE 가중 투표,
+  min_sim 0.5→0.3, min_contributors=3 미달 시 confidence=None
+- `scripts/measure_accuracy.py` — 동일 thumb 버그 수정, 가중 적중률 병기
+- `requirements.txt` — python-dotenv 누락 추가 (app.py가 이미 import 중이었음)
+
+### Changed
+- `api/submit.py` — 사주 피처 계산·저장 + 게이트 블렌드(현재 no-op) +
+  피드백 학습 경로 배선 (아이템 불변, confidence 주석만)
+- `ENGINE_VERSION` "0.1" → "0.2" (게이트 0이므로 추천 결과는 v0.1과 동일)
+
+### 원칙 변경
+- "설문 = 추천의 100%" → **검증 게이트**: 사주 prior는 저장·검증되며, 커밋된
+  하네스가 Stage 2(n≥200) 기준을 통과한 차원만 Leo 승인으로 가중치 개방
+
+---
+
 ## 2026-03-12 — Leoflavor Engine v0.1 (엔진 재설계)
 
 ### Breaking Changes

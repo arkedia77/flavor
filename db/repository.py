@@ -5,14 +5,16 @@ from db.connection import get_db_connection
 
 
 def save_submission(result_id, name, birth_date, birth_time, gender,
-                    elements, raw_answers, survey, profile, results, profile_version, created_at):
+                    elements, raw_answers, survey, profile, results, profile_version, created_at,
+                    saju=None):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("""
         INSERT INTO submissions (id, name, birth_date, birth_time, gender,
                                  elements_json, raw_survey_json, survey_json,
-                                 profile_json, results_json, profile_version, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 profile_json, results_json, profile_version, created_at,
+                                 saju_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         result_id, name, birth_date, birth_time, gender,
         json.dumps(elements, ensure_ascii=False),
@@ -21,7 +23,8 @@ def save_submission(result_id, name, birth_date, birth_time, gender,
         json.dumps(profile, ensure_ascii=False),
         json.dumps(results, ensure_ascii=False),
         profile_version,
-        created_at
+        created_at,
+        json.dumps(saju, ensure_ascii=False) if saju else None
     ))
     conn.commit()
     conn.close()

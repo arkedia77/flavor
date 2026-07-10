@@ -15,6 +15,9 @@ import math
 from config import DIMENSIONS
 from engines.domains import run_all_domains
 
+# 4단계 리액션 → 투표 가중치 (🎯소름 2 / 👍맞아 1 / 🤷글쎄 -1 / 👎완전아닌데 -2)
+THUMB_VALUE = {2: 1.0, 1: 0.5, -1: -0.5, -2: -1.0}
+
 
 def centered_cosine(a: dict, b: dict) -> float:
     """9차원 프로필 간 centered cosine 유사도 (-1 ~ +1)
@@ -61,11 +64,15 @@ def find_similar_users(target_profile: dict, all_profiles: list, top_k: int = 10
     return scored[:top_k]
 
 
-def feedback_boost(rule_results: dict, similar_users: list, min_sim: float = 0.5) -> dict:
+def feedback_boost(rule_results: dict, similar_users: list, min_sim: float = 0.3,
+                   min_contributors: int = 3) -> dict:
     """유사 유저 피드백으로 규칙 기반 추천 보정
 
-    - centered cosine 기준 min_sim 이상인 유저만 참고 (0.5 = 중간 이상 상관)
-    - 도메인별로 👍가 압도적이면 신뢰도 ↑, 👎 많으면 대안 표시
+    - centered cosine 기준 min_sim 이상인 유저만 참고
+      (0.5 → 0.3 완화: 소규모 데이터에서 0.5는 기아 상태)
+    - 4단계 리액션을 THUMB_VALUE로 가중 투표 (구버전은 thumb==1만 up으로
+      세어 🎯(2)가 down 집계되는 버그가 있었음)
+    - 기여 유저가 min_contributors 미만이면 confidence=None (소표본 과신 방지)
 
     Returns:
         dict: 도메인별 {item, reason, description, confidence, feedback_signal}
@@ -73,31 +80,36 @@ def feedback_boost(rule_results: dict, similar_users: list, min_sim: float = 0.5
     boosted = {}
 
     for domain, rec in rule_results.items():
-        thumbs_up = 0
-        thumbs_down = 0
-        total_weight = 0
+        thumbs_up = 0.0
+        thumbs_down = 0.0
+        total_weight = 0.0
+        contributors = set()
 
         for sim, user in similar_users:
             if sim < min_sim:
                 continue
             for fb in user.get("feedbacks", []):
                 if fb["domain"] == domain:
-                    weight = sim  # 유사도가 곧 가중치
-                    if fb["thumb"] == 1:
-                        thumbs_up += weight
+                    v = THUMB_VALUE.get(fb["thumb"], 0.0)
+                    if v == 0.0:
+                        continue  # 알 수 없는 thumb값은 무시
+                    w = sim  # 유사도가 곧 가중치
+                    if v > 0:
+                        thumbs_up += w * v
                     else:
-                        thumbs_down += weight
-                    total_weight += weight
+                        thumbs_down += w * (-v)
+                    total_weight += w * abs(v)
+                    contributors.add(user["id"])
 
         result = dict(rec)
 
-        if total_weight > 0:
+        if total_weight > 0 and len(contributors) >= min_contributors:
             confidence = thumbs_up / total_weight
             result["confidence"] = round(confidence, 2)
             result["feedback_signal"] = {
                 "up": round(thumbs_up, 2),
                 "down": round(thumbs_down, 2),
-                "sample_size": len([s for s, u in similar_users if s >= min_sim]),
+                "sample_size": len(contributors),
             }
         else:
             result["confidence"] = None

@@ -30,6 +30,7 @@ def init_db():
     for col, col_type in [
         ("raw_survey_json", "TEXT"),
         ("profile_version", "TEXT"),
+        ("saju_json", "TEXT"),
     ]:
         try:
             c.execute(f"ALTER TABLE submissions ADD COLUMN {col} {col_type}")
