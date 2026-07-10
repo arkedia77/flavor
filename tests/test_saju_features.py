@@ -8,9 +8,9 @@ import random
 import unittest
 
 from engines.saju_features import (
-    ELEMENTS, SIKSHIN_GROUPS, SIPSIN_FLAVOR_MAP_V2,
-    extract_features, extract_features_from_birth, flatten,
-    sipsin_prior_delta, saju_prior_9d, _rel_elements, _sipsin_of,
+    ELEMENTS, SIKSHIN_GROUPS, SIPSIN_FLAVOR_MAP_V2, HIDDEN_STEMS_KR,
+    extract_features, extract_features_from_birth, extract_features_from_pillars,
+    flatten, sipsin_prior_delta, saju_prior_9d, _rel_elements, _sipsin_of,
 )
 from engines.sipsin import calc_sipsin, STEM_ELEMENT, PRODUCES
 
@@ -162,6 +162,52 @@ class TestPriorAndFlatten(unittest.TestCase):
             self.assertTrue(k.isascii(), f"non-ascii key: {k}")
             self.assertIsInstance(v, float)
         self.assertEqual(flat["hour_known"], 0.0)
+
+
+class TestPillarsPath(unittest.TestCase):
+    """간지 직접 입력 경로 — 고전 명식 정답지 검증용"""
+
+    def test_pillars_path_matches_date_path(self):
+        a = extract_features(1977, 4, 11, 16)
+        b = extract_features_from_pillars(
+            {"년주": "정사", "월주": "갑진", "일주": "무술", "시주": "경신"})
+        for k in ("pillars", "day_master", "sipsin", "strength", "yongsin",
+                  "gyeokguk", "yinyang", "elements", "interactions"):
+            self.assertEqual(a[k], b[k], f"{k} mismatch")
+
+    def test_pillars_without_hour(self):
+        f = extract_features_from_pillars(
+            {"년주": "정사", "월주": "갑진", "일주": "무술"})
+        self.assertFalse(f["input"]["hour_known"])
+        self.assertNotIn("시주", f["pillars"])
+
+    def test_invalid_pillar_raises(self):
+        with self.assertRaises(ValueError):
+            extract_features_from_pillars(
+                {"년주": "정", "월주": "갑진", "일주": "무술"})
+
+    def test_hidden_table_covers_all_branches(self):
+        # lunar와 동일한 정적 테이블: 12지지 전부, index 0 = 본기
+        self.assertEqual(len(HIDDEN_STEMS_KR), 12)
+        self.assertEqual(HIDDEN_STEMS_KR["진"][0], "무")
+        self.assertEqual(HIDDEN_STEMS_KR["사"][0], "병")
+        self.assertEqual(HIDDEN_STEMS_KR["자"], ["계"])
+
+
+class TestParamsOverride(unittest.TestCase):
+    """민감도 분석용 파라미터 훅"""
+
+    def test_default_params_identity(self):
+        a = extract_features(1977, 4, 11, 16)
+        b = extract_features(1977, 4, 11, 16, params={})
+        self.assertEqual(a, b)
+
+    def test_override_changes_result(self):
+        flat = {"년간": 1.0, "월간": 1.0, "시간": 1.0,
+                "년지": 1.0, "월지": 1.0, "일지": 1.0, "시지": 1.0}
+        a = extract_features(1977, 4, 11, 16)
+        b = extract_features(1977, 4, 11, 16, params={"palace_weights": flat})
+        self.assertNotEqual(a["sipsin"]["strength"], b["sipsin"]["strength"])
 
 
 class TestSipsinBugfixRegression(unittest.TestCase):

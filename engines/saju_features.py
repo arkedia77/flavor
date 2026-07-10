@@ -4,6 +4,9 @@ lunar_python 기반 만세력에서 통계 검증 가능한 결정적 피처 벡
 - 십신 강도 (지장간·궁성 가중), 신강약 연속 점수, 억부용신, 격국, 음양, 오행
 - 모든 출력은 JSON-serializable, 동일 입력 → 동일 출력 (결정적)
 - 시간 미상(hour=None) 시 시주 슬롯을 제외하고 재정규화 (12시 가짜 주입 금지)
+- 입력 경로 2개: 생년월일시(extract_features) / 간지 직접(extract_features_from_pillars
+  — 고전 명식 정답지 검증용, 지장간은 lunar와 동일한 LunarUtil.ZHI_HIDE_GAN 사용)
+- params로 가중치 체계를 교체 가능 (민감도 분석용) — 기본값이 프로덕션 공식
 
 이 모듈의 피처는 추천에 직접 반영되지 않는다. config/saju_gate.json의
 가중치가 검증 게이트(scripts/validate_saju_signal.py) 통과로 개방되기 전까지
@@ -13,7 +16,10 @@ sipsin_prior_delta / saju_prior_9d는 저장·검증용으로만 쓰인다.
 elements.counts는 그 실패 베이스라인과의 대조를 위해 유지하는 피처다.
 """
 
+import math
+
 from lunar_python import Solar
+from lunar_python.util import LunarUtil
 
 from engines.sipsin import (
     STEM_ELEMENT, STEM_POLARITY, BRANCH_ELEMENT, BRANCH_POLARITY,
@@ -34,24 +40,38 @@ SIKSHIN_GROUPS = {
 }
 _GROUP_OF = {ss: g for g, members in SIKSHIN_GROUPS.items() for ss in members}
 
-# 궁성(위치) 가중 — 월지 본기가 사령부라는 자평 원칙 반영
-PALACE_WEIGHTS = {
-    "년간": 1.0, "월간": 1.2, "시간": 1.0,
-    "년지": 1.0, "월지": 2.5, "일지": 1.5, "시지": 1.0,
+# 지지 → 지장간 (lunar EightChar가 쓰는 것과 동일 테이블, 한글 변환)
+# 순서: index 0 = 본기, 이후 세력 내림차순
+HIDDEN_STEMS_KR = {
+    _to_kr(zhi): [_to_kr(g) for g in gans]
+    for zhi, gans in LunarUtil.ZHI_HIDE_GAN.items()
 }
 
-# 지장간 가중 — lunar_python 순서 [본기, 중기, 여기] 기준 (실측 확인)
-HIDDEN_WEIGHTS_BY_LEN = {
-    1: [1.0],
-    2: [0.7, 0.3],
-    3: [0.6, 0.3, 0.1],
+# ── 기본 파라미터 (프로덕션 공식 = sf-1) ──
+# 민감도 분석에서 params 인자로 교체 가능. 기본값 변경은 SCHEMA_VERSION 변경 사항.
+DEFAULT_PARAMS = {
+    # 궁성(위치) 가중 — 월지 본기가 사령부라는 자평 원칙 반영
+    "palace_weights": {
+        "년간": 1.0, "월간": 1.2, "시간": 1.0,
+        "년지": 1.0, "월지": 2.5, "일지": 1.5, "시지": 1.0,
+    },
+    # 지장간 가중 — index 0 = 본기 (길이별)
+    "hidden_weights_by_len": {1: [1.0], 2: [0.7, 0.3], 3: [0.6, 0.3, 0.1]},
+    # 신강약: 슬롯이 일간을 돕는 정도
+    "support_bigyeop": 1.0,
+    "support_inseong": 0.8,
+    # 균등분포 기대값 = 0.2*(비겁+인성 support) → 중화점
+    "strength_neutral": 0.36,
+    "strength_strong": 0.42,   # label용
+    "strength_weak": 0.30,
 }
 
-# 신강약: 슬롯이 일간을 돕는 정도 (비겁 1.0, 인성 0.8, 기타 0)
-# 균등분포 기대값 = 0.2*1.0 + 0.2*0.8 = 0.36 → 중화점
-STRENGTH_NEUTRAL = 0.36
-STRENGTH_STRONG = 0.42   # label용
-STRENGTH_WEAK = 0.30
+# 하위 호환 상수 (기존 import 대응)
+PALACE_WEIGHTS = DEFAULT_PARAMS["palace_weights"]
+HIDDEN_WEIGHTS_BY_LEN = DEFAULT_PARAMS["hidden_weights_by_len"]
+STRENGTH_NEUTRAL = DEFAULT_PARAMS["strength_neutral"]
+STRENGTH_STRONG = DEFAULT_PARAMS["strength_strong"]
+STRENGTH_WEAK = DEFAULT_PARAMS["strength_weak"]
 
 
 # ── 십신 → 9차원 prior 가설 테이블 v2 ──
@@ -141,43 +161,86 @@ def _sipsin_of(day_stem: str, target_stem: str) -> str:
     return table[(relation, same)]
 
 
-# ── 만세력 → 가중 슬롯 전개 ──
+# ── 명식 정규화 (chart dict) ──
+# chart = {
+#   "day_stem": "무",
+#   "stems": [("년간","정"), ("월간","갑"), ("시간","경")?],   # 일간 제외
+#   "branches": [("년지","사",[지장간...]), ..., ("시지",...)?],  # [본기, ...]
+#   "pillars": {"년주":"정사", ...},
+#   "hour_known": bool,
+# }
 
-def _get_eight_char(year, month, day, hour):
-    solar = Solar.fromYmdHms(year, month, day, hour, 0, 0)
-    return solar.getLunar().getEightChar()
+def _build_chart_from_date(year, month, day, hour):
+    hour_known = hour is not None
+    solar = Solar.fromYmdHms(year, month, day, hour if hour_known else 12, 0, 0)
+    ba = solar.getLunar().getEightChar()
 
-
-def _hidden_kr(hide_gan_list) -> list:
-    return [_to_kr(g) for g in hide_gan_list]
-
-
-def _weighted_slots(ba, hour_known: bool):
-    """8자(6자) → [(천간글자, weight, 위치태그)] 전개.
-
-    천간은 그대로, 지지는 지장간([본기,중기,여기])으로 전개해
-    궁성가중 × 지장간가중을 곱한다. 일간은 기준점이므로 제외.
-    """
-    slots = []
-    stems = [("년간", ba.getYearGan()), ("월간", ba.getMonthGan())]
+    stems = [("년간", _to_kr(ba.getYearGan())), ("월간", _to_kr(ba.getMonthGan()))]
     branches = [
-        ("년지", ba.getYearHideGan()),
-        ("월지", ba.getMonthHideGan()),
-        ("일지", ba.getDayHideGan()),
+        ("년지", _to_kr(ba.getYearZhi()), [_to_kr(g) for g in ba.getYearHideGan()]),
+        ("월지", _to_kr(ba.getMonthZhi()), [_to_kr(g) for g in ba.getMonthHideGan()]),
+        ("일지", _to_kr(ba.getDayZhi()), [_to_kr(g) for g in ba.getDayHideGan()]),
     ]
+    pillars = {
+        "년주": stems[0][1] + branches[0][1],
+        "월주": stems[1][1] + branches[1][1],
+        "일주": _to_kr(ba.getDayGan()) + branches[2][1],
+    }
     if hour_known:
-        stems.append(("시간", ba.getTimeGan()))
-        branches.append(("시지", ba.getTimeHideGan()))
+        stems.append(("시간", _to_kr(ba.getTimeGan())))
+        tz = _to_kr(ba.getTimeZhi())
+        branches.append(("시지", tz, [_to_kr(g) for g in ba.getTimeHideGan()]))
+        pillars["시주"] = stems[2][1] + tz
 
-    for tag, gan in stems:
-        slots.append((_to_kr(gan), PALACE_WEIGHTS[tag], tag))
+    return {"day_stem": _to_kr(ba.getDayGan()), "stems": stems,
+            "branches": branches, "pillars": pillars, "hour_known": hour_known}
 
-    for tag, hidden in branches:
-        kr = _hidden_kr(hidden)
-        weights = HIDDEN_WEIGHTS_BY_LEN[len(kr)]
-        for stem, hw in zip(kr, weights):
-            slots.append((stem, PALACE_WEIGHTS[tag] * hw, tag))
 
+def _build_chart_from_pillars(pillars: dict):
+    """간지 직접 입력 — {"년주":"정사","월주":"갑진","일주":"무술","시주":"경신"(선택)}
+
+    고전 명식 검증용. 지장간은 lunar와 동일한 HIDDEN_STEMS_KR 사용.
+    """
+    def split(p):
+        if not p or len(p) != 2:
+            raise ValueError(f"간지 형식 오류: {p!r} (예: '정사')")
+        s, b = p[0], p[1]
+        if s not in STEM_ELEMENT or b not in BRANCH_ELEMENT:
+            raise ValueError(f"알 수 없는 간지: {p!r}")
+        return s, b
+
+    ys, yb = split(pillars["년주"])
+    ms, mb = split(pillars["월주"])
+    ds, db = split(pillars["일주"])
+    hour_known = bool(pillars.get("시주"))
+
+    stems = [("년간", ys), ("월간", ms)]
+    branches = [
+        ("년지", yb, HIDDEN_STEMS_KR[yb]),
+        ("월지", mb, HIDDEN_STEMS_KR[mb]),
+        ("일지", db, HIDDEN_STEMS_KR[db]),
+    ]
+    out_pillars = {"년주": pillars["년주"], "월주": pillars["월주"], "일주": pillars["일주"]}
+    if hour_known:
+        hs, hb = split(pillars["시주"])
+        stems.append(("시간", hs))
+        branches.append(("시지", hb, HIDDEN_STEMS_KR[hb]))
+        out_pillars["시주"] = pillars["시주"]
+
+    return {"day_stem": ds, "stems": stems, "branches": branches,
+            "pillars": out_pillars, "hour_known": hour_known}
+
+
+def _weighted_slots(chart, params):
+    """명식 → [(천간글자, weight, 위치태그)] 전개. 일간은 기준점이므로 제외."""
+    pw = params["palace_weights"]
+    hw = params["hidden_weights_by_len"]
+    slots = []
+    for tag, stem in chart["stems"]:
+        slots.append((stem, pw[tag], tag))
+    for tag, _branch, hidden in chart["branches"]:
+        for stem, w in zip(hidden, hw[len(hidden)]):
+            slots.append((stem, pw[tag] * w, tag))
     return slots
 
 
@@ -205,47 +268,41 @@ def _sipsin_features(day_stem: str, slots) -> dict:
     }
 
 
-def _strength_features(day_stem: str, ba, slots, hour_known: bool) -> dict:
-    day_el = STEM_ELEMENT[day_stem]
+def _strength_features(chart, slots, params) -> dict:
+    day_el = STEM_ELEMENT[chart["day_stem"]]
     rel = _rel_elements(day_el)
 
     def support(el: str) -> float:
         if el == rel["비겁"]:
-            return 1.0
+            return params["support_bigyeop"]
         if el == rel["인성"]:
-            return 0.8
+            return params["support_inseong"]
         return 0.0
 
     total = sum(w for _, w, _ in slots)
     score = sum(w * support(STEM_ELEMENT[stem]) for stem, w, _ in slots) / total
 
     # 득령: 월지 본기
-    month_main = _hidden_kr(ba.getMonthHideGan())[0]
-    m_el = STEM_ELEMENT[month_main]
+    month_hidden = next(h for tag, _b, h in chart["branches"] if tag == "월지")
+    m_el = STEM_ELEMENT[month_hidden[0]]
     deukryeong = 1.0 if m_el == rel["비겁"] else (0.75 if m_el == rel["인성"] else 0.0)
 
     # 득지: 지지 통근 (지장간에 일간 오행 존재), 일지 1.5배 가중
-    branch_hiddens = [("년지", ba.getYearHideGan()), ("월지", ba.getMonthHideGan()),
-                      ("일지", ba.getDayHideGan())]
-    if hour_known:
-        branch_hiddens.append(("시지", ba.getTimeHideGan()))
     root_w, root_total = 0.0, 0.0
-    for tag, hidden in branch_hiddens:
+    for tag, _b, hidden in chart["branches"]:
         w = 1.5 if tag == "일지" else 1.0
         root_total += w
-        if any(STEM_ELEMENT[s] == day_el for s in _hidden_kr(hidden)):
+        if any(STEM_ELEMENT[s] == day_el for s in hidden):
             root_w += w
     deukji = root_w / root_total
 
-    # 득세: 타 천간 중 비겁/인성 비율
-    other_stems = [_to_kr(ba.getYearGan()), _to_kr(ba.getMonthGan())]
-    if hour_known:
-        other_stems.append(_to_kr(ba.getTimeGan()))
-    deukse = sum(support(STEM_ELEMENT[s]) for s in other_stems) / len(other_stems)
+    # 득세: 타 천간 중 비겁/인성 지지율
+    other = [s for _tag, s in chart["stems"]]
+    deukse = sum(support(STEM_ELEMENT[s]) for s in other) / len(other)
 
-    if score > STRENGTH_STRONG:
+    if score > params["strength_strong"]:
         label = "신강"
-    elif score < STRENGTH_WEAK:
+    elif score < params["strength_weak"]:
         label = "신약"
     else:
         label = "중화"
@@ -256,7 +313,8 @@ def _strength_features(day_stem: str, ba, slots, hour_known: bool) -> dict:
     }
 
 
-def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: dict) -> dict:
+def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: dict,
+                      params) -> dict:
     """억부용신 — 결정적 규칙.
 
     신약: 인성/비겁 오행 중 명식 내 가중 비중이 큰 쪽 (동률 시 인성)
@@ -264,8 +322,9 @@ def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: d
     조후용신은 유파 이견이 커서 제외 — method 필드로 향후 확장.
     """
     rel = _rel_elements(STEM_ELEMENT[day_stem])
+    neutral = params["strength_neutral"]
 
-    if strength_score < STRENGTH_NEUTRAL:
+    if strength_score < neutral:
         cands = [rel["인성"], rel["비겁"]]
         yongsin = max(cands, key=lambda el: (elements_weighted[el], el == rel["인성"]))
         huisin = cands[0] if yongsin == cands[1] else cands[1]
@@ -274,7 +333,7 @@ def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: d
         yongsin = max(cands, key=lambda el: (elements_weighted[el], -cands.index(el)))
         huisin = next(k for k, v in PRODUCES.items() if v == yongsin)
 
-    degree = min(1.0, abs(strength_score - STRENGTH_NEUTRAL) / STRENGTH_NEUTRAL)
+    degree = min(1.0, abs(strength_score - neutral) / neutral)
     return {
         "method": "억부", "element": yongsin, "희신": huisin,
         "degree": round(degree, 4),
@@ -282,45 +341,38 @@ def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: d
     }
 
 
-def _gyeokguk_features(day_stem: str, ba, hour_known: bool) -> dict:
+def _gyeokguk_features(chart) -> dict:
     """격국 — 월지 본기 기준 + 투간 보정.
 
     월지 지장간 중 천간(년간/월간/시간)에 투출한 글자가 있으면 우선
     (본기 투출 > 중기 > 여기), 미투출 시 본기.
     시간 미상이면 시간(時干)은 투간 후보에서 제외 (가짜 12시 누출 금지).
     """
-    hidden = _hidden_kr(ba.getMonthHideGan())  # [본기, 중기, 여기]
-    visible = {_to_kr(ba.getYearGan()), _to_kr(ba.getMonthGan())}
-    if hour_known:
-        visible.add(_to_kr(ba.getTimeGan()))
+    month_hidden = next(h for tag, _b, h in chart["branches"] if tag == "월지")
+    visible = {s for _tag, s in chart["stems"]}
 
-    chosen, tugan = hidden[0], False
-    for h in hidden:
+    chosen, tugan = month_hidden[0], False
+    for h in month_hidden:
         if h in visible:
             chosen, tugan = h, True
             break
 
-    ss = _sipsin_of(day_stem, chosen)
+    ss = _sipsin_of(chart["day_stem"], chosen)
     return {"name": f"{ss}격", "group": _GROUP_OF[ss], "tugan": tugan}
 
 
-def _element_features(day_stem: str, ba, slots, hour_known: bool) -> dict:
-    import math
-
+def _element_features(chart, slots) -> dict:
     # raw counts: 천간 + 지지 대표오행 (v0.1 실패 베이스라인 대조군)
-    chars = [(_to_kr(ba.getYearGan()), _to_kr(ba.getYearZhi())),
-             (_to_kr(ba.getMonthGan()), _to_kr(ba.getMonthZhi())),
-             (_to_kr(ba.getDayGan()), _to_kr(ba.getDayZhi()))]
-    if hour_known:
-        chars.append((_to_kr(ba.getTimeGan()), _to_kr(ba.getTimeZhi())))
     counts = {el: 0 for el in ELEMENTS}
-    for stem, branch in chars:
-        counts[STEM_ELEMENT[stem]] += 1
-        counts[BRANCH_ELEMENT[branch]] += 1
+    counts[STEM_ELEMENT[chart["day_stem"]]] += 1
+    for _tag, s in chart["stems"]:
+        counts[STEM_ELEMENT[s]] += 1
+    for _tag, b, _h in chart["branches"]:
+        counts[BRANCH_ELEMENT[b]] += 1
 
     # 가중 분포: 십신 슬롯 + 일간(1.0) 포함
     weighted = {el: 0.0 for el in ELEMENTS}
-    weighted[STEM_ELEMENT[day_stem]] += 1.0
+    weighted[STEM_ELEMENT[chart["day_stem"]]] += 1.0
     for stem, w, _ in slots:
         weighted[STEM_ELEMENT[stem]] += w
     total = sum(weighted.values())
@@ -335,14 +387,16 @@ def _element_features(day_stem: str, ba, slots, hour_known: bool) -> dict:
     }
 
 
-def _yinyang_ratio(ba, hour_known: bool) -> float:
-    pairs = [(_to_kr(ba.getYearGan()), _to_kr(ba.getYearZhi())),
-             (_to_kr(ba.getMonthGan()), _to_kr(ba.getMonthZhi())),
-             (_to_kr(ba.getDayGan()), _to_kr(ba.getDayZhi()))]
-    if hour_known:
-        pairs.append((_to_kr(ba.getTimeGan()), _to_kr(ba.getTimeZhi())))
-    yang = sum((STEM_POLARITY[s] == "양") + (BRANCH_POLARITY[b] == "양") for s, b in pairs)
-    return yang / (len(pairs) * 2)
+def _yinyang_ratio(chart) -> float:
+    yang = STEM_POLARITY[chart["day_stem"]] == "양"
+    n = 1
+    for _tag, s in chart["stems"]:
+        yang += STEM_POLARITY[s] == "양"
+        n += 1
+    for _tag, b, _h in chart["branches"]:
+        yang += BRANCH_POLARITY[b] == "양"
+        n += 1
+    return yang / n
 
 
 def _interaction_features(sipsin: dict, strength: dict, yongsin: dict,
@@ -364,45 +418,32 @@ def _interaction_features(sipsin: dict, strength: dict, yongsin: dict,
     }
 
 
-# ── 메인 진입점 ──
+# ── 공통 조립 ──
 
-def extract_features(year: int, month: int, day: int, hour=None) -> dict:
-    """생년월일(시) → 사주 피처 벡터. 완전 결정적, JSON-serializable.
+def _features_from_chart(chart, input_info, params=None) -> dict:
+    p = dict(DEFAULT_PARAMS)
+    if params:
+        p.update(params)
 
-    hour=None이면 시주 슬롯을 제외하고 재정규화한다 (가짜 12시 주입 금지 —
-    일주 산출용 lunar 호출만 12시 고정, 시주는 어떤 피처에도 안 들어감).
-    """
-    hour_known = hour is not None
-    ba = _get_eight_char(year, month, day, hour if hour_known else 12)
-
-    day_stem = _to_kr(ba.getDayGan())
-    slots = _weighted_slots(ba, hour_known)
+    day_stem = chart["day_stem"]
+    slots = _weighted_slots(chart, p)
 
     sipsin = _sipsin_features(day_stem, slots)
-    strength = _strength_features(day_stem, ba, slots, hour_known)
-    elements = _element_features(day_stem, ba, slots, hour_known)
-    yongsin = _yongsin_features(day_stem, strength["score"], elements["weighted"])
-    gyeokguk = _gyeokguk_features(day_stem, ba, hour_known)
-    yang_ratio = _yinyang_ratio(ba, hour_known)
+    strength = _strength_features(chart, slots, p)
+    elements = _element_features(chart, slots)
+    yongsin = _yongsin_features(day_stem, strength["score"], elements["weighted"], p)
+    gyeokguk = _gyeokguk_features(chart)
+    yang_ratio = _yinyang_ratio(chart)
     interactions = _interaction_features(sipsin, strength, yongsin, yang_ratio)
 
-    pillars = {
-        "년주": _to_kr(ba.getYearGan()) + _to_kr(ba.getYearZhi()),
-        "월주": _to_kr(ba.getMonthGan()) + _to_kr(ba.getMonthZhi()),
-        "일주": _to_kr(ba.getDayGan()) + _to_kr(ba.getDayZhi()),
-    }
-    if hour_known:
-        pillars["시주"] = _to_kr(ba.getTimeGan()) + _to_kr(ba.getTimeZhi())
-
-    degraded = [] if hour_known else [
+    degraded = [] if chart["hour_known"] else [
         "sipsin", "strength", "yongsin", "yinyang", "elements", "interactions",
     ]
 
     return {
         "schema_version": SCHEMA_VERSION,
-        "input": {"year": year, "month": month, "day": day,
-                  "hour": hour if hour_known else None, "hour_known": hour_known},
-        "pillars": pillars,
+        "input": input_info,
+        "pillars": chart["pillars"],
         "day_master": {"stem": day_stem, "element": STEM_ELEMENT[day_stem],
                        "polarity": STEM_POLARITY[day_stem]},
         "sipsin": sipsin,
@@ -414,6 +455,33 @@ def extract_features(year: int, month: int, day: int, hour=None) -> dict:
         "interactions": interactions,
         "degraded_features": degraded,
     }
+
+
+# ── 메인 진입점 ──
+
+def extract_features(year: int, month: int, day: int, hour=None, params=None) -> dict:
+    """생년월일(시) → 사주 피처 벡터. 완전 결정적, JSON-serializable.
+
+    hour=None이면 시주 슬롯을 제외하고 재정규화한다 (가짜 12시 주입 금지 —
+    일주 산출용 lunar 호출만 12시 고정, 시주는 어떤 피처에도 안 들어감).
+    """
+    hour_known = hour is not None
+    chart = _build_chart_from_date(year, month, day, hour)
+    return _features_from_chart(chart, {
+        "year": year, "month": month, "day": day,
+        "hour": hour if hour_known else None, "hour_known": hour_known,
+    }, params)
+
+
+def extract_features_from_pillars(pillars: dict, params=None) -> dict:
+    """간지 직접 입력 → 사주 피처 벡터 (고전 명식 정답지 검증용).
+
+    pillars: {"년주":"정사","월주":"갑진","일주":"무술","시주":"경신"(선택)}
+    """
+    chart = _build_chart_from_pillars(pillars)
+    return _features_from_chart(chart, {
+        "pillars_direct": True, "hour_known": chart["hour_known"],
+    }, params)
 
 
 def extract_features_from_birth(birth_date: str, birth_time,

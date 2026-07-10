@@ -9,8 +9,10 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| v0.2 서버 배포 | High | Leo→reklcli | 구현·커밋 완료. Leo 배포 승인 후 admin deploy API 호출 |
-| 카카오 로그인 | High | reklcli+Leo | Leo가 카카오 개발자 앱 등록 → REST API 키 받은 후 구현 |
+| **이론·가설 검증 (Leo 지시 7/10)** | **Top** | reklcli | 데이터 수집 재시작 전 필수. 정답지 검증 + 민감도 분석 + MAP_V2 근거 강화 |
+
+> **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
+> 순서: 이론 검증 → 플랫폼(서버/카카오 로그인) → 유통. 배포·유통은 검증 완료까지 보류.
 
 ---
 
@@ -26,9 +28,11 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 유통/바이럴 채널 결정 | High | Leo | 인스타, 에타, 카톡 등 — 현재 접속자 거의 없음 |
-| Stage 2 게이트 판정 | Medium | reklcli | n_persons 200 도달 시 `scripts/validate_saju_signal.py` → 통과 차원 Leo 승인 |
-| 적중률 재측정 | Medium | reklcli | 실 데이터 쌓인 후 `scripts/measure_accuracy.py` (thumb 버그 수정판) |
+| v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
+| DB 리셋 실행 | High | flavor2 | Leo 확정 (7/10). 유통 재시작 직전에 실행 |
+| 카카오 로그인 | High | reklcli+Leo | 유저 식별 확립 (person n 신뢰도) — 유통 전 필수 |
+| 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
+| Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
 | Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후, 하네스 Ridge CV 활성화 |
 
 ---
