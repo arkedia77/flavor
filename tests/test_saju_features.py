@@ -153,7 +153,7 @@ class TestPriorAndFlatten(unittest.TestCase):
         for name, spec in SIPSIN_FLAVOR_MAP_V2.items():
             for dim in spec["delta"]:
                 self.assertIn(dim, DIMENSIONS, f"{name}: unknown dim {dim}")
-            self.assertIn(spec["evidence"], ("MBTI-p05", "실무"))
+            self.assertIn(spec["evidence"], ("실무수렴", "실무단독"))
 
     def test_flatten_ascii_and_numeric(self):
         f = extract_features(1977, 4, 11, None)

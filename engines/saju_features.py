@@ -74,51 +74,63 @@ STRENGTH_STRONG = DEFAULT_PARAMS["strength_strong"]
 STRENGTH_WEAK = DEFAULT_PARAMS["strength_weak"]
 
 
-# ── 십신 → 9차원 prior 가설 테이블 v2 ──
-# 근거: engines/research/sipsin_mbti_tcm_research.md
-#   evidence "MBTI-p05" = 십신↔MBTI 상관 논문 유의(p<0.05) 5쌍
-#   evidence "실무"     = 실무 아키타입/TCM 프로파일 (논문 무관)
-# 순수 데이터 테이블 — 방향성이 본질, 진폭은 검증 후 회귀로 재추정 대상.
+# ── 십신 → 9차원 prior 가설 테이블 v2.1 ──
+# 근거 감사 (2026-07-10, reports/theory/EVIDENCE_AUDIT_2026-07-10.md):
+#   기존 "십신→MBTI 5쌍 p<0.05" 인용은 실존 논문 미확인 → 전량 강등.
+#   evidence "실무수렴" = 독립 실무 소스 3개+ 수렴 아키타입 (논문 근거 아님)
+#   evidence "실무단독" = 소스 수렴 약함/양면적
+#   rationale 안 (추정)은 어떤 소스에도 근거 없는 speculative delta — urban 전량 해당.
+# 순수 데이터 테이블 — 방향성 가설이며, 최종 타당성은 검증 게이트가 판정.
 SIPSIN_FLAVOR_MAP_V2 = {
-    "상관": {"delta": {"maximalist": +0.08, "adventurous": +0.08, "social": +0.06,
+    "상관": {"delta": {"maximalist": +0.08, "adventurous": +0.08, "social": +0.04,
                        "aesthetic": +0.05, "comfort": -0.05},
-             "rationale": "EF(외향감정) + 반항아/서브컬처/실험적 스타일",
-             "evidence": "MBTI-p05"},
+             "rationale": "다재다능/호기심/과시욕/실험적 스타일 수렴. social은 양면적"
+                          "(사교적 vs 관계훼손 서술 공존)이라 진폭 축소",
+             "evidence": "실무수렴"},
     "정관": {"delta": {"urban": +0.06, "comfort": +0.05, "aesthetic": +0.04,
                        "maximalist": -0.06, "adventurous": -0.05},
-             "rationale": "ET(외향사고) + 클래식/정돈/브랜드 정통성",
-             "evidence": "MBTI-p05"},
+             "rationale": "원칙/명예/계획성/보수 수렴 → comfort+/maximalist-/adventurous-."
+                          " urban+/aesthetic+는 (추정)",
+             "evidence": "실무수렴"},
     "정재": {"delta": {"comfort": +0.08, "budget": -0.08, "adventurous": -0.06,
                        "social": -0.04, "urban": +0.03},
-             "rationale": "IS(내향감각) + 가성비/실용/전통",
-             "evidence": "MBTI-p05"},
+             "rationale": "성실/절약/보수적 재정관리 수렴 → comfort+/budget-/adventurous-."
+                          " social-/urban+는 (추정)",
+             "evidence": "실무수렴"},
     "편재": {"delta": {"adventurous": +0.08, "social": +0.07, "urban": +0.06,
                        "budget": +0.06, "comfort": -0.04},
-             "rationale": "ES(외향감각) + 모험가/여행/새 음식/과시 소비",
-             "evidence": "MBTI-p05"},
-    "식신": {"delta": {"aesthetic": +0.07, "comfort": +0.06, "bitter": +0.05,
-                       "social": -0.03, "energetic": -0.03},
-             "rationale": "IF(내향감정) + 미식가/감성 경험/깊은맛",
-             "evidence": "MBTI-p05"},
+             "rationale": "활동적/기회포착/큰 씀씀이/다정다감 수렴 → adv+/soc+/budget+."
+                          " urban+/comfort-는 (추정)",
+             "evidence": "실무수렴"},
+    "식신": {"delta": {"aesthetic": +0.07, "comfort": +0.06, "bitter": +0.05},
+             "rationale": "미식가/의식주/풍류 수렴 → aesthetic+/comfort+. bitter+는"
+                          " 미식→깊은맛 (추정). 구버전 social-/energetic-는 실무 소스와"
+                          " 정면 모순(사교 능함·활동력)이라 삭제 (감사 2026-07-10)",
+             "evidence": "실무수렴"},
     "비견": {"delta": {"adventurous": +0.05, "comfort": +0.03, "social": -0.05},
-             "rationale": "자기동일/독립적 취향/브랜드 충성 — 군중 비의존",
-             "evidence": "실무"},
+             "rationale": "독립/주체성/자존 수렴. social 방향은 소스 불일치"
+                          "(원만 vs 지배성) — 군중 비의존 해석 채택, 재검토 대상",
+             "evidence": "실무단독"},
     "겁재": {"delta": {"social": +0.07, "budget": +0.06, "maximalist": +0.06,
                        "energetic": +0.05, "urban": +0.05},
-             "rationale": "경쟁자/트렌드 민감/한정판/과시적 소비",
-             "evidence": "실무"},
+             "rationale": "경쟁심/승부욕/충동 소비 수렴 → budget+/maximalist+."
+                          " urban+는 (추정)",
+             "evidence": "실무수렴"},
     "편관": {"delta": {"energetic": +0.08, "adventurous": +0.06, "maximalist": +0.05,
                        "urban": +0.04, "comfort": -0.06},
-             "rationale": "투사/강렬한 경험/스포츠/자극적 음식",
-             "evidence": "실무"},
+             "rationale": "카리스마/인내/위험감수 수렴 → energetic+/adventurous+."
+                          " urban+는 (추정)",
+             "evidence": "실무수렴"},
     "편인": {"delta": {"adventurous": +0.07, "bitter": +0.06, "aesthetic": +0.04,
                        "social": -0.06, "urban": -0.03},
-             "rationale": "탐구자/마이너·비주류/영적 경험 (MBTI 무관 판정 → 독자 모델)",
-             "evidence": "실무"},
+             "rationale": "비주류/특수분야 몰입/직관 수렴 → adventurous+/social-."
+                          " bitter+/urban-는 (추정)",
+             "evidence": "실무수렴"},
     "정인": {"delta": {"comfort": +0.07, "bitter": +0.04, "aesthetic": +0.03,
                        "maximalist": -0.05, "budget": -0.03},
-             "rationale": "스승/전통문화/건강식/교육 (MBTI 무관 판정 → 독자 모델)",
-             "evidence": "실무"},
+             "rationale": "학문/수용/안정/보수 수렴 → comfort+/maximalist-."
+                          " bitter+는 (추정)",
+             "evidence": "실무수렴"},
 }
 
 # flatten()용 로마자 키
