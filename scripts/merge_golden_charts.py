@@ -54,9 +54,16 @@ def validate_entry(entry, seen_ids):
     labels = entry.get("labels") or {}
     if labels.get("신강약") not in VALID_STRENGTH:
         issues.append(f"신강약 값 이상: {labels.get('신강약')!r}")
-    for k in ("용신", "희신"):
-        if labels.get(k) not in VALID_ELEMENT:
-            issues.append(f"{k} 값 이상: {labels.get(k)!r}")
+    if labels.get("용신") not in VALID_ELEMENT:
+        issues.append(f"용신 값 이상: {labels.get('용신')!r}")
+    # 희신은 복수 가능 ("수/목" 또는 리스트) → 리스트로 정규화
+    hs = labels.get("희신")
+    if isinstance(hs, str):
+        hs = [p.strip() for p in hs.split("/") if p.strip()]
+        labels["희신"] = hs or None
+    if labels.get("희신") is not None:
+        if not all(h in VALID_ELEMENT for h in labels["희신"]):
+            issues.append(f"희신 값 이상: {labels['희신']!r}")
     gk = labels.get("격국")
     if gk is not None and not isinstance(gk, str):
         issues.append(f"격국 형식 이상: {gk!r}")

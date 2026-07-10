@@ -111,10 +111,23 @@ def compute(chart_entry, params=None):
     return extract_features(y, m, d, hour, params=params)
 
 
+# 별격(외격) 마커 — 억부용신 비적용 영역. 신강약/용신 집계에서 분리
+SPECIAL_GYEOKGUK_MARKERS = (
+    "종격", "전왕격", "합화격", "양기성상격", "곡직", "염상", "윤하", "가색",
+    "종혁", "종강", "종아", "종재", "종관", "종세", "종살",
+)
+
+
+def is_special_structure(entry) -> bool:
+    gk = (entry.get("labels") or {}).get("격국") or ""
+    return any(m in gk for m in SPECIAL_GYEOKGUK_MARKERS)
+
+
 def compare_one(entry, features):
     """항목별 일치 여부. 라벨 없는 필드는 None(집계 제외)."""
     labels = entry.get("labels") or {}
-    out = {"id": entry["id"], "tier": entry.get("source_tier", "web")}
+    out = {"id": entry["id"], "tier": entry.get("source_tier", "web"),
+           "special": is_special_structure(entry)}
 
     # 기둥 재확인 (출처 간지 vs 엔진 재계산 — birth가 있고 pillars도 있을 때만 의미)
     if entry.get("pillars") and entry.get("birth"):
@@ -142,8 +155,14 @@ def compare_one(entry, features):
     gt_y = labels.get("용신")
     if gt_y:
         out["용신_정확"] = (features["yongsin"]["element"] == gt_y)
+        # 우리 {용신,희신} 쌍에 정답 용신이 포함되는가 + 정답 {용신,희신들}에
+        # 우리 용신이 포함되는가 — 양방향 관대 판정 중 전자를 기본으로
         pair = {features["yongsin"]["element"], features["yongsin"]["희신"]}
-        out["용신_희신포함"] = gt_y in pair
+        gt_hs = labels.get("희신") or []
+        if isinstance(gt_hs, str):
+            gt_hs = [p.strip() for p in gt_hs.split("/") if p.strip()]
+        out["용신_희신포함"] = (gt_y in pair) or (
+            features["yongsin"]["element"] in set([gt_y] + gt_hs))
         out["용신_pred"] = features["yongsin"]["element"]
     else:
         out["용신_정확"] = None
@@ -160,9 +179,10 @@ def compare_one(entry, features):
     return out
 
 
-def aggregate(rows, tier=None):
-    """필드별 일치율 (라벨 있는 것만)"""
-    sel = [r for r in rows if tier is None or r["tier"] == tier]
+def aggregate(rows, tier=None, special=None):
+    """필드별 일치율 (라벨 있는 것만). special: True=별격만, False=억부 적용군만"""
+    sel = [r for r in rows if (tier is None or r["tier"] == tier)
+           and (special is None or r.get("special") == special)]
     out = {"n": len(sel)}
     for field in ("pillars_match", "신강약", "용신_정확", "용신_희신포함", "격국"):
         vals = [r[field] for r in sel if r.get(field) is not None]
@@ -172,23 +192,53 @@ def aggregate(rows, tier=None):
 
 
 def sensitivity_analysis(charts):
-    """변형별 신강약/용신 판정 + 기본 대비 뒤집힘 비율"""
+    """변형별 (a) 정답지 일치율 — 캘리브레이션의 본체, (b) 기본 대비 뒤집힘 비율"""
     labeled = [c for c in charts if (c.get("labels") or {}).get("신강약") or
                (c.get("labels") or {}).get("용신")]
     universe = labeled if len(labeled) >= 10 else charts  # 라벨 부족하면 전체 명식 사용
 
     base_preds = {}
     variant_results = {}
+    accuracy = {}
     for name, override in SENSITIVITY_VARIANTS.items():
+        neutral = (override or {}).get("strength_neutral",
+                                       DEFAULT_PARAMS["strength_neutral"])
         preds = {}
+        # 정답 일치 집계 (억부 적용군 = 정격만)
+        s_hit = s_n = y_hit = y_incl = y_n = 0
         for c in universe:
             try:
                 f = compute(c, params=override or None)
             except Exception:
                 continue
-            preds[c["id"]] = {"신강약": f["strength"]["label"],
+            pred_label = f["strength"]["label"]
+            preds[c["id"]] = {"신강약": pred_label,
                               "score": f["strength"]["score"],
                               "용신": f["yongsin"]["element"]}
+            if is_special_structure(c):
+                continue  # 별격은 억부 정확도 집계 제외
+            labels = c.get("labels") or {}
+            gt_s = labels.get("신강약")
+            if gt_s in ("신강", "신약"):
+                p = pred_label
+                if p == "중화":
+                    p = "신강" if f["strength"]["score"] >= neutral else "신약"
+                s_n += 1
+                s_hit += (p == gt_s)
+            gt_y = labels.get("용신")
+            if gt_y:
+                y_n += 1
+                y_hit += (f["yongsin"]["element"] == gt_y)
+                gt_hs = labels.get("희신") or []
+                if isinstance(gt_hs, str):
+                    gt_hs = [x.strip() for x in gt_hs.split("/") if x.strip()]
+                pair = {f["yongsin"]["element"], f["yongsin"]["희신"]}
+                y_incl += (gt_y in pair) or (f["yongsin"]["element"] in set([gt_y] + gt_hs))
+        accuracy[name] = {
+            "신강약_일치": {"n": s_n, "rate": round(s_hit / s_n, 3) if s_n else None},
+            "용신_정확": {"n": y_n, "rate": round(y_hit / y_n, 3) if y_n else None},
+            "용신_희신포함": {"n": y_n, "rate": round(y_incl / y_n, 3) if y_n else None},
+        }
         if name == "기본(sf-1)":
             base_preds = preds
         variant_results[name] = preds
@@ -205,7 +255,7 @@ def sensitivity_analysis(charts):
         flips[name] = {"n": len(common),
                        "신강약_뒤집힘": round(s_flip / len(common), 3),
                        "용신_뒤집힘": round(y_flip / len(common), 3)}
-    return {"n_universe": len(universe), "flips": flips}
+    return {"n_universe": len(universe), "accuracy_by_variant": accuracy, "flips": flips}
 
 
 def _git_sha():
@@ -245,6 +295,9 @@ def main():
         "n_charts": len(charts), "n_labeled": len(labeled), "n_errors": len(errors),
         "accept_criteria": ACCEPT,
         "overall": aggregate(rows),
+        # 억부 적용군 = 정격 (게이트 수용 기준의 판정 대상), 별격 = 참고
+        "eokbu_applicable": aggregate(rows, special=False),
+        "special_structures": aggregate(rows, special=True),
         "by_tier": {t: aggregate(rows, t) for t in ("classical", "expert", "web")},
         "disagreements": [r for r in rows
                           if any(r.get(k) is False
