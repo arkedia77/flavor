@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-07-11 — 오염 차단 UX + 별격 감지 (sf-3)
+
+### Changed (오염 차단 — Leo 승인)
+- `static/shared/quiz-engine.js` + 레거시 인라인 4파일(vol2/vol3 DNA·사주):
+  선천 성향 배너를 응답 **후** 노출로 변경 (자기귀인 오염 차단, EVIDENCE_AUDIT 완화책 1)
+  - 문항 화면: 배너 → 중립 질문 헤더, A/B 순서 innate 기반 → 문항별 랜덤 (위치 편향 제거)
+  - 답변에 `ux:'nv1'` 플래그 — 하네스가 오염 전/후 응답 구분 가능
+  - `agreed_with_innate` = 방향 일치 의미로 재정의
+
+### New (별격 감지 v1 — SCHEMA sf-3)
+- `engines/saju_features.py` `_special_gyeokguk()` — 합화/양기성상/전왕/종격 감지
+  + 순세 용신 (왕신 따름). 판정: reports/theory/VERDICT_2026-07-11_byeolgyeok.md
+- 록겁 격명 매핑: 월지 본기 비견→건록격, 겁재→양인격(양간)
+- `flatten()` `gyeokguk_special` one-hot 추가
+- 격국 정확도: 전체 44.9%→61.7%, 별격 0%→51.3%, 자평진전 75% 유지
+- 테스트 43개 (별격 앵커 6개 추가)
+
+---
+
 ## 2026-07-10 — Leoflavor Engine v0.2 (사주 검증 게이트)
 
 ### New

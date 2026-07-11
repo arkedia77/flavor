@@ -37,9 +37,9 @@ class TestAnchor(unittest.TestCase):
         self.assertEqual(_sipsin_of("무", "경"), "식신")
 
     def test_gyeokguk(self):
-        # 월지 진 본기 무 = 일간과 비견, 지장간 [무,을,계] 중 천간 투출 없음
+        # 월지 진 본기 무 = 일간과 비견 → 록겁 매핑으로 건록격 (sf-3)
         self.assertEqual(self.f["gyeokguk"],
-                         {"name": "비견격", "group": "비겁", "tugan": False})
+                         {"name": "건록격", "group": "비겁", "tugan": False})
 
     def test_yongsin_rule(self):
         # v2 원인 기반: 신강(0.4348), 인성<비겁(비겁왕), 태왕 아님(<0.55),
@@ -53,6 +53,53 @@ class TestAnchor(unittest.TestCase):
         self.assertAlmostEqual(sum(self.f["sipsin"]["strength"].values()), 1.0, delta=1e-3)  # 4자리 반올림 저장값 허용오차
         self.assertAlmostEqual(sum(self.f["sipsin"]["groups"].values()), 1.0, delta=1e-3)  # 4자리 반올림 저장값 허용오차
         self.assertAlmostEqual(sum(self.f["elements"]["weighted"].values()), 1.0, delta=1e-3)  # 4자리 반올림 저장값 허용오차
+
+
+class TestSpecialGyeokguk(unittest.TestCase):
+    """별격 감지 앵커 (sf-3) — 적천수천미 정답지 명식, 골든 라벨과 일치 확인"""
+
+    def test_jeonwang(self):
+        # gs-004: 수 일간 극신강 + 관살 무력 → 전왕격 (윤하)
+        f = extract_features_from_pillars(
+            {"년주": "계유", "월주": "갑자", "일주": "계해", "시주": "신유"})
+        self.assertEqual(f["gyeokguk"]["name"], "전왕격 윤하격")
+        self.assertEqual(f["gyeokguk"]["group"], "별격")
+        self.assertEqual(f["yongsin"]["method"], "순세-별격")
+        self.assertEqual(f["yongsin"]["element"], "수")
+
+    def test_jong(self):
+        # gs-041: 정화 극신약, 수(관성) 지배 → 종격 종관격, 순세 용신 수
+        f = extract_features_from_pillars(
+            {"년주": "기축", "월주": "병자", "일주": "정해", "시주": "경자"})
+        self.assertEqual(f["gyeokguk"]["name"], "종격 종관격")
+        self.assertEqual(f["yongsin"]["element"], "수")
+
+    def test_haphwa(self):
+        # gs-275: 임 일간 + 시간 정 합 → 목 화신, 인월 득령 → 합화격 丁壬合木
+        f = extract_features_from_pillars(
+            {"년주": "무신", "월주": "갑인", "일주": "임인", "시주": "정미"})
+        self.assertEqual(f["gyeokguk"]["name"], "합화격 丁壬合木")
+        self.assertEqual(f["yongsin"]["element"], "목")
+
+    def test_yanggi(self):
+        # gs-053: 목·화 두 오행 균형 → 양기성상격 食傷局
+        f = extract_features_from_pillars(
+            {"년주": "갑오", "월주": "정묘", "일주": "갑오", "시주": "정묘"})
+        self.assertEqual(f["gyeokguk"]["name"], "양기성상격 食傷局")
+
+    def test_normal_chart_not_special(self):
+        # 앵커(1977-04-11 16시)는 정격 — 별격 오탐 회귀 가드
+        f = extract_features(1977, 4, 11, 16)
+        self.assertEqual(f["gyeokguk"]["group"], "비겁")
+        self.assertNotIn("subtype", f["gyeokguk"])
+        self.assertEqual(flatten(f)["gyeokguk_special"], 0.0)
+
+    def test_special_flatten_flag(self):
+        f = extract_features_from_pillars(
+            {"년주": "계유", "월주": "갑자", "일주": "계해", "시주": "신유"})
+        self.assertEqual(flatten(f)["gyeokguk_special"], 1.0)
+        self.assertEqual(sum(flatten(f)[f"gyeokguk_grp_{g}"] for g in
+                             ("bigyeop", "siksang", "jaeseong", "gwanseong", "inseong")), 0.0)
 
 
 class TestHourUnknown(unittest.TestCase):
@@ -133,6 +180,8 @@ class TestProperties(unittest.TestCase):
     def test_yongsin_rule_consistency(self):
         for y, m, d, h in self.cases:
             f = extract_features(y, m, d, h)
+            if f["yongsin"]["method"] == "순세-별격":
+                continue  # 별격은 억부 규칙 비적용 (순세 — 왕신을 따름)
             day_el = f["day_master"]["element"]
             rel = _rel_elements(day_el)
             helper_els = {rel["비겁"], rel["인성"]}

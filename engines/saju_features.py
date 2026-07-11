@@ -26,7 +26,7 @@ from engines.sipsin import (
     PRODUCES, OVERCOMES, SIPSIN_NAMES, _to_kr,
 )
 
-SCHEMA_VERSION = "sf-2"  # sf-2: 용신 규칙 원인 기반 교체 (2026-07-11, VERDICT 참조)
+SCHEMA_VERSION = "sf-3"  # sf-3: 별격 감지 + 록겁(건록/양인) 격명 + 별격 순세 용신 (2026-07-11)
 
 ELEMENTS = ["목", "화", "토", "금", "수"]
 _EL_IDX = {el: i for i, el in enumerate(ELEMENTS)}
@@ -67,6 +67,18 @@ DEFAULT_PARAMS = {
     # 억부용신 v2 (원인 기반)
     "yongsin_taewang": 0.55,   # 이 이상이면 태왕 → 극 불가, 설기(식상)
     "yongsin_min_w": 0.05,     # 용신 후보 오행의 최소 유력 기준 (가중 비중)
+    # 별격(외격) 감지 v1 (sf-3) — 적천수천미 별격 115건 캘리브레이션 (2026-07-11)
+    # 홀짝 분할 교차평가로 강건성 확인. 상세: reports/theory/VERDICT_2026-07-11_byeolgyeok.md
+    "special_hap_min_w": 0.15,        # 합화: 화신 최소 가중 비중
+    "special_hap_score_max": 0.40,    # 합화: 일간 신강 상한 (강하면 합화 불성립)
+    "special_yanggi_min_chars": 3,    # 양기성상: 두 오행 각각 최소 글자 수
+    "special_jw_score": 0.60,         # 전왕: 신강 점수 하한
+    "special_jw_gwan_max": 0.14,      # 전왕: 관성 비중 상한 (관살 무력 요건)
+    "special_jong_score": 0.26,       # 종격: 신강 점수 상한
+    "special_jong_ins_max": 0.10,     # 종격: 인성 비중 상한 (인성 있으면 종하지 않음)
+    "special_jong_bg_max": 0.20,      # 종격: 비겁 비중 상한
+    "special_jong_deukji_max": 0.50,  # 종격: 득지(통근) 상한
+    "special_jong_dom_min": 0.35,     # 종격: 지배 세력 최소 비중
 }
 
 # 하위 호환 상수 (기존 import 대응)
@@ -145,6 +157,19 @@ _SIPSIN_ASCII = {
 _GROUP_ASCII = {"비겁": "bigyeop", "식상": "siksang", "재성": "jaeseong",
                 "관성": "gwanseong", "인성": "inseong"}
 _EL_ASCII = {"목": "wood", "화": "fire", "토": "earth", "금": "metal", "수": "water"}
+
+# ── 별격(외격) 상수 ──
+# 천간합 (canonical 순서 = 간지 순서 빠른 쪽 먼저) → 화신 오행
+_HAP_PAIRS = {("갑", "기"): "토", ("을", "경"): "금", ("병", "신"): "수",
+              ("정", "임"): "목", ("무", "계"): "화"}
+_HANJA_STEM = {"갑": "甲", "을": "乙", "병": "丙", "정": "丁", "무": "戊",
+               "기": "己", "경": "庚", "신": "辛", "임": "壬", "계": "癸"}
+_HANJA_EL = {"목": "木", "화": "火", "토": "土", "금": "金", "수": "水"}
+# 일행득기격 명칭 (일간 오행별) — 정답지 표기 준수 (곡직인수격)
+_JEONWANG_NAME = {"목": "곡직인수격", "화": "염상격", "토": "가색격",
+                  "금": "종혁격", "수": "윤하격"}
+# 양기성상격 국 명칭 — 정답지 표기(한자) 준수. 인성국은 골든 부재 + 전왕과 중복이라 제외
+_YANGGI_GUK = {"식상": "食傷局", "재성": "財局", "관성": "官局"}
 
 
 # ── 오행 관계 헬퍼 ──
@@ -371,15 +396,24 @@ def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: d
 
 
 def _gyeokguk_features(chart) -> dict:
-    """격국 — 월지 본기 기준 + 투간 보정.
+    """격국 — 월지 본기 기준 + 투간 보정 + 록겁(건록/양인) 매핑.
 
-    월지 지장간 중 천간(년간/월간/시간)에 투출한 글자가 있으면 우선
+    월지 본기가 비겁이면 십신격을 취하지 않고 건록격/양인격 (자평 원칙,
+    sf-3 — 적천수천미 대조에서 록겁월 77건 중 무조건 매핑 57 > 투간 우선 54 > 기존 6).
+    그 외: 월지 지장간 중 천간(년간/월간/시간)에 투출한 글자가 있으면 우선
     (본기 투출 > 중기 > 여기), 미투출 시 본기.
     시간 미상이면 시간(時干)은 투간 후보에서 제외 (가짜 12시 누출 금지).
     """
     month_hidden = next(h for tag, _b, h in chart["branches"] if tag == "월지")
-    visible = {s for _tag, s in chart["stems"]}
+    ss_bongi = _sipsin_of(chart["day_stem"], month_hidden[0])
+    if ss_bongi == "비견":
+        return {"name": "건록격", "group": "비겁", "tugan": False}
+    if ss_bongi == "겁재":
+        # 양인격은 양간 전용 — 음간 겁재월은 건록격으로 (골든 라벨 전례 없음)
+        name = "양인격" if STEM_POLARITY[chart["day_stem"]] == "양" else "건록격"
+        return {"name": name, "group": "비겁", "tugan": False}
 
+    visible = {s for _tag, s in chart["stems"]}
     chosen, tugan = month_hidden[0], False
     for h in month_hidden:
         if h in visible:
@@ -388,6 +422,73 @@ def _gyeokguk_features(chart) -> dict:
 
     ss = _sipsin_of(chart["day_stem"], chosen)
     return {"name": f"{ss}격", "group": _GROUP_OF[ss], "tugan": tugan}
+
+
+def _special_gyeokguk(chart, sipsin_groups, strength, elements, p):
+    """별격(외격) 감지 — 해당 없으면 None (sf-3, 2026-07-11).
+
+    검사 순서: 합화 → 양기성상 → 전왕 → 종격 (구체 조건 우선).
+    임계값은 적천수천미 별격 115건 + 정격 391건으로 캘리브레이션 (in-sample,
+    홀짝 분할 교차평가로 강건성만 확인 — VERDICT_2026-07-11_byeolgyeok.md).
+    반환 dict의 sunse_element는 순세 용신(왕신 따름) 재정의에 쓰인다.
+    """
+    day_stem = chart["day_stem"]
+    day_el = STEM_ELEMENT[day_stem]
+    rel = _rel_elements(day_el)
+    groups = sipsin_groups
+    score = strength["score"]
+    weighted = elements["weighted"]
+    counts = elements["counts"]
+    month_hidden = next(h for tag, _b, h in chart["branches"] if tag == "월지")
+
+    # 1) 합화격: 일간이 월간/시간과 천간합 + 화신이 월지 지장간에 존재(득령)
+    #    + 일간 약 + 화신 유력. (통근 배제 조건은 골든 8/10이 위반해 미채용)
+    adjacent = {s for tag, s in chart["stems"] if tag in ("월간", "시간")}
+    for (a, b), hua in _HAP_PAIRS.items():
+        partner = b if day_stem == a else (a if day_stem == b else None)
+        if partner is None:
+            continue
+        if (partner in adjacent
+                and any(STEM_ELEMENT[s] == hua for s in month_hidden)
+                and score <= p["special_hap_score_max"]
+                and weighted[hua] >= p["special_hap_min_w"]):
+            name = f"합화격 {_HANJA_STEM[a]}{_HANJA_STEM[b]}合{_HANJA_EL[hua]}"
+            return {"name": name, "group": "별격", "subtype": "합화",
+                    "tugan": False, "sunse_element": hua}
+
+    # 2) 양기성상격: 팔자가 두 오행으로만 구성 + 양쪽 균형
+    present = [(el, v) for el, v in counts.items() if v > 0]
+    if (len(present) == 2
+            and min(v for _el, v in present) >= p["special_yanggi_min_chars"]):
+        other = next((el for el, _v in present if el != day_el), None)
+        if other:
+            grp = next(g for g, el in rel.items() if el == other)
+            if grp in _YANGGI_GUK:
+                return {"name": f"양기성상격 {_YANGGI_GUK[grp]}", "group": "별격",
+                        "subtype": "양기성상", "tugan": False, "sunse_element": other}
+
+    # 3) 전왕격(일행득기/종강): 극신강 + 관살 무력 + 득령
+    m_el = STEM_ELEMENT[month_hidden[0]]
+    deukryeong = m_el in (rel["비겁"], rel["인성"])
+    if (score >= p["special_jw_score"]
+            and groups["관성"] <= p["special_jw_gwan_max"] and deukryeong):
+        sub = "종강격" if groups["인성"] > groups["비겁"] else _JEONWANG_NAME[day_el]
+        return {"name": f"전왕격 {sub}", "group": "별격", "subtype": "전왕",
+                "tugan": False, "sunse_element": day_el}
+
+    # 4) 종격: 극신약 + 인성·비겁 무력 + 통근 약함 + 지배 세력 존재
+    if (score <= p["special_jong_score"]
+            and groups["인성"] <= p["special_jong_ins_max"]
+            and groups["비겁"] <= p["special_jong_bg_max"]
+            and strength["득지"] <= p["special_jong_deukji_max"]):
+        opp = {k: groups[k] for k in ("식상", "재성", "관성")}
+        dom = max(opp, key=opp.get)
+        if opp[dom] >= p["special_jong_dom_min"]:
+            sub = {"식상": "종아격", "재성": "종재격", "관성": "종관격"}[dom]
+            return {"name": f"종격 {sub}", "group": "별격", "subtype": "종격",
+                    "tugan": False, "sunse_element": rel[dom]}
+
+    return None
 
 
 def _element_features(chart, slots) -> dict:
@@ -463,6 +564,22 @@ def _features_from_chart(chart, input_info, params=None) -> dict:
     yongsin = _yongsin_features(day_stem, strength["score"], elements["weighted"],
                                 sipsin["groups"], p)
     gyeokguk = _gyeokguk_features(chart)
+
+    # 별격 감지 시 격국 교체 + 용신을 순세(왕신 따름)로 재정의.
+    # 골든 별격 115건에서 순세∈(용신∪희신) 95.7% vs 억부 34.8% (VERDICT 참조)
+    special = _special_gyeokguk(chart, sipsin["groups"], strength, elements, p)
+    if special:
+        special["normal_name"] = gyeokguk["name"]
+        gyeokguk = special
+        sunse = special["sunse_element"]
+        yongsin = {
+            "method": "순세-별격", "element": sunse,
+            "희신": next(k for k, v in PRODUCES.items() if v == sunse),  # 용신 생조자
+            "degree": round(min(1.0, abs(strength["score"] - p["strength_neutral"])
+                                / p["strength_neutral"]), 4),
+            "strength_in_chart": round(elements["weighted"][sunse], 4),
+        }
+
     yang_ratio = _yinyang_ratio(chart)
     interactions = _interaction_features(sipsin, strength, yongsin, yang_ratio)
 
@@ -557,6 +674,7 @@ def flatten(features: dict) -> dict:
         out[f"day_el_{_EL_ASCII[el]}"] = 1.0 if f["day_master"]["element"] == el else 0.0
     for g in SIKSHIN_GROUPS:
         out[f"gyeokguk_grp_{_GROUP_ASCII[g]}"] = 1.0 if f["gyeokguk"]["group"] == g else 0.0
+    out["gyeokguk_special"] = 1.0 if f["gyeokguk"]["group"] == "별격" else 0.0
     out["el_entropy"] = f["elements"]["entropy"]
     out["yang_ratio"] = f["yinyang"]["yang_ratio"]
     out["day_polarity_yang"] = 1.0 if f["day_master"]["polarity"] == "양" else 0.0
