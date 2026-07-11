@@ -207,28 +207,36 @@ function startQuiz() {
   showQuestion(0);
 }
 
-/* ═══ 문항 표시 ═══ */
+/* ═══ 문항 표시 ═══
+   오염 차단 (2026-07-11, Leo 승인): 선천 성향은 응답 전 노출 금지.
+   - 배너를 중립 질문 헤더로 재사용 (자기귀인 프라이밍 제거)
+   - A/B 표시 순서는 innate가 아니라 문항별 랜덤 (위치 편향 제거)
+   - 선천 성향은 결과 화면에서만 노출 */
+let qFlip = false; // true면 화면상 A자리에 q.B 표시
+
+function neutralizeLabel(label) {
+  // 배너 동의형 프레이밍("맞아,"/"아닌데?") 접두어 제거
+  return label.replace(/^(맞아[,!]?|아닌데\?)\s*/, '');
+}
+
 function showQuestion(idx) {
   const C = window.QUIZ_CONFIG;
   const q = C.questions[idx];
-  const innateVal = innateProfile[q.dimension] || 0.5;
-  const isHigh = innateVal >= 0.5;
 
-  // 선천 성향 배너
+  const label = document.getElementById('innate-label');
+  if (label) label.textContent = '🤔 넌 어느 쪽이야?';
   document.getElementById('innate-text').textContent =
-    `넌 "${isHigh ? q.highText : q.lowText}" 타입이야`;
+    `${q.highText} vs ${q.lowText}`;
+  const vs = document.querySelector('.vs-label');
+  if (vs) vs.textContent = '솔직하게 골라봐';
 
-  if (isHigh) {
-    document.getElementById('emoji-a').textContent = q.A.emoji;
-    document.getElementById('text-a').textContent  = q.A.label;
-    document.getElementById('emoji-b').textContent = q.B.emoji;
-    document.getElementById('text-b').textContent  = q.B.label;
-  } else {
-    document.getElementById('emoji-a').textContent = q.B.emoji;
-    document.getElementById('text-a').textContent  = q.B.label.replace('아닌데?', '맞아,');
-    document.getElementById('emoji-b').textContent = q.A.emoji;
-    document.getElementById('text-b').textContent  = q.A.label.replace('맞아,', '아닌데?');
-  }
+  qFlip = Math.random() < 0.5;
+  const first  = qFlip ? q.B : q.A;
+  const second = qFlip ? q.A : q.B;
+  document.getElementById('emoji-a').textContent = first.emoji;
+  document.getElementById('text-a').textContent  = neutralizeLabel(first.label);
+  document.getElementById('emoji-b').textContent = second.emoji;
+  document.getElementById('text-b').textContent  = neutralizeLabel(second.label);
 
   document.getElementById('opt-a').className = 'ab-option';
   document.getElementById('opt-b').className = 'ab-option';
@@ -243,25 +251,22 @@ function choose(side) {
   const q = C.questions[currentQ];
   const responseMs = Date.now() - qStartTime;
   const innateVal = innateProfile[q.dimension] || 0.5;
-  const isHigh = innateVal >= 0.5;
 
   document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
 
-  let chosenVal;
-  if (side === 'A') {
-    chosenVal = isHigh ? q.A.val : q.B.val;
-  } else {
-    chosenVal = isHigh ? q.B.val : q.A.val;
-  }
+  // 화면 위치(side)를 랜덤 순서(qFlip) 반영해 실제 선택지로 역매핑
+  const picked = (side === 'A') !== qFlip ? q.A : q.B;
+  const chosenVal = picked.val;
 
   answers.push({
     id: q.id,
     dimension: q.dimension,
-    choice: side,
+    choice: picked === q.A ? 'A' : 'B',
     value: chosenVal,
     innate_value: innateVal,
-    agreed_with_innate: side === 'A',
-    response_ms: responseMs
+    agreed_with_innate: (chosenVal >= 0.5) === (innateVal >= 0.5),
+    response_ms: responseMs,
+    ux: 'nv1'  // neutral v1: 선천 비노출 + 랜덤 순서 (오염 차단 이후 데이터 표식)
   });
 
   currentQ++;

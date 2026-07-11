@@ -786,29 +786,31 @@ function getInnateText(q) {
   return `${q.highText}과 ${q.lowText} 사이`;
 }
 
+/* 오염 차단 (2026-07-11, Leo 승인): 선천 성향은 응답 전 노출 금지.
+   배너는 중립 질문 헤더로 재사용, A/B 순서는 문항별 랜덤 (위치 편향 제거) */
+let qFlip = false;
+
+function neutralizeLabel(label) {
+  return label.replace(/^(맞아[,!]?|아닌데\?)\s*/, '');
+}
+
 function showQuestion(idx) {
   const q = QUESTIONS[idx];
-  const innateVal = innateProfile[q.dimension] || 0.5;
-  const isHigh = innateVal >= 0.5;
 
-  // 선천 성향 배너 업데이트
+  const hdr = document.getElementById('innate-label');
+  if (hdr) hdr.textContent = '🤔 넌 어느 쪽이야?';
   document.getElementById('innate-text').textContent =
-    `넌 "${isHigh ? q.highText : q.lowText}" 타입이야`;
+    `${q.highText} vs ${q.lowText}`;
+  const vs = document.querySelector('.vs-label');
+  if (vs) vs.textContent = '솔직하게 골라봐';
 
-  // A/B 순서: 선천이 높으면 A가 "맞아", B가 "아닌데"
-  // 선천이 낮으면 A/B를 뒤집어서 A가 "맞아(low)" B가 "아닌데(high)"
-  if (isHigh) {
-    document.getElementById('emoji-a').textContent = q.A.emoji;
-    document.getElementById('text-a').textContent  = q.A.label;
-    document.getElementById('emoji-b').textContent = q.B.emoji;
-    document.getElementById('text-b').textContent  = q.B.label;
-  } else {
-    // 선천이 낮은 쪽이므로, "맞아" = 낮은 값
-    document.getElementById('emoji-a').textContent = q.B.emoji;
-    document.getElementById('text-a').textContent  = q.B.label.replace('아닌데?', '맞아,');
-    document.getElementById('emoji-b').textContent = q.A.emoji;
-    document.getElementById('text-b').textContent  = q.A.label.replace('맞아,', '아닌데?');
-  }
+  qFlip = Math.random() < 0.5;
+  const first  = qFlip ? q.B : q.A;
+  const second = qFlip ? q.A : q.B;
+  document.getElementById('emoji-a').textContent = first.emoji;
+  document.getElementById('text-a').textContent  = neutralizeLabel(first.label);
+  document.getElementById('emoji-b').textContent = second.emoji;
+  document.getElementById('text-b').textContent  = neutralizeLabel(second.label);
 
   document.getElementById('opt-a').className = 'ab-option';
   document.getElementById('opt-b').className = 'ab-option';
@@ -822,28 +824,21 @@ function choose(side) {
   const q = QUESTIONS[currentQ];
   const responseMs = Date.now() - qStartTime;
   const innateVal = innateProfile[q.dimension] || 0.5;
-  const isHigh = innateVal >= 0.5;
 
   document.getElementById(`opt-${side.toLowerCase()}`).classList.add(`selected-${side.toLowerCase()}`);
 
-  // A = "맞아" (innate 유지), B = "아닌데" (반대 값)
-  let chosenVal;
-  if (side === 'A') {
-    // 맞아 → innate 값 쪽에 동조
-    chosenVal = isHigh ? q.A.val : q.B.val;
-  } else {
-    // 아닌데 → 반대 값
-    chosenVal = isHigh ? q.B.val : q.A.val;
-  }
+  const picked = (side === 'A') !== qFlip ? q.A : q.B;
+  const chosenVal = picked.val;
 
   answers.push({
     id: q.id,
     dimension: q.dimension,
-    choice: side,
+    choice: picked === q.A ? 'A' : 'B',
     value: chosenVal,
     innate_value: innateVal,
-    agreed_with_innate: side === 'A',
-    response_ms: responseMs
+    agreed_with_innate: (chosenVal >= 0.5) === (innateVal >= 0.5),
+    response_ms: responseMs,
+    ux: 'nv1'
   });
 
   currentQ++;
