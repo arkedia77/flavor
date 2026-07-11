@@ -42,10 +42,12 @@ class TestAnchor(unittest.TestCase):
                          {"name": "비견격", "group": "비겁", "tugan": False})
 
     def test_yongsin_rule(self):
-        # 신강(0.4348) → 용신 ∈ {식상,재성,관성 오행}, 명식 내 최유력 = 금
+        # v2 원인 기반: 신강(0.4348), 인성<비겁(비겁왕), 태왕 아님(<0.55),
+        # 관성(목) 유력(0.1912≥0.05) → 용신 관성=목, 희신 재성=수 (재생관)
         self.assertEqual(self.f["strength"]["label"], "신강")
-        self.assertEqual(self.f["yongsin"]["element"], "금")
-        self.assertEqual(self.f["yongsin"]["희신"], "토")  # 토생금
+        self.assertEqual(self.f["yongsin"]["method"], "억부-원인기반")
+        self.assertEqual(self.f["yongsin"]["element"], "목")
+        self.assertEqual(self.f["yongsin"]["희신"], "수")
 
     def test_distributions_sum_to_one(self):
         self.assertAlmostEqual(sum(self.f["sipsin"]["strength"].values()), 1.0, delta=1e-3)  # 4자리 반올림 저장값 허용오차

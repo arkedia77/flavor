@@ -26,7 +26,7 @@ from engines.sipsin import (
     PRODUCES, OVERCOMES, SIPSIN_NAMES, _to_kr,
 )
 
-SCHEMA_VERSION = "sf-1"
+SCHEMA_VERSION = "sf-2"  # sf-2: 용신 규칙 원인 기반 교체 (2026-07-11, VERDICT 참조)
 
 ELEMENTS = ["목", "화", "토", "금", "수"]
 _EL_IDX = {el: i for i, el in enumerate(ELEMENTS)}
@@ -64,6 +64,9 @@ DEFAULT_PARAMS = {
     "strength_neutral": 0.36,
     "strength_strong": 0.42,   # label용
     "strength_weak": 0.30,
+    # 억부용신 v2 (원인 기반)
+    "yongsin_taewang": 0.55,   # 이 이상이면 태왕 → 극 불가, 설기(식상)
+    "yongsin_min_w": 0.05,     # 용신 후보 오행의 최소 유력 기준 (가중 비중)
 }
 
 # 하위 호환 상수 (기존 import 대응)
@@ -326,28 +329,42 @@ def _strength_features(chart, slots, params) -> dict:
 
 
 def _yongsin_features(day_stem: str, strength_score: float, elements_weighted: dict,
-                      params) -> dict:
-    """억부용신 — 결정적 규칙.
+                      sipsin_groups: dict, params) -> dict:
+    """억부용신 v2 — 원인 기반 결정적 규칙 (sf-2, 2026-07-11).
 
-    신약: 인성/비겁 오행 중 명식 내 가중 비중이 큰 쪽 (동률 시 인성)
-    신강: 식상/재성/관성 오행 중 가중 비중 최대 (있는 것을 쓴다), 희신 = 용신을 생하는 오행
+    적천수천미 393 정격 대조에서 v1(유력한 쪽) 37.4% → v2 47.6% (∪희신 74.3%).
+    고전 규칙 근거 (reports/theory/SCHOOL_PARAMS_2026-07-10.md):
+      신약 — 병(압박 세력 최강자) 기반: 재다신약→비겁, 관살/식상 과다→인성
+      신강 — 인다신강→재성(제인), 태왕→식상(설기, 극하면 반발),
+             비겁왕→관성 (단 관성 무력 시 식상→재성 순 대체)
     조후용신은 유파 이견이 커서 제외 — method 필드로 향후 확장.
     """
     rel = _rel_elements(STEM_ELEMENT[day_stem])
     neutral = params["strength_neutral"]
+    g = sipsin_groups
 
     if strength_score < neutral:
-        cands = [rel["인성"], rel["비겁"]]
-        yongsin = max(cands, key=lambda el: (elements_weighted[el], el == rel["인성"]))
-        huisin = cands[0] if yongsin == cands[1] else cands[1]
+        # 병 = 압박 세력 최강자 (동률 시 관성 > 재성 > 식상 순 — 극신 우선)
+        opp_order = ["관성", "재성", "식상"]
+        strongest = max(opp_order, key=lambda k: (g[k], -opp_order.index(k)))
+        if strongest == "재성":
+            yongsin, huisin = rel["비겁"], rel["인성"]   # 재다신약 → 비겁
+        else:
+            yongsin, huisin = rel["인성"], rel["비겁"]   # 관살/식상 과다 → 인성
+    elif g["인성"] > g["비겁"]:
+        yongsin, huisin = rel["재성"], rel["식상"]       # 인다신강 → 재성 제인
+    elif strength_score >= params["yongsin_taewang"]:
+        yongsin, huisin = rel["식상"], rel["재성"]       # 태왕 → 설기
+    elif elements_weighted[rel["관성"]] >= params["yongsin_min_w"]:
+        yongsin, huisin = rel["관성"], rel["재성"]       # 비겁왕 → 관성 (재생관)
+    elif elements_weighted[rel["식상"]] >= params["yongsin_min_w"]:
+        yongsin, huisin = rel["식상"], rel["재성"]       # 관성 무력 → 식상
     else:
-        cands = [rel["식상"], rel["재성"], rel["관성"]]
-        yongsin = max(cands, key=lambda el: (elements_weighted[el], -cands.index(el)))
-        huisin = next(k for k, v in PRODUCES.items() if v == yongsin)
+        yongsin, huisin = rel["재성"], rel["식상"]       # 둘 다 무력 → 재성
 
     degree = min(1.0, abs(strength_score - neutral) / neutral)
     return {
-        "method": "억부", "element": yongsin, "희신": huisin,
+        "method": "억부-원인기반", "element": yongsin, "희신": huisin,
         "degree": round(degree, 4),
         "strength_in_chart": round(elements_weighted[yongsin], 4),
     }
@@ -443,7 +460,8 @@ def _features_from_chart(chart, input_info, params=None) -> dict:
     sipsin = _sipsin_features(day_stem, slots)
     strength = _strength_features(chart, slots, p)
     elements = _element_features(chart, slots)
-    yongsin = _yongsin_features(day_stem, strength["score"], elements["weighted"], p)
+    yongsin = _yongsin_features(day_stem, strength["score"], elements["weighted"],
+                                sipsin["groups"], p)
     gyeokguk = _gyeokguk_features(chart)
     yang_ratio = _yinyang_ratio(chart)
     interactions = _interaction_features(sipsin, strength, yongsin, yang_ratio)
