@@ -159,9 +159,26 @@ A/B 프레이밍을 뒤집는다 — 자기귀인 효과(Fichten & Sunerton 1983
 ## 7. 명시적 이월 (v0.3+)
 
 - 조후용신, 합충형해 생극 그래프 피처
-- 도메인별 대안 랭킹 (item swap — domains.py가 도메인당 1개 아이템 구조라 선행 리팩터 필요)
-- 클라이언트 saju-engine.js의 MAP_V2 패리티 (서버가 정본, 클라이언트는 표시용)
+  - 합충 동적 피처 실험 sf-4(국 감지)는 검증 후 미채택 (VERDICT_2026-07-12_guk.md)
+- ~~도메인별 대안 랭킹 (item swap)~~ → **구현 완료(게이트 방식, 2026-07-12)**.
+  domains.py `DOMAIN_POOL` + recommend.py `learned_rerank`. config/learning_gate.json
+  `enabled=false`가 기본 = 규칙 top 불변(v0.1 동작, 테스트 보증). 아이템 단위 신호는
+  저장된 results_json + 도메인 피드백으로 재구성(feedbacks 테이블 무변경). 활성화는
+  데이터 축적 + Leo 승인 커밋으로만. 스토어 포맷은 additive(learned/rule_item 키만
+  추가) — /result 하위호환 유지.
+- ~~클라이언트 saju-engine.js의 MAP_V2 패리티~~ → **완료(2026-07-12)**.
+  SIPSIN_FLAVOR_MAP을 서버 MAP_V2에 동기화 + 패리티 가드 테스트.
 - Ridge CV 회귀 (n≥150에서 하네스에 활성화), ML 전환 (Phase D, 200명+)
+
+### 학습 게이트 (config/learning_gate.json) — 사주 게이트와 대칭
+
+- `enabled` false 시작. min_sim 0.3 / min_contributors 3 / min_advantage 0.5.
+- 로더(config.load_learning_gate)는 파싱 실패/비정상 값 시 **enabled=False 폴백** (fail-safe).
+- 재랭킹 조건: 유사 유저(sim≥min_sim)의 아이템별 유사도-가중 thumb 평균에서,
+  기여자 min_contributors 이상인 후보 최고점이 규칙 픽 대비 min_advantage 이상 우수 ∧
+  순양수일 때만 풀에서 승격. 규칙 픽 데이터 부재 시 순양수 최고 후보 승격.
+- 게이트 열기 = 도메인별 피드백이 신뢰 규모(리셋 후 person n)에 도달했을 때 Leo 판단.
+  롤백 = enabled false 1줄. survey/prior/results 원본이 항상 저장되므로 재계산 가능.
 
 ## 8. 테스트 앵커
 

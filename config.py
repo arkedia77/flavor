@@ -39,6 +39,39 @@ def load_saju_gate(path: str = None) -> dict:
 
 SAJU_GATE = load_saju_gate()
 
+# ── 학습 게이트 (유사유저 피드백 → 아이템 재랭킹) ──
+# enabled=false = v0.1 동작(규칙 top 불변). 활성화는 데이터 축적 + Leo 승인 커밋으로만.
+# 롤백 = enabled false 1줄. 사주 게이트와 동일한 fail-safe 철학.
+LEARNING_GATE_PATH = os.path.join(os.path.dirname(__file__), "config", "learning_gate.json")
+_LEARNING_OFF = {
+    "gate_version": "fail-safe-off",
+    "enabled": False,
+    "min_sim": 0.3,
+    "min_contributors": 3,
+    "min_advantage": 0.5,
+}
+
+
+def load_learning_gate(path: str = None) -> dict:
+    """학습 게이트 로드. 파일 없음/파싱 실패/비정상 값 → enabled=False 폴백 (fail-safe)."""
+    try:
+        with open(path or LEARNING_GATE_PATH, encoding="utf-8") as fp:
+            gate = json.load(fp)
+        out = dict(_LEARNING_OFF)
+        out["enabled"] = bool(gate.get("enabled", False))
+        out["gate_version"] = str(gate.get("gate_version", "lg0"))
+        for k, lo, hi in (("min_sim", 0.0, 1.0), ("min_advantage", 0.0, 4.0)):
+            v = float(gate.get(k, _LEARNING_OFF[k]))
+            out[k] = v if lo <= v <= hi else _LEARNING_OFF[k]
+        mc = int(gate.get("min_contributors", _LEARNING_OFF["min_contributors"]))
+        out["min_contributors"] = mc if mc >= 1 else _LEARNING_OFF["min_contributors"]
+        return out
+    except Exception:
+        return dict(_LEARNING_OFF)
+
+
+LEARNING_GATE = load_learning_gate()
+
 # 추천 경계값 상수
 HIGH = 0.65
 LOW = 0.35

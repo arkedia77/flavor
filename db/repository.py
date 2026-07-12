@@ -135,11 +135,16 @@ def get_ux_vote_tally():
 
 
 def get_feedback_data():
-    """전체 피드백 + 연결된 submission 프로필 (추천 학습용)"""
+    """전체 피드백 + 연결된 submission 프로필 (추천 학습용).
+
+    results_json을 조인해 각 피드백에 '그때 보여준 아이템'을 붙인다 —
+    학습 재랭킹(recommend.learned_rerank)이 아이템 단위 신호를 쓰기 위함.
+    (feedbacks 테이블은 도메인 단위라 아이템은 결과 스냅샷에서 재구성)
+    """
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("""
-        SELECT s.id, s.survey_json, s.profile_json, f.domain, f.thumb
+        SELECT s.id, s.survey_json, s.profile_json, s.results_json, f.domain, f.thumb
         FROM feedbacks f
         JOIN submissions s ON f.submission_id = s.id
         ORDER BY f.created_at ASC
@@ -148,14 +153,19 @@ def get_feedback_data():
     conn.close()
 
     users = {}
-    for sid, survey_json, profile_json, domain, thumb in rows:
+    for sid, survey_json, profile_json, results_json, domain, thumb in rows:
         if sid not in users:
+            results = json.loads(results_json) if results_json else {}
             users[sid] = {
                 "id": sid,
                 "profile": json.loads(profile_json) if profile_json else {},
+                "results": results,
                 "feedbacks": [],
             }
-        users[sid]["feedbacks"].append({"domain": domain, "thumb": thumb})
+        shown = users[sid]["results"].get(domain) or {}
+        users[sid]["feedbacks"].append({
+            "domain": domain, "thumb": thumb, "item": shown.get("item"),
+        })
 
     return list(users.values())
 

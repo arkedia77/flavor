@@ -1,6 +1,8 @@
-"""8개 도메인별 추천 (규칙 기반)"""
+"""8개 도메인별 추천 (규칙 기반) + 도메인별 후보 풀 (학습 재랭킹용)"""
 
-from config import HIGH, LOW, MHI, MLO
+import random as _random
+
+from config import HIGH, LOW, MHI, MLO, DIMENSIONS
 
 
 def recommend_coffee(profile: dict) -> dict:
@@ -205,14 +207,43 @@ def recommend_interior(profile: dict) -> dict:
                 "description": "새것 같은 빈티지, 빈티지 같은 새것, 그 경계 어딘가"}
 
 
+_DOMAIN_FUNCS = {
+    "커피": recommend_coffee,
+    "향수": recommend_perfume,
+    "음악": recommend_music,
+    "식당": recommend_restaurant,
+    "운동": recommend_exercise,
+    "여행": recommend_travel,
+    "패션": recommend_fashion,
+    "인테리어": recommend_interior,
+}
+
+
 def run_all_domains(profile: dict) -> dict:
-    return {
-        "커피": recommend_coffee(profile),
-        "향수": recommend_perfume(profile),
-        "음악": recommend_music(profile),
-        "식당": recommend_restaurant(profile),
-        "운동": recommend_exercise(profile),
-        "여행": recommend_travel(profile),
-        "패션": recommend_fashion(profile),
-        "인테리어": recommend_interior(profile),
-    }
+    return {domain: fn(profile) for domain, fn in _DOMAIN_FUNCS.items()}
+
+
+# ── 도메인별 후보 풀 (학습 재랭킹용) ──
+# 각 규칙 함수가 산출할 수 있는 모든 아이템을 결정적 샘플링으로 열거한다.
+# 규칙 함수는 그대로 두고(동작 불변) 풀만 추가 — reason/description이 함수와 항상
+# 일치(전사 오류 0). 학습 게이트 ON일 때 recommend.py가 이 풀에서 아이템을 승격한다.
+def _build_domain_pools(n_samples: int = 8000, seed: int = 20260712) -> dict:
+    rng = _random.Random(seed)
+    pools = {d: {} for d in _DOMAIN_FUNCS}
+    for _ in range(n_samples):
+        prof = {dim: rng.random() for dim in DIMENSIONS}
+        for domain, fn in _DOMAIN_FUNCS.items():
+            rec = fn(prof)
+            pools[domain].setdefault(rec["item"], rec)  # 첫 등장 dict 보존
+    return {d: list(items.values()) for d, items in pools.items()}
+
+
+DOMAIN_POOL = _build_domain_pools()
+
+
+def pool_item(domain: str, item: str):
+    """도메인 후보 풀에서 아이템명으로 {item, reason, description} 조회 (없으면 None)"""
+    for rec in DOMAIN_POOL.get(domain, []):
+        if rec["item"] == item:
+            return rec
+    return None

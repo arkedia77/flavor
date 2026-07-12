@@ -1,0 +1,8 @@
+{
+  "_comment": "학습 게이트 — 유사유저 피드백 기반 아이템 재랭킹. enabled=false면 규칙 top 불변(v0.1 동작, 테스트 보증). 활성화는 데이터 축적(person n 신뢰) + Leo 승인 커밋으로만. 롤백=enabled false 1줄.",
+  "enabled": false,
+  "min_sim": 0.3,
+  "min_contributors": 3,
+  "min_advantage": 0.5,
+  "gate_version": "lg0"
+}
