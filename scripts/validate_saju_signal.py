@@ -42,7 +42,15 @@ from scripts.data_io import (
     dedupe_persons, dataset_hash,
 )
 
-HARNESS_VERSION = "1.0"
+HARNESS_VERSION = "1.1"
+# v1.1 (2026-07-12, EVIDENCE_AUDIT 완화책 4 — 수집 재개 전 pre-registered 수정안):
+#   ① 노출 전 서브셋: person의 시간순 첫 제출 survey(해당 제출이 실제 측정한 차원만)
+#      — 이후 제출은 결과 화면에서 선천 성향을 본 뒤라 자기귀인 오염 가능
+#   ② 네거티브 컨트롤: nc_* 차원(사주 이론·카피 무연결)에서 CONFIRMED 동등 기준
+#      충족 쌍 발생 시 CONTAMINATION_FLAG — 리포트의 모든 CONFIRMED 무효
+#   ③ 신봉도 층화: CONFIRMED 차원이 비신봉군에서 |rho|<0.05 또는 부호 불일치면
+#      SELF_ATTRIBUTION_SUSPECT — 게이트 개방 보류 (Leo 판단)
+#   상세: docs/ENGINE_V02_DESIGN.md §4 수정안
 
 # ── 게이트 기준 상수 (pre-registered) ──
 STAGE2_MIN_N = 200
@@ -171,29 +179,36 @@ def compute_person_features(persons):
             continue
         enriched.append({**p, "features": feats,
                          "prior": saju_prior_9d(feats),
-                         "flat": flatten(feats)})
+                         "flat": flatten(feats),
+                         "_first_dims": first_measured_dims(p)})
     return enriched
 
 
-def confirmatory(persons, label):
-    """차원별 prior vs survey — 게이트 판정용 9검정"""
-    n = len(persons)
+def confirmatory(persons, label, survey_key="survey", dim_filter=None):
+    """차원별 prior vs survey — 게이트 판정용 9검정.
+
+    survey_key: person dict에서 읽을 설문 벡터 키 ("survey" | "survey_first")
+    dim_filter(person, dim): False면 해당 person을 그 차원 검정에서 제외
+      (노출 전 서브셋에서 첫 제출이 실제 측정한 차원만 쓰기 위함)
+    """
     results = {}
     pvals = []
     for dim in DIMENSIONS:
-        xs = [p["prior"][dim] for p in persons]
-        ys = [p["survey"][dim] for p in persons]
+        sel = [p for p in persons if dim_filter is None or dim_filter(p, dim)]
+        xs = [p["prior"][dim] for p in sel]
+        ys = [p[survey_key][dim] for p in sel]
+        n_dim = len(sel)
         rho = spearman(xs, ys)
-        if n >= 10 and len(set(xs)) > 1:
+        if n_dim >= 10 and len(set(xs)) > 1:
             p_perm = permutation_p(xs, ys, rho)
             ci = bootstrap_ci(xs, ys)
-            half = n // 2
+            half = n_dim // 2
             rho_a = spearman(xs[:half], ys[:half])
             rho_b = spearman(xs[half:], ys[half:])
             split_ok = (rho_a * rho_b > 0) and (rho_a * rho > 0)
         else:
             p_perm, ci, split_ok = 1.0, (None, None), False
-        results[dim] = {"rho": round(rho, 3), "p_perm": round(p_perm, 4),
+        results[dim] = {"n": n_dim, "rho": round(rho, 3), "p_perm": round(p_perm, 4),
                         "ci95": ci, "split_sign_consistent": split_ok}
         pvals.append(p_perm)
 
@@ -201,14 +216,14 @@ def confirmatory(persons, label):
     for dim, q in zip(DIMENSIONS, qs):
         r = results[dim]
         r["q"] = round(q, 4)
-        if n < STAGE2_MIN_N:
+        if r["n"] < STAGE2_MIN_N:
             r["verdict"] = "insufficient_n"
         elif (abs(r["rho"]) >= RHO_MIN and r["q"] < Q_MAX
               and r["p_perm"] < P_PERM_MAX and r["split_sign_consistent"]):
             r["verdict"] = "CONFIRMED"
         else:
             r["verdict"] = "no_signal"
-    return {"label": label, "n": n, "per_dim": results}
+    return {"label": label, "n": len(persons), "per_dim": results}
 
 
 def exploratory_screen(persons):
@@ -236,6 +251,95 @@ def exploratory_screen(persons):
     rows.sort(key=lambda r: -abs(r["rho"]))
     return {"n_tests": len(rows), "top": rows[:25],
             "significant_q05": [r for r in rows if r["q"] < 0.05]}
+
+
+def first_measured_dims(person) -> set:
+    """시간순 첫 제출이 실제 측정한 9차원 부분집합 (노출 전 서브셋용).
+
+    A/B 퀴즈는 raw_answers가 답변 리스트(dimension 필드 보유),
+    vol1 27문항은 {"q1":...} dict — 27문항은 9차원 전부 측정.
+    포맷 불명 시 전체로 간주 (리셋 후 데이터는 전부 신형 포맷).
+    """
+    subs = person.get("submissions") or []
+    if not subs:
+        return set(DIMENSIONS)
+    first = min(subs, key=lambda s: s.get("created_at") or "")
+    raw = first.get("raw_answers")
+    items = raw if isinstance(raw, list) else (
+        list(raw.values()) if isinstance(raw, dict) else [])
+    dims = {it.get("dimension") for it in items
+            if isinstance(it, dict) and not it.get("meta")}
+    dims &= set(DIMENSIONS)
+    return dims or set(DIMENSIONS)
+
+
+def negative_control(persons):
+    """네거티브 컨트롤 (pre-registered v1.1-②) — 사주 prior → nc_* 차원 상관.
+
+    nc 차원은 사주 이론(MAP_V2)·표시 카피 어디에도 연결되지 않은 취향이므로
+    진짜 신호가 있을 수 없다. CONFIRMED 동등 기준을 충족하는 (prior, nc) 쌍이
+    하나라도 나오면 방법론/오염 문제 → 리포트 전체 CONTAMINATION_FLAG,
+    같은 리포트의 모든 CONFIRMED는 무효 (게이트 개방 금지).
+    """
+    nc_keys = sorted({k for p in persons for k in (p.get("meta") or {})
+                      if k.startswith("nc_")})
+    if not nc_keys:
+        return {"note": "nc 데이터 없음 (구버전 제출)", "flag": False,
+                "n_tests": 0, "flagged": [], "pairs": []}
+    rows = []
+    skipped = []
+    for nc in nc_keys:
+        sel = [p for p in persons if nc in (p.get("meta") or {})]
+        ys = [p["meta"][nc] for p in sel]
+        if len(sel) < 10 or len(set(ys)) < 2:
+            skipped.append({"nc": nc, "note": f"n={len(sel)} 부족 또는 무변동"})
+            continue
+        for dim in DIMENSIONS:
+            xs = [p["prior"][dim] for p in sel]
+            if len(set(xs)) < 2:
+                continue
+            rho = spearman(xs, ys)
+            p_perm = permutation_p(xs, ys, rho)
+            rows.append({"nc": nc, "prior_dim": dim, "n": len(sel),
+                         "rho": round(rho, 3), "p_perm": round(p_perm, 4)})
+    if rows:
+        qs = bh_fdr([r["p_perm"] for r in rows])
+        for r, q in zip(rows, qs):
+            r["q"] = round(q, 4)
+    flagged = [r for r in rows
+               if abs(r["rho"]) >= RHO_MIN and r["q"] < Q_MAX
+               and r["p_perm"] < P_PERM_MAX]
+    return {"n_tests": len(rows), "flag": bool(flagged), "flagged": flagged,
+            "skipped": skipped,
+            "pairs": sorted(rows, key=lambda r: -abs(r["rho"]))[:10]}
+
+
+def belief_stratified(persons, conf_primary):
+    """신봉도 층화 (pre-registered v1.1-③).
+
+    CONFIRMED 차원의 신호가 신봉군에서만 존재하고 비신봉군에서 부재
+    (|rho|<0.05)하거나 부호가 뒤집히면 바넘/자기귀인 의심 —
+    해당 차원 SELF_ATTRIBUTION_SUSPECT, 게이트 개방 보류 (Leo 판단).
+    """
+    withb = [p for p in persons if "meta_belief" in (p.get("meta") or {})]
+    hi = [p for p in withb if p["meta"]["meta_belief"] >= 0.5]
+    lo = [p for p in withb if p["meta"]["meta_belief"] < 0.5]
+    out = {"n_with_belief": len(withb), "n_believer": len(hi), "n_skeptic": len(lo)}
+    if min(len(hi), len(lo)) < 20:
+        out["note"] = "층화 불가 — 양 군 각 20명 미만"
+        out["self_attribution_suspect"] = []
+        return out
+    out["believer"] = confirmatory(hi, "belief_high")
+    out["skeptic"] = confirmatory(lo, "belief_low")
+    suspects = []
+    for dim, r in (conf_primary.get("per_dim") or {}).items():
+        if r.get("verdict") != "CONFIRMED":
+            continue
+        rlo = out["skeptic"]["per_dim"][dim]
+        if abs(rlo["rho"]) < 0.05 or rlo["rho"] * r["rho"] < 0:
+            suspects.append(dim)
+    out["self_attribution_suspect"] = suspects
+    return out
 
 
 def innate_agreement(persons):
@@ -309,17 +413,45 @@ def write_report(report, out_dir):
         "",
         "## 게이트 기준 (pre-registered)",
         f"> {GATE_CRITERIA_TEXT}",
+        "> 수정안 v1.1 (2026-07-12, 리셋·수집 재개 전 등록): ① 게이트 판정 주 대상 = "
+        "노출 전 응답(첫 제출, 실측 차원만) ② nc 컨트롤 유의 시 CONTAMINATION_FLAG "
+        "③ 비신봉군 신호 부재 시 SELF_ATTRIBUTION_SUSPECT (개방 보류)",
         "",
-        "## Confirmatory — prior → survey (게이트 판정 대상)",
+        "## Confirmatory — prior → survey (노출 전, 게이트 판정 대상)",
         "",
-        "| 차원 | rho | 95% CI | p_perm | q(BH) | 분할부호 | 판정 |",
-        "|---|---|---|---|---|---|---|",
+        "| 차원 | n | rho | 95% CI | p_perm | q(BH) | 분할부호 | 판정 |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for dim in DIMENSIONS:
-        r = report["confirmatory_all"]["per_dim"][dim]
+        r = report["confirmatory_first_preexposure"]["per_dim"].get(dim)
+        if not r:
+            continue
         ci = f"[{r['ci95'][0]}, {r['ci95'][1]}]" if r["ci95"][0] is not None else "—"
-        lines.append(f"| {dim} | {r['rho']} | {ci} | {r['p_perm']} | {r['q']} "
-                     f"| {'✓' if r['split_sign_consistent'] else '✗'} | {r['verdict']} |")
+        lines.append(f"| {dim} | {r.get('n', '—')} | {r['rho']} | {ci} | {r['p_perm']} "
+                     f"| {r['q']} | {'✓' if r['split_sign_consistent'] else '✗'} "
+                     f"| {r['verdict']} |")
+
+    nc = report["negative_control"]
+    lines += ["", f"## 네거티브 컨트롤 (v1.1-②) — flag: {'⚠️ 발생' if nc.get('flag') else '없음'}"]
+    if nc.get("note"):
+        lines.append(f"- {nc['note']}")
+    for r in nc.get("flagged", []):
+        lines.append(f"- ⚠️ {r['prior_dim']} → {r['nc']}: rho={r['rho']} q={r['q']} "
+                     f"(있을 수 없는 신호 — 방법론/오염 점검)")
+
+    bl = report["belief_stratified"]
+    lines += ["", "## 신봉도 층화 (v1.1-③)",
+              f"- 신봉 {bl.get('n_believer', 0)} / 비신봉 {bl.get('n_skeptic', 0)}"
+              + (f" — {bl['note']}" if bl.get("note") else ""),
+              f"- SELF_ATTRIBUTION_SUSPECT: {bl.get('self_attribution_suspect', [])}"]
+
+    ca = report["confirmatory_all"]
+    lines += ["", f"### 참고: 전체 응답 평균 기준 (n={ca['n']} — 노출 후 포함, 게이트 비사용)",
+              "", "| 차원 | rho | p_perm | q | 판정 |", "|---|---|---|---|---|"]
+    for dim in DIMENSIONS:
+        r = ca["per_dim"].get(dim)
+        if r:
+            lines.append(f"| {dim} | {r['rho']} | {r['p_perm']} | {r['q']} | {r['verdict']} |")
 
     hk = report.get("confirmatory_hour_known")
     if hk:
@@ -389,6 +521,15 @@ def main():
 
     conf_all = confirmatory(persons, "all") if n >= 3 else {"label": "all", "n": n, "per_dim": {}}
     conf_hour = confirmatory(hour_persons, "hour_known") if len(hour_persons) >= 10 else None
+    # 노출 전 서브셋 (v1.1-①: 게이트 판정의 주 대상) — 첫 제출 survey,
+    # 해당 제출이 실제 측정한 차원만
+    conf_first = (confirmatory(persons, "first_submission_preexposure",
+                               survey_key="survey_first",
+                               dim_filter=lambda p, d: d in p["_first_dims"])
+                  if n >= 3 else {"label": "first_submission_preexposure",
+                                  "n": n, "per_dim": {}})
+    nc = negative_control(persons)
+    belief = belief_stratified(persons, conf_first)
     exploratory = exploratory_screen(persons)
     ia = innate_agreement(persons)
     fb_mon = feedback_monitoring(submissions, feedbacks)
@@ -400,16 +541,27 @@ def main():
     else:
         stage = f"Stage 1 (탐색 전용, n<{STAGE2_MIN_N} — 가중치 개방 불가)"
 
-    confirmed = [d for d, r in conf_all.get("per_dim", {}).items()
+    # v1.1-①: 게이트 판정의 주 대상 = 노출 전 서브셋 (conf_all은 참고 지표)
+    confirmed = [d for d, r in conf_first.get("per_dim", {}).items()
                  if r.get("verdict") == "CONFIRMED"]
+    suspects = belief.get("self_attribution_suspect", [])
+    openable = [d for d in confirmed if d not in suspects]
     if n < STAGE2_MIN_N:
         conclusion = (f"n_persons={n} < {STAGE2_MIN_N}: 탐색 단계. 게이트 가중치는 전부 0 유지. "
                       "결과는 가설 개정 참고용으로만 사용.")
+    elif nc["flag"]:
+        conclusion = (f"⚠️ CONTAMINATION_FLAG: 네거티브 컨트롤 {len(nc['flagged'])}쌍이 "
+                      f"CONFIRMED 동등 기준 충족 — 이 리포트의 모든 CONFIRMED 무효 "
+                      f"(pre-registered v1.1-②). 원인 규명 전 게이트 개방 금지.")
     elif confirmed:
-        conclusion = (f"게이트 통과 차원: {confirmed}. Leo 승인 후 config/saju_gate.json에서 "
-                      f"해당 차원 w=0.15 개방 가능.")
+        parts = [f"게이트 통과 차원(노출 전 기준): {confirmed}."]
+        if suspects:
+            parts.append(f"단 SELF_ATTRIBUTION_SUSPECT {suspects}는 개방 보류 (v1.1-③).")
+        if openable:
+            parts.append(f"Leo 승인 후 config/saju_gate.json에서 {openable} w=0.15 개방 가능.")
+        conclusion = " ".join(parts)
     else:
-        conclusion = "게이트 통과 차원 없음. 가중치 전부 0 유지."
+        conclusion = "게이트 통과 차원 없음 (노출 전 기준). 가중치 전부 0 유지."
 
     report = {
         "harness_version": HARNESS_VERSION,
@@ -425,8 +577,11 @@ def main():
         "n_hour_known": len(hour_persons),
         "gate_stage": stage,
         "gate_criteria": GATE_CRITERIA_TEXT,
+        "confirmatory_first_preexposure": conf_first,
         "confirmatory_all": conf_all,
         "confirmatory_hour_known": conf_hour,
+        "negative_control": nc,
+        "belief_stratified": belief,
         "exploratory": exploratory,
         "innate_agreement": ia,
         "feedback_monitoring": fb_mon,

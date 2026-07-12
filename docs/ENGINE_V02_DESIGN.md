@@ -108,6 +108,29 @@ A/B 프레이밍을 뒤집는다 — 자기귀인 효과(Fichten & Sunerton 1983
 대체하는 대상이 정확히 survey 차원이므로 검증 대상과 배포 사용처가 일치한다.
 피드백 thumb은 규칙 엔진 품질과 교락되어 게이트 기준으로 쓰지 않는다 (모니터링만).
 
+### 수정안 v1.1 (2026-07-12 — DB 리셋·수집 재개 **전** 등록, EVIDENCE_AUDIT 완화책 4)
+
+> 원 기준의 "사후 변경 금지"는 데이터 관측 후 기준 변경 금지를 뜻한다. 이 수정안은
+> 게이트 대상 데이터가 아직 0건인 시점(리셋 전)에 오염 통제를 **추가**하는 것으로,
+> 기존 통과 문턱은 완화하지 않고 강화만 한다. 발효는 Leo 승인 커밋.
+
+1. **노출 전 응답 원칙**: 게이트 판정의 주 대상은 person의 **시간순 첫 제출**
+   survey(해당 제출이 실제 측정한 차원만). 이후 제출은 결과 화면에서 선천
+   성향·페르소나를 본 뒤라 자기귀인 오염 가능(Fichten & Sunerton 1983).
+   전체 평균 기준은 참고 지표로 병기.
+2. **네거티브 컨트롤**: 퀴즈에 nc_* 문항(사주 이론·표시 카피와 무연결 취향,
+   MAP_V2 delta 영구 부재 서약)을 포함. 어떤 prior 차원이든 nc 차원과
+   CONFIRMED 동등 기준(|ρ|≥0.20 ∧ q<0.05 ∧ p_perm<0.01)을 충족하면
+   **CONTAMINATION_FLAG** — 해당 리포트의 모든 CONFIRMED 무효, 원인 규명 전
+   게이트 개방 금지.
+3. **신봉도 층화**: meta_belief 문항(사주 신봉 여부)으로 층화. CONFIRMED 차원이
+   비신봉군에서 |ρ|<0.05 이거나 부호가 뒤집히면 **SELF_ATTRIBUTION_SUSPECT**
+   — 해당 차원 개방 보류(바넘/자기귀인 의심), Leo 판단.
+
+구현: 퀴즈 메타 문항(static/shared/quiz-engine.js META_QUESTIONS + 레거시 4파일),
+하네스 v1.1(scripts/validate_saju_signal.py), 어휘 분리 가드
+(config/dimension_lexicon.json + tests/test_lexicon_separation.py).
+
 ## 5. 검증 하네스 (scripts/)
 
 - `data_io.py`: fetch(API/DB) + 위생 필터 — DUMMY_CUTOFF=2026-03-14 이전 제외,

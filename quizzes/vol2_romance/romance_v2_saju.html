@@ -883,7 +883,23 @@ function showQuestion(idx) {
   qStartTime = Date.now();
 }
 
+/* ═══ 메타 문항 (EVIDENCE_AUDIT 완화책 4, 2026-07-12) ═══
+   9차원 프로필 계산에서 제외, answers로만 저장 (shared quiz-engine.js와 동일).
+   nc_noodle: 네거티브 컨트롤 / meta_belief: 사주 신봉도 공변량 */
+const META_QUESTIONS = [
+  { id:'nc_noodle', dimension:'nc_noodle', meta:true,
+    highText:'국물부터 마시는', lowText:'면부터 건지는',
+    A:{emoji:'🥣', label:'라면 나오면 국물부터 한 숟갈 떠야지', val:1},
+    B:{emoji:'🍜', label:'면부터 후루룩, 국물은 마지막에', val:0} },
+  { id:'meta_belief', dimension:'meta_belief', meta:true,
+    highText:'사주 꽤 믿는', lowText:'재미로만 보는',
+    A:{emoji:'🔮', label:'사주나 운세, 꽤 맞다고 생각하는 편이야', val:1},
+    B:{emoji:'🤷', label:'재미로 보는 거지 뭐, 안 믿어', val:0} },
+];
+META_QUESTIONS.forEach(q => QUESTIONS.push(q));
+
 function choose(side) {
+
   if (currentQ >= QUESTIONS.length) return;
   const q = QUESTIONS[currentQ];
   const responseMs = Date.now() - qStartTime;
@@ -894,16 +910,21 @@ function choose(side) {
   const picked = (side === 'A') !== qFlip ? q.A : q.B;
   const chosenVal = picked.val;
 
-  answers.push({
+  const entry = {
     id: q.id,
     dimension: q.dimension,
     choice: picked === q.A ? 'A' : 'B',
     value: chosenVal,
-    innate_value: innateVal,
-    agreed_with_innate: (chosenVal >= 0.5) === (innateVal >= 0.5),
     response_ms: responseMs,
     ux: 'nv1'
-  });
+  };
+  if (q.meta) {
+    entry.meta = true;  // 메타 문항: innate 비교 필드 생략 (하네스 집계 오염 방지)
+  } else {
+    entry.innate_value = innateVal;
+    entry.agreed_with_innate = (chosenVal >= 0.5) === (innateVal >= 0.5);
+  }
+  answers.push(entry);
 
   currentQ++;
 
@@ -918,6 +939,7 @@ function buildProfile() {
   const dims = {};
   const counts = {};
   answers.forEach(a => {
+    if (a.meta) return;  // 메타 문항(신봉도/nc)은 9차원 프로필에서 제외
     dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
     counts[a.dimension] = (counts[a.dimension] || 0) + 1;
   });

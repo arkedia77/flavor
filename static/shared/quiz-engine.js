@@ -27,6 +27,24 @@
 
 const API_BASE = window.location.origin;
 
+/* ═══ 메타 문항 (EVIDENCE_AUDIT 완화책 4, 2026-07-12) ═══
+   모든 퀴즈 끝에 자동 추가. 9차원 프로필 계산에서 제외, answers로만 저장.
+   - nc_noodle: 네거티브 컨트롤 — 사주 이론(MAP_V2)·표시 카피 어디에도 연결되지 않은
+     취향. 검증 하네스에서 사주 피처가 이 차원과 상관을 보이면 방법론/오염 플래그.
+     문구에 9차원 어휘(config/dimension_lexicon.json) 사용 금지.
+   - meta_belief: 사주 신봉도 공변량 — 신봉군에서만 신호가 나오면 바넘/자기귀인 의심
+     (하네스 층화 분석). */
+const META_QUESTIONS = [
+  { id:'nc_noodle', dimension:'nc_noodle', meta:true,
+    highText:'국물부터 마시는', lowText:'면부터 건지는',
+    A:{emoji:'🥣', label:'라면 나오면 국물부터 한 숟갈 떠야지', val:1},
+    B:{emoji:'🍜', label:'면부터 후루룩, 국물은 마지막에', val:0} },
+  { id:'meta_belief', dimension:'meta_belief', meta:true,
+    highText:'사주 꽤 믿는', lowText:'재미로만 보는',
+    A:{emoji:'🔮', label:'사주나 운세, 꽤 맞다고 생각하는 편이야', val:1},
+    B:{emoji:'🤷', label:'재미로 보는 거지 뭐, 안 믿어', val:0} },
+];
+
 let currentQ = 0;
 let answers = [];
 let qStartTime = 0;
@@ -201,6 +219,12 @@ function startQuiz() {
     innateProfile = sipsinToInnate(sipsinData, 5);
   }
 
+  // 메타 문항 추가 (중복 방지 플래그)
+  if (!C._metaAppended) {
+    C.questions = C.questions.concat(META_QUESTIONS);
+    C._metaAppended = true;
+  }
+
   document.getElementById('screen-intro').style.display = 'none';
   document.getElementById('screen-quiz').style.display = 'flex';
   document.body.classList.add('no-scroll');
@@ -258,16 +282,23 @@ function choose(side) {
   const picked = (side === 'A') !== qFlip ? q.A : q.B;
   const chosenVal = picked.val;
 
-  answers.push({
+  const entry = {
     id: q.id,
     dimension: q.dimension,
     choice: picked === q.A ? 'A' : 'B',
     value: chosenVal,
-    innate_value: innateVal,
-    agreed_with_innate: (chosenVal >= 0.5) === (innateVal >= 0.5),
     response_ms: responseMs,
     ux: 'nv1'  // neutral v1: 선천 비노출 + 랜덤 순서 (오염 차단 이후 데이터 표식)
-  });
+  };
+  if (q.meta) {
+    // 메타 문항(신봉도/네거티브 컨트롤): innate 비교 무의미 — 필드 자체를 생략
+    // (하네스 innate 동의율 집계가 agreed_with_innate 키 존재로 카운트하므로)
+    entry.meta = true;
+  } else {
+    entry.innate_value = innateVal;
+    entry.agreed_with_innate = (chosenVal >= 0.5) === (innateVal >= 0.5);
+  }
+  answers.push(entry);
 
   currentQ++;
 
@@ -283,6 +314,7 @@ function buildProfile() {
   const dims = {};
   const counts = {};
   answers.forEach(a => {
+    if (a.meta) return;  // 메타 문항(신봉도/nc)은 9차원 프로필에서 제외
     dims[a.dimension] = (dims[a.dimension] || 0) + a.value;
     counts[a.dimension] = (counts[a.dimension] || 0) + 1;
   });

@@ -125,12 +125,37 @@ def hour_is_known(sub: dict) -> bool:
     return is_saju_quiz
 
 
+def extract_meta_answers(sub: dict) -> dict:
+    """제출의 raw_answers에서 메타 문항(신봉도/네거티브 컨트롤) 값 추출.
+
+    퀴즈 엔진(완화책 4, 2026-07-12)이 answers 배열에 meta:true 항목으로 싣는다.
+    반환: {"meta_belief": 0|1, "nc_noodle": 0|1, ...} — 없으면 빈 dict (구버전 행)
+    """
+    raw = sub.get("raw_answers")
+    items = raw if isinstance(raw, list) else (
+        list(raw.values()) if isinstance(raw, dict) else [])
+    out = {}
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        qid = it.get("id") or ""
+        if it.get("meta") or qid == "meta_belief" or qid.startswith("nc_"):
+            try:
+                out[qid] = float(it.get("value"))
+            except (TypeError, ValueError):
+                pass
+    return out
+
+
 def dedupe_persons(submissions: list) -> list:
     """(name, birth_date, gender) 키로 person 단위 집계.
 
     - survey = 소속 제출들의 9차원 평균 (노이즈 감소)
+    - survey_first = 시간순 첫 제출의 9차원 (노출 전 응답 — 이후 제출은 결과
+      화면에서 선천 성향을 본 뒤라 자기귀인 오염 가능, EVIDENCE_AUDIT 참조)
     - hour_known = 신뢰 가능한 제출이 하나라도 있고 birth_time이 서로 모순되지 않을 때
     - birth_time = 신뢰 가능한 제출 중 첫 값
+    - meta = 메타 문항 person 평균 (meta_belief 신봉도, nc_* 네거티브 컨트롤)
     """
     persons = {}
     for sub in submissions:
@@ -157,16 +182,32 @@ def dedupe_persons(submissions: list) -> list:
         survey = {d: sum(s.get(d, 0.5) for s in p["surveys"]) / n for d in DIMENSIONS}
         hours = set(p["hours"])
         hour_known = len(hours) == 1  # 모순(여러 시간 주장) 시 미상으로 강등
+
+        subs_sorted = sorted(p["submissions"], key=lambda s: s.get("created_at") or "")
+        first_survey = subs_sorted[0].get("survey") or {}
+        survey_first = {d: float(first_survey.get(d, 0.5)) for d in DIMENSIONS}
+
+        meta_acc = {}
+        for sub in subs_sorted:
+            for k, v in extract_meta_answers(sub).items():
+                meta_acc.setdefault(k, []).append(v)
+        meta = {k: sum(vs) / len(vs) for k, vs in meta_acc.items()}
+
         out.append({
             "key": p["key"],
             "birth_date": p["birth_date"],
             "birth_time": str(p["hours"][0]) if hour_known else None,
             "survey": survey,
+            "survey_first": survey_first,
+            "meta": meta,
             "n_submissions": n,
             "hour_known": hour_known,
             "hour_conflict": len(hours) > 1,
             "first_created_at": min(s["created_at"] for s in p["submissions"]),
             "submission_ids": [s["id"] for s in p["submissions"]],
+            # innate_agreement 등 제출 원본 접근용 (2026-07-12 추가 — 종전엔
+            # submission_ids만 있어 하네스 innate 집계가 항상 비어 있던 버그)
+            "submissions": p["submissions"],
         })
     out.sort(key=lambda p: p["first_created_at"])
     return out

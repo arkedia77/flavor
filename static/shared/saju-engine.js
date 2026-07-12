@@ -86,8 +86,10 @@ function _buildSipsinDist(ba, includeHour) {
   }
   zhiLists.forEach(function(arr) {
     if (arr && arr.length > 0) {
-      // 지장간의 첫 번째(본기)만 카운트 — 기존 로직과 일관성 유지
-      var s = _sipsinKr(arr[arr.length - 1]);
+      // 지장간 본기만 카운트 — lunar 순서는 [본기, 중기, 여기] (index 0 = 본기).
+      // 2026-07-12: arr[length-1](여기)로 읽던 버그 수정 — 서버 sipsin.py의
+      // 2026-07-10 수정(arr[-1]→arr[0])과 동일 버그가 클라이언트에 남아 있었음
+      var s = _sipsinKr(arr[0]);
       if (dist[s] !== undefined) dist[s]++;
     }
   });
@@ -165,18 +167,20 @@ function sipsinToInnate(sipsinResult, amplify) {
   return innate;
 }
 
-/* ── 일간 페르소나 ── */
+/* ── 일간 페르소나 ──
+   어휘 분리 (2026-07-12): 9차원 설문 어휘(config/dimension_lexicon.json) 사용 금지.
+   서버 engines/persona.py와 동일해야 함 (tests/test_lexicon_separation.py가 패리티 검사) */
 const DAY_MASTER_PERSONA = {
-  "갑": {name:"큰 나무의 개척자", emoji:"🌲", element:"목", vibe:"새로운 길을 만드는 사람"},
-  "을": {name:"덩굴의 적응가", emoji:"🌿", element:"목", vibe:"어디서든 자리를 잡는 유연한 감각"},
-  "병": {name:"태양의 무대인", emoji:"☀️", element:"화", vibe:"주목받을 때 빛나는 에너지"},
-  "정": {name:"촛불의 감성가", emoji:"🕯️", element:"화", vibe:"은은하지만 깊은 감각의 소유자"},
-  "무": {name:"대지의 중심축", emoji:"🏔️", element:"토", vibe:"흔들리지 않는 안정감"},
-  "기": {name:"정원의 큐레이터", emoji:"🌾", element:"토", vibe:"사소한 것도 아름답게 가꾸는 손길"},
-  "경": {name:"강철의 완벽주의자", emoji:"⚔️", element:"금", vibe:"타협 없는 기준, 날카로운 취향"},
-  "신": {name:"보석의 감식가", emoji:"💎", element:"금", vibe:"정제된 아름다움을 알아보는 눈"},
-  "임": {name:"바다의 탐험가", emoji:"🌊", element:"수", vibe:"끝없이 새로운 것을 향해 흐르는 호기심"},
-  "계": {name:"이슬의 관찰자", emoji:"💧", element:"수", vibe:"조용히 스며들어 본질을 꿰뚫는 직관"},
+  "갑": {name:"큰 나무의 개척자", emoji:"🌲", element:"목", vibe:"가장 먼저 땅을 뚫고 하늘로 뻗는 기세"},
+  "을": {name:"덩굴의 적응가", emoji:"🌿", element:"목", vibe:"어디서든 제 자리를 찾아내는 유연함"},
+  "병": {name:"태양의 무대인", emoji:"☀️", element:"화", vibe:"무대 한가운데서 가장 밝게 타오르는 존재감"},
+  "정": {name:"촛불의 이야기꾼", emoji:"🕯️", element:"화", vibe:"어둠이 짙을수록 또렷해지는 은은한 불빛"},
+  "무": {name:"대지의 중심축", emoji:"🏔️", element:"토", vibe:"산맥처럼 흔들림 없는 묵직한 중심"},
+  "기": {name:"정원의 일꾼", emoji:"🌾", element:"토", vibe:"무엇을 심어도 자라나게 하는 손길"},
+  "경": {name:"강철의 대장장이", emoji:"⚔️", element:"금", vibe:"불에 달구고 두드려 벼려낸 단단한 기준"},
+  "신": {name:"보석의 세공사", emoji:"💎", element:"금", vibe:"원석 속에서 빛을 골라내는 눈"},
+  "임": {name:"바다의 항해사", emoji:"🌊", element:"수", vibe:"수평선 너머를 향해 쉬지 않고 흐르는 물길"},
+  "계": {name:"이슬의 관찰자", emoji:"💧", element:"수", vibe:"새벽 안개처럼 스며들어 속을 꿰뚫는 직관"},
 };
 
 const DOMAIN_EMOJI = { '커피':'☕','향수':'🌸','음악':'🎵','식당':'🍽️','운동':'🏃','여행':'✈️','패션':'👗','인테리어':'🏠' };
