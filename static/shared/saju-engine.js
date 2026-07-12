@@ -125,18 +125,24 @@ function calcSipsinFull(year, month, day, hour) {
   return { dayStem: ds, dayEl: dayEl, dayPol: dayPol, distribution: result.distribution, dominant: result.dominant, pillars: p };
 }
 
-/* ── 십신 → 9차원 innate 벡터 ── */
+/* ── 십신 → 9차원 innate 벡터 (표시용) ──
+   서버 engines/saju_features.py SIPSIN_FLAVOR_MAP_V2 = 정본.
+   여기 델타 값은 서버와 **정확히 일치**해야 함 (tests/test_lexicon_separation.py
+   TestMapParity가 검사). 2026-07-12: 감사 이전 구맵 → V2 동기화.
+   (구맵은 식신 social-/energetic- 등 감사에서 폐기한 델타를 표시하고 있었음)
+   주의: 클라이언트 가중은 십신 count 기반 근사(서버는 궁성·지장간 가중) — 값은
+   같아도 최종 innate는 근사치다. 정확 prior는 서버 saju_prior_9d가 정본. */
 const SIPSIN_FLAVOR_MAP = {
-  "비견": {adventurous:+0.06, energetic:+0.04, comfort:-0.04},
-  "겁재": {social:+0.08, energetic:+0.06, budget:+0.04},
-  "식신": {aesthetic:+0.08, comfort:+0.04, bitter:+0.04},
-  "상관": {maximalist:+0.08, adventurous:+0.06, aesthetic:+0.04},
-  "편재": {social:+0.06, budget:+0.08, urban:+0.04},
-  "정재": {comfort:+0.08, budget:-0.06, urban:+0.04},
-  "편관": {energetic:+0.08, urban:+0.06, maximalist:+0.04},
-  "정관": {comfort:+0.06, urban:+0.06, aesthetic:+0.04},
-  "편인": {adventurous:+0.08, aesthetic:+0.06, social:-0.04},
-  "정인": {comfort:+0.08, social:+0.04, aesthetic:+0.04},
+  "비견": {adventurous:+0.05, comfort:+0.03, social:-0.05},
+  "겁재": {social:+0.07, budget:+0.06, maximalist:+0.06, energetic:+0.05, urban:+0.05},
+  "식신": {aesthetic:+0.07, comfort:+0.06, bitter:+0.05},
+  "상관": {maximalist:+0.08, adventurous:+0.08, social:+0.04, aesthetic:+0.05, comfort:-0.05},
+  "편재": {adventurous:+0.08, social:+0.07, urban:+0.06, budget:+0.06, comfort:-0.04},
+  "정재": {comfort:+0.08, budget:-0.08, adventurous:-0.06, social:-0.04, urban:+0.03},
+  "편관": {energetic:+0.08, adventurous:+0.06, maximalist:+0.05, urban:+0.04, comfort:-0.06},
+  "정관": {urban:+0.06, comfort:+0.05, aesthetic:+0.04, maximalist:-0.06, adventurous:-0.05},
+  "편인": {adventurous:+0.07, bitter:+0.06, aesthetic:+0.04, social:-0.06, urban:-0.03},
+  "정인": {comfort:+0.07, bitter:+0.04, aesthetic:+0.03, maximalist:-0.05, budget:-0.03},
 };
 
 const DIMENSIONS = ["social","adventurous","aesthetic","comfort","budget","maximalist","energetic","urban","bitter"];

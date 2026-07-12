@@ -19,6 +19,7 @@ import re
 import unittest
 
 from engines.persona import DAY_MASTER_PERSONA
+from engines.saju_features import SIPSIN_FLAVOR_MAP_V2
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEXICON_PATH = os.path.join(ROOT, "config", "dimension_lexicon.json")
@@ -50,6 +51,43 @@ def parse_js_personas():
         out[m.group("stem")] = {"name": m.group("name"), "emoji": m.group("emoji"),
                                 "element": m.group("element"), "vibe": m.group("vibe")}
     return out
+
+
+def parse_js_flavor_map():
+    """saju-engine.js의 SIPSIN_FLAVOR_MAP 블록 파싱 → {십신: {dim: delta}}"""
+    with open(SAJU_ENGINE_JS, encoding="utf-8") as fp:
+        src = fp.read()
+    block = re.search(r"const SIPSIN_FLAVOR_MAP\s*=\s*\{(.*?)\n\};", src, re.S)
+    assert block, "saju-engine.js에서 SIPSIN_FLAVOR_MAP 블록을 찾지 못함"
+    out = {}
+    for m in re.finditer(r'"([가-힣]{2})":\s*\{([^}]*)\}', block.group(1)):
+        deltas = {}
+        for pair in re.finditer(r'(\w+)\s*:\s*([+-]?[0-9.]+)', m.group(2)):
+            deltas[pair.group(1)] = float(pair.group(2))
+        out[m.group(1)] = deltas
+    return out
+
+
+class TestMapParity(unittest.TestCase):
+    """클라이언트 SIPSIN_FLAVOR_MAP ↔ 서버 MAP_V2 델타 정확 일치 (2026-07-12).
+
+    innate 표시가 감사(EVIDENCE_AUDIT) 이전 폐기 가설을 쓰지 않도록 강제.
+    서버가 정본 — 서버 MAP_V2 개정 시 이 테스트가 클라이언트 갱신을 강제한다.
+    """
+    def test_client_map_matches_server_v2(self):
+        js = parse_js_flavor_map()
+        self.assertEqual(set(js.keys()), set(SIPSIN_FLAVOR_MAP_V2.keys()),
+                         "클라이언트/서버 십신 키 목록 불일치")
+        for sipsin, entry in SIPSIN_FLAVOR_MAP_V2.items():
+            server = entry["delta"]
+            client = js[sipsin]
+            self.assertEqual(
+                set(client.keys()), set(server.keys()),
+                f"{sipsin} 델타 차원 불일치: 클라 {set(client)} vs 서버 {set(server)}")
+            for dim, v in server.items():
+                self.assertAlmostEqual(
+                    client[dim], v, places=4,
+                    msg=f"{sipsin}.{dim} 값 불일치: 클라 {client[dim]} vs 서버 {v}")
 
 
 class TestLexiconFile(unittest.TestCase):
