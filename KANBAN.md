@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-07-12
+**최종 수정**: 2026-07-13
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -29,7 +29,10 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db`. lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
+| **키워드 사전 교정** (점검 Q1·Q6) | Medium | **Leo→reklcli** | 핸드드립 축 혼동(bitter→산미)·축 명칭 정직화("진한 블랙형 vs 부드러운 스위트형")·패밀리 계상+LR캡·pivot 변수화. **엔진 변경이라 Leo 승인 대기**(AskUserQuestion 옵션②). |
+| 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
+| 콜드스타트 arm 게이트 개방 | Medium | **Leo** | 리셋 시점. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
+| seed 온보딩 문항 프론트 배선 | Medium | reklcli | 커피 진입 1문항 자유입력 → submit seeds[]. 개방 전 배선 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
@@ -46,6 +49,8 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-13 | **콜드스타트 랜덤 arm + seed 수집 + LLM 우도 인터페이스** (페플셀프 점검 Q2/Q3 반영, Leo "①리셋 전 필수" 선택): 리셋 순간부터 켜야 소급 가능한 2건 게이트형 구현. apply_random_arm(OFF=완전 항등) + config/coldstart_arm.json + submit 배선(seeds→results._coldstart) + lift 하네스 --arm random 무교란 필터 + build_llm_infer. 설계서 docs/COLDSTART_MEASUREMENT_DESIGN.md. 테스트 20개(전체 107). OFF/ON 엔드투엔드 스모크 확인. 커밋 push 완료 |
+| 2026-07-13 | **페플셀프 파일럿 A 점검** 의뢰·회신: 방향 충실, 실질 결함 2건(키워드 축 혼동·lift 셀렉션 바이어스). 리셋 전 필수=랜덤 arm+seed 수집(소급 불가). exchange/flavor-pilotA-review-v01.md |
 | 2026-07-12 | **파일럿 A — 커피 콜드스타트 예측** (Leo 승인, fableself 리서치 기반): 코호트(연령·성별 문헌 계수)+seed 베이지안 → 쓴맛형/산미형. lift 하네스(concordance, 저장 데이터 소급 재계산) 합성검증 통과. 사주=미사용(외부 예측력 0). 실 lift는 데이터 대기, 추천 교체 미적용 |
 | 2026-07-12 | **fableself 리서치 의뢰·회신**: 외부 데이터셋/방법론 shortlist. 결론=코호트+LLM seed 콜드스타트가 최속 lift, 사주=예측력 0(게이트 정합 확인) |
 | 2026-07-12 | **학습 루프 실작동 (게이트)** (Leo 선택): 무력했던 confidence 주석 → 유사유저 피드백 아이템 재랭킹. domains.py 후보 풀 + recommend.py learned_rerank + config/learning_gate.json(default OFF=항등). 활성화만 Leo 승인 대기 |
