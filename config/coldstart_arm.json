@@ -1,0 +1,8 @@
+{
+  "gate_version": "csa0-off",
+  "enabled": false,
+  "random_frac": 0.0,
+  "domains": ["커피"],
+  "seed_collection": false,
+  "_note": "랜덤 노출 arm + seed 수집 게이트. enabled=false ∧ random_frac=0.0 = 현 동작과 완전 항등(노출·저장 무변경). 개방은 DB 리셋 시점부터 Leo 승인 커밋으로만 — 비랜덤 노출은 소급 불가라 리셋 순간부터 켜야 무교란 lift 추정 가능(fableself 점검 Q2). random_frac 권장 0.10~0.20."
+}

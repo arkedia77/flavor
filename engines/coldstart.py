@@ -17,6 +17,8 @@ engines/는 Flask 무의존. LLM은 llm_infer 콜러블로 주입(미지정 시 
 휴리스틱). 실제 LLM(Claude) 연결은 자연어 seed 수집이 생긴 뒤의 확장 지점이다.
 """
 
+import json
+
 # 커피 타입 축: 쓴맛형(bitter) vs 산미형(acidic/sweet-mild)
 TYPE_KR = {"bitter": "쓴맛형", "acidic": "산미형"}
 
@@ -127,3 +129,97 @@ def predict_coffee_type(age, gender, seeds=None, llm_infer=None) -> dict:
 
 def age_from_birth_year(birth_year: int, reference_year: int) -> int:
     return reference_year - birth_year
+
+
+# ── 랜덤 노출 arm (측정 무교란화) ────────────────────────────────────
+# fableself 점검 Q2: 노출이 비랜덤(9차원 규칙이 아이템 선택)이면 concordance lift가
+# 셀렉션 바이어스로 교란된다 — match 셀에 "시스템이 원래 잘 서빙하던 유저×아이템"이
+# 몰려 lift 과대/과소. 소급 재계산은 로깅 문제만 풀 뿐 배정 교란은 못 푼다.
+# 유일한 무교란 추정치 = 노출의 일부를 풀 내 무작위로 서빙하는 랜덤 arm. 비용 ≈ 0.
+# 단 랜덤 배정은 소급 불가 → 리셋 순간부터 켜야 한다. 게이트: config/coldstart_arm.json.
+
+def apply_random_arm(results: dict, config: dict, rng) -> dict:
+    """콜드스타트 랜덤 노출 arm. results를 변형하지 않고 (교체·태그된) 새 dict 반환.
+
+    OFF(config 없음/enabled=False/random_frac<=0)면 results를 **그대로** 반환(완전 항등,
+    노출·저장 무변경 — 사주/학습 게이트와 동일 fail-safe).
+    ON이면 config['domains'] 중 results에 있는 도메인마다:
+      rng.random() < random_frac → 풀(DOMAIN_POOL)에서 무작위 아이템 서빙, _arm='random'
+      아니면 규칙 픽 유지, _arm='rule'
+    _arm 태그가 results_json에 저장되어 lift 분석이 랜덤 arm만 골라 무교란 추정 가능.
+    _rule_item = 랜덤일 때 규칙이 원래 고른 아이템(감사용).
+
+    rng: random.random()/random.choice() 인터페이스 (라이브=random 모듈, 테스트=Random(seed)).
+    """
+    if not config or not config.get("enabled") or float(config.get("random_frac", 0.0)) <= 0.0:
+        return results
+    from engines.domains import DOMAIN_POOL
+
+    frac = float(config["random_frac"])
+    out = dict(results)
+    for domain in (config.get("domains") or []):
+        rec = out.get(domain)
+        if not isinstance(rec, dict):
+            continue
+        pool = DOMAIN_POOL.get(domain) or []
+        if pool and rng.random() < frac:
+            pick = dict(rng.choice(pool))
+            pick["_arm"] = "random"
+            pick["_rule_item"] = rec.get("item")
+            out[domain] = pick
+        else:
+            new = dict(rec)
+            new["_arm"] = "rule"
+            out[domain] = new
+    return out
+
+
+# ── LLM 우도 인터페이스 (seed 자연어 → bitter/acidic 우도) ────────────
+# predict_coffee_type(..., llm_infer=<콜러블>)에 주입하는 어댑터. 자연어 seed 수집이
+# 라이브가 된 뒤의 확장 지점 — 그 전까지 predict는 오프라인 키워드 휴리스틱을 쓴다.
+# 키워드 이분 매칭보다 강하고(동의어·신조어 흡수) 풀-LLM보다 쌈(단문 1콜).
+# 총 우도비는 캡(seed 과신 방지, fableself 점검 Q3의 곱셈 스태킹 함정 대응).
+
+LLM_LIKELIHOOD_PROMPT = """\
+너는 커피 취향 분류기다. 사용자가 커피에 대해 적은 한 줄(seed)을 읽고,
+이 사람이 '쓴맛·진한 블랙 커피(bitter)'를 좋아할 가능성 대 '부드러운·달콤한 커피
+(acidic/sweet-mild)'를 좋아할 가능성의 우도비를 매겨라.
+seed가 취향 정보를 거의 안 주면 1.0(무정보)에 가깝게.
+출력은 JSON 한 줄만: {"bitter": <0.3~3.0>, "acidic": <0.3~3.0>}
+
+예시:
+seed: "아메리카노만 마셔요 진하게" → {"bitter": 2.4, "acidic": 0.5}
+seed: "바닐라라떼 시럽 추가" → {"bitter": 0.5, "acidic": 2.3}
+seed: "커피 잘 몰라요" → {"bitter": 1.0, "acidic": 1.0}
+seed: "산미 있는 핸드드립 좋아함" → {"bitter": 0.7, "acidic": 2.0}
+
+seed: "%s" →"""
+
+_LLM_LR_CAP = 3.0  # 단일 seed 우도비 상한 (양방향, 과신 방지)
+
+
+def build_llm_infer(complete_fn, lr_cap: float = _LLM_LR_CAP):
+    """seed_text -> {"bitter": Lb, "acidic": La} 콜러블 생성.
+
+    complete_fn: prompt(str) -> 응답 텍스트(str) 콜러블 (예: Claude 래퍼). 주입식이라
+    engines/는 Flask·SDK 무의존 유지. 파싱 실패/예외 시 (1.0, 1.0)=무정보로 폴백.
+    반환 우도비는 [1/lr_cap, lr_cap]로 클램프.
+    """
+    def _clip(x):
+        try:
+            v = float(x)
+        except (TypeError, ValueError):
+            return 1.0
+        return max(1.0 / lr_cap, min(lr_cap, v))
+
+    def infer(seed_text: str) -> dict:
+        try:
+            raw = complete_fn(LLM_LIKELIHOOD_PROMPT % str(seed_text).replace('"', "'"))
+            start, end = raw.find("{"), raw.rfind("}")
+            obj = json.loads(raw[start:end + 1]) if 0 <= start < end else {}
+            return {"bitter": _clip(obj.get("bitter", 1.0)),
+                    "acidic": _clip(obj.get("acidic", 1.0))}
+        except Exception:
+            return {"bitter": 1.0, "acidic": 1.0}
+
+    return infer

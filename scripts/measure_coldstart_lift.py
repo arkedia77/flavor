@@ -72,8 +72,15 @@ def _r(v):
     return round(v, 4) if isinstance(v, float) else v
 
 
-def records_from_stored(submissions: list, feedbacks: list, reference_year: int) -> list:
-    """저장된 submissions + 커피 피드백 → 예측 lift 측정용 레코드 재구성."""
+def records_from_stored(submissions: list, feedbacks: list, reference_year: int,
+                        arm: str = "all") -> list:
+    """저장된 submissions + 커피 피드백 → 예측 lift 측정용 레코드 재구성.
+
+    arm: 'random'=랜덤 노출만(무교란 추정), 'rule'=규칙 노출만, 'all'=전부.
+    노출 arm 태그(results[커피]._arm)는 랜덤 arm 게이트가 켜진 뒤 제출분에만 있다.
+    태그 없는 옛 행은 'rule'로 간주(규칙 노출).
+    seed는 results._coldstart.seeds에서 읽어 예측에 반영(있을 때만).
+    """
     by_id = {s["id"]: s for s in submissions}
     records = []
     for fb in feedbacks:
@@ -87,13 +94,19 @@ def records_from_stored(submissions: list, feedbacks: list, reference_year: int)
             continue
         age = reference_year - int(bd[0])
         results = sub.get("results") or {}
-        shown_item = (results.get(COFFEE_DOMAIN) or {}).get("item")
+        coffee = results.get(COFFEE_DOMAIN) or {}
+        shown_item = coffee.get("item")
         if not shown_item:
             continue
+        rec_arm = coffee.get("_arm") or "rule"  # 태그 없으면 규칙 노출
+        if arm != "all" and rec_arm != arm:
+            continue
+        seeds = (results.get("_coldstart") or {}).get("seeds") or None
         records.append({
-            "age": age, "gender": sub.get("gender"),
+            "age": age, "gender": sub.get("gender"), "seeds": seeds,
             "shown_type": coffee_item_type(shown_item),
             "positive": int(fb.get("thumb", 0)) >= 1,
+            "arm": rec_arm,
         })
     return records
 
@@ -141,6 +154,8 @@ def main():
     ap.add_argument("--token", type=str)
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--reference-year", type=int, default=datetime.now().year)
+    ap.add_argument("--arm", choices=["random", "rule", "all"], default="all",
+                    help="노출 arm 필터. 무교란 lift 추정=random (랜덤 arm 게이트 개방 후)")
     args = ap.parse_args()
 
     if args.self_test or not (args.db or os.environ.get("FLAVOR_ADMIN_TOKEN") or args.token):
@@ -157,11 +172,16 @@ def main():
     else:
         submissions, feedbacks = fetch_from_admin_api(args.url, args.token, since=None)
 
-    records = records_from_stored(submissions, feedbacks, args.reference_year)
+    records = records_from_stored(submissions, feedbacks, args.reference_year, arm=args.arm)
     result = compute_lift(records)
-    print(json.dumps({"reference_year": args.reference_year,
+    n_random = sum(1 for r in records_from_stored(submissions, feedbacks, args.reference_year, arm="random"))
+    print(json.dumps({"reference_year": args.reference_year, "arm": args.arm,
                       "n_coffee_feedback": sum(1 for f in feedbacks if f.get("domain") == COFFEE_DOMAIN),
+                      "n_random_arm": n_random,
                       **result}, ensure_ascii=False, indent=1))
+    if args.arm != "random":
+        print("[i] arm=all/rule은 비랜덤 노출이라 셀렉션 바이어스로 교란될 수 있음 — "
+              "무교란 추정은 --arm random (랜덤 arm 게이트 개방 후).")
     if result["n_used"] < 30:
         print(f"[!] 유효 레코드 {result['n_used']}개 — lift 신뢰엔 수십+ 필요 (수집 진행 중)")
 

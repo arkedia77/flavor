@@ -7,15 +7,17 @@ Leoflavor Engine v0.2 — 검증 게이트 방식
 """
 
 import json
+import random
 import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 
-from config import ENGINE_VERSION, SAJU_GATE
+from config import ENGINE_VERSION, SAJU_GATE, COLDSTART_ARM
 from engines.survey import raw_to_survey
 from engines.persona import get_persona
 from engines.personality import get_personality_type
 from engines.recommend import recommend
+from engines.coldstart import apply_random_arm
 from engines.saju_features import (
     extract_features_from_birth, saju_prior_9d, SCHEMA_VERSION as SAJU_SCHEMA_VERSION,
 )
@@ -116,6 +118,22 @@ def submit():
         except Exception:
             all_profiles = None
         results = recommend(profile, all_profiles)
+
+        # 콜드스타트 랜덤 노출 arm (게이트 OFF=완전 항등). 랜덤 배정·seed는 소급 불가 →
+        # 리셋 순간부터 켜야 무교란 lift 추정 가능(fableself 점검 Q2). _arm 태그가
+        # results_json에 저장돼 lift 분석이 랜덤 arm만 골라 무교란 추정한다.
+        results = apply_random_arm(results, COLDSTART_ARM, random)
+
+        # seed 자연어 (콜드스타트 예측기용 — 소급 불가라 수집 시점에 저장).
+        seeds = data.get("seeds") or []
+        if isinstance(seeds, str):
+            seeds = [seeds]
+        seeds = [str(s).strip() for s in seeds if str(s).strip()][:3]
+        if seeds or COLDSTART_ARM.get("enabled"):
+            results["_coldstart"] = {
+                "seeds": seeds,
+                "arm_gate": COLDSTART_ARM.get("gate_version"),
+            }
 
         # 취향 아키타입 (9차원 기반)
         personality = get_personality_type(profile)

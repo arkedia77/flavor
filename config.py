@@ -72,6 +72,42 @@ def load_learning_gate(path: str = None) -> dict:
 
 LEARNING_GATE = load_learning_gate()
 
+# ── 콜드스타트 랜덤 노출 arm 게이트 ──
+# enabled=false ∧ random_frac=0.0 = 현 동작과 완전 항등(노출·저장 무변경).
+# 켜면 지정 도메인 노출의 random_frac 비율을 풀 내 무작위로 서빙하고 arm을 로깅한다 —
+# 비랜덤 노출(규칙이 아이템 선택)은 셀렉션 바이어스로 lift를 교란하며 소급 불가하므로,
+# 무교란 lift 추정치는 랜덤 arm에서만 나온다(fableself 점검 Q2). 리셋 순간부터 켜야 함.
+# 개방은 Leo 승인 커밋으로만 — 사주/학습 게이트와 동일 fail-safe 철학.
+COLDSTART_ARM_PATH = os.path.join(os.path.dirname(__file__), "config", "coldstart_arm.json")
+_ARM_OFF = {
+    "gate_version": "fail-safe-off",
+    "enabled": False,
+    "random_frac": 0.0,
+    "domains": ["커피"],
+    "seed_collection": False,
+}
+
+
+def load_coldstart_arm(path: str = None) -> dict:
+    """랜덤 arm 게이트 로드. 파일 없음/파싱 실패/비정상 값 → enabled=False∧frac=0 폴백."""
+    try:
+        with open(path or COLDSTART_ARM_PATH, encoding="utf-8") as fp:
+            cfg = json.load(fp)
+        out = dict(_ARM_OFF)
+        out["enabled"] = bool(cfg.get("enabled", False))
+        out["seed_collection"] = bool(cfg.get("seed_collection", False))
+        out["gate_version"] = str(cfg.get("gate_version", "csa0"))
+        frac = float(cfg.get("random_frac", 0.0))
+        out["random_frac"] = frac if 0.0 <= frac <= 1.0 else 0.0
+        doms = cfg.get("domains", _ARM_OFF["domains"])
+        out["domains"] = [str(d) for d in doms] if isinstance(doms, list) else list(_ARM_OFF["domains"])
+        return out
+    except Exception:
+        return dict(_ARM_OFF)
+
+
+COLDSTART_ARM = load_coldstart_arm()
+
 # 추천 경계값 상수
 HIGH = 0.65
 LOW = 0.35
