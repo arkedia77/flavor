@@ -136,31 +136,31 @@ class TestArmFilterInHarness(unittest.TestCase):
 
 class TestLLMInfer(unittest.TestCase):
     def test_parse_valid(self):
-        infer = build_llm_infer(lambda p: '{"bitter": 2.0, "acidic": 0.6}')
+        infer = build_llm_infer(lambda p: '{"black": 2.0, "sweet": 0.6}')
         out = infer("아메리카노만")
-        self.assertEqual(out["bitter"], 2.0)
-        self.assertEqual(out["acidic"], 0.6)
+        self.assertEqual(out["black"], 2.0)
+        self.assertEqual(out["sweet"], 0.6)
 
     def test_clamp_to_cap(self):
-        infer = build_llm_infer(lambda p: '{"bitter": 99, "acidic": 0.001}')
+        infer = build_llm_infer(lambda p: '{"black": 99, "sweet": 0.001}')
         out = infer("x")
-        self.assertEqual(out["bitter"], _LLM_LR_CAP)
-        self.assertEqual(out["acidic"], 1.0 / _LLM_LR_CAP)
+        self.assertEqual(out["black"], _LLM_LR_CAP)
+        self.assertEqual(out["sweet"], 1.0 / _LLM_LR_CAP)
 
     def test_garbage_falls_back_neutral(self):
         infer = build_llm_infer(lambda p: "모르겠어요")
-        self.assertEqual(infer("x"), {"bitter": 1.0, "acidic": 1.0})
+        self.assertEqual(infer("x"), {"black": 1.0, "sweet": 1.0})
 
     def test_exception_falls_back_neutral(self):
         def boom(p):
             raise RuntimeError("api down")
         infer = build_llm_infer(boom)
-        self.assertEqual(infer("x"), {"bitter": 1.0, "acidic": 1.0})
+        self.assertEqual(infer("x"), {"black": 1.0, "sweet": 1.0})
 
     def test_prose_wrapped_json(self):
-        infer = build_llm_infer(lambda p: 'JSON: {"bitter": 1.5, "acidic": 0.8} 입니다')
+        infer = build_llm_infer(lambda p: 'JSON: {"black": 1.5, "sweet": 0.8} 입니다')
         out = infer("x")
-        self.assertEqual(out["bitter"], 1.5)
+        self.assertEqual(out["black"], 1.5)
 
 
 class TestLoaderFailSafe(unittest.TestCase):

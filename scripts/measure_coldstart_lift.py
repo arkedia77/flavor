@@ -34,15 +34,15 @@ COFFEE_DOMAIN = "커피"
 
 
 def compute_lift(records: list) -> dict:
-    """records: [{age, gender, seeds?, shown_type('bitter'|'acidic'), positive(bool)}]
+    """records: [{age, gender, seeds?, shown_type('black'|'sweet'), positive(bool)}]
 
-    shown_type이 bitter/acidic이 아닌 것(mixed/unknown)은 제외.
+    shown_type이 black/sweet이 아닌 것(mixed/unknown)은 제외.
     """
     match_pos = match_n = mis_pos = mis_n = pos_total = 0
     used = 0
     for r in records:
         shown = r.get("shown_type")
-        if shown not in ("bitter", "acidic"):
+        if shown not in ("black", "sweet"):
             continue
         pred = predict_coffee_type(r.get("age"), r.get("gender"),
                                    r.get("seeds"))["type"]
@@ -116,20 +116,20 @@ def records_from_stored(submissions: list, feedbacks: list, reference_year: int,
 def _synthetic_records(n, signal: bool, seed=20260712):
     """signal=True면 실제 선호가 코호트 방향과 상관, False면 무상관(null)."""
     rng = random.Random(seed)
-    from engines.coldstart import cohort_bitter_prior
+    from engines.coldstart import cohort_black_prior
     recs = []
     for _ in range(n):
         age = rng.randint(18, 80)
         gender = rng.choice(["male", "female"])
-        # 잠재 쓴맛 선호 확률
+        # 잠재 블랙 선호 확률
         if signal:
-            p_like_bitter = cohort_bitter_prior(age, gender)  # 코호트와 상관
+            p_like_black = cohort_black_prior(age, gender)  # 코호트와 상관
         else:
-            p_like_bitter = 0.5  # 무상관
-        likes_bitter = rng.random() < p_like_bitter
-        shown_type = rng.choice(["bitter", "acidic"])
+            p_like_black = 0.5  # 무상관
+        likes_black = rng.random() < p_like_black
+        shown_type = rng.choice(["black", "sweet"])
         # 보여준 타입이 그의 실제 선호와 맞으면 👍 확률↑
-        pos = rng.random() < (0.75 if (shown_type == "bitter") == likes_bitter else 0.30)
+        pos = rng.random() < (0.75 if (shown_type == "black") == likes_black else 0.30)
         recs.append({"age": age, "gender": gender,
                      "shown_type": shown_type, "positive": pos})
     return recs
