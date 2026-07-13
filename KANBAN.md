@@ -31,7 +31,7 @@
 |------|---------|------|------|
 | 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
 | 콜드스타트 arm 게이트 개방 | Medium | **Leo** | 리셋 시점. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
-| seed 온보딩 문항 프론트 배선 | Medium | reklcli | 커피 진입 1문항 자유입력 → submit seeds[]. 개방 전 배선 |
+| **seed 온보딩 문항 프론트 배선** | **High** | reklcli | ▶ **다음 세션 착수 (Leo 지정 7/13)**. 커피 진입 1문항 자유입력 → submit seeds[]. 백엔드 준비됨(results._coldstart 저장). 개방 전 배선 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
