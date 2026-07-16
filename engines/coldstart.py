@@ -255,19 +255,20 @@ def coffee_reveal(seed_text=None, served_item=None, reaction=None) -> dict:
 
     seed_text: 퀴즈 때 수집한 자연어 seed(선택). '말한 극(said)' 재료.
     served_item: 측정창에서 실제 노출된 커피 아이템명(COFFEE_ITEM_TYPE 키). 반응 해석에 필요.
-    reaction: 그 아이템에 대한 thumb 정수(🎯2/👍1/🤷-1는 중립취급/👎-2). >0=좋아함, <0=싫어함.
+    reaction: 그 아이템에 대한 thumb 정수(🎯2/👍1=좋아함, 🤷-1=중립, 👎-2=싫어함).
+              🤷(-1)는 'meh'이지 dislike가 아니므로 극 반전 안 함 — 오직 👎(-2)만 반대 극.
     """
     said = coffee_persona(seed_text)["pole"] if seed_text else "unknown"
 
     served_pole = coffee_item_type(served_item) if served_item else "unknown"
     if reaction is None or served_pole in ("mixed", "unknown"):
         reacted = "unknown"
-    elif reaction > 0:
-        reacted = served_pole            # 서빙 아이템을 좋아함 → 그 극
-    elif reaction < 0:
-        reacted = _opposite_pole(served_pole)  # 서빙을 싫어함 → 반대 극으로 기움
+    elif reaction >= 1:
+        reacted = served_pole            # 🎯/👍 서빙 아이템을 좋아함 → 그 극
+    elif reaction <= -2:
+        reacted = _opposite_pole(served_pole)  # 👎 서빙을 싫어함 → 반대 극으로 기움
     else:
-        reacted = "unknown"              # 🤷 중립 → 미확정
+        reacted = "unknown"              # 🤷(-1) meh → 미확정(반전 안 함)
 
     # 주재료 = 반응(피드백 산출물). 반응 미확정 시 seed로 폴백.
     primary = reacted if reacted != "unknown" else said

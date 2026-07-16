@@ -17,17 +17,19 @@ from engines.survey import raw_to_survey
 from engines.persona import get_persona
 from engines.personality import get_personality_type
 from engines.recommend import recommend
-from engines.coldstart import apply_random_arm
+from engines.coldstart import apply_random_arm, coffee_reveal
 from engines.saju_features import (
     extract_features_from_birth, saju_prior_9d, SCHEMA_VERSION as SAJU_SCHEMA_VERSION,
 )
 from engines.gated_blend import apply_gated_blend, any_weight_open
 from db.repository import (
-    save_submission, save_feedback, get_recent_submissions,
+    save_submission, save_feedback, get_recent_submissions, get_submission,
     get_calibration_data, get_submission_count, check_and_record_milestone,
     save_ux_vote, get_ux_vote_tally, get_ux_vote_comments,
     get_feedback_data,
 )
+
+COFFEE_DOMAIN = "커피"
 
 submit_bp = Blueprint('submit', __name__)
 
@@ -189,7 +191,23 @@ def feedback():
         if not submission_id or not domain or thumb not in (2, 1, -1, -2):
             return jsonify({"status": "error", "message": "invalid params"}), 400
         save_feedback(submission_id, domain, thumb, datetime.now().isoformat())
-        return jsonify({"status": "ok"})
+
+        resp = {"status": "ok"}
+        # 커피 자아 리빌 (fableself 결정 2026-07-16, Leo 위임): 게이트 ON일 때만.
+        # 피드백은 방금 저장(=lock)됐고, 이 응답으로 '피드백을 재료로 생성한' 리빌 카드를
+        # 내려준다. 측정창(카드 노출·리액션)은 이미 끝난 뒤라 예측 라벨 priming 오염 0.
+        # 게이트 OFF면 reveal 키 없음 = 현행 응답과 항등. 실패해도 피드백 저장은 성공 유지.
+        try:
+            if COLDSTART_ARM.get("seed_collection") and domain == COFFEE_DOMAIN:
+                row = get_submission(submission_id)
+                results = json.loads(row[6]) if (row and row[6]) else {}
+                served = (results.get(COFFEE_DOMAIN) or {}).get("item")
+                seeds = (results.get("_coldstart") or {}).get("seeds") or []
+                seed = seeds[0] if seeds else None
+                resp["reveal"] = coffee_reveal(seed, served, thumb)
+        except Exception:
+            pass
+        return jsonify(resp)
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 

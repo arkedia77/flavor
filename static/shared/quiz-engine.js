@@ -526,6 +526,7 @@ function sendFeedback(btn, domain, thumb) {
   const wrap = btn.parentElement;
   if (wrap.classList.contains('voted')) return;
 
+  // 클릭 즉시 lock(=commit). fableself 결정: 제출 lock 후에만 리빌(소급 수정 시 오염 재발).
   wrap.classList.add('voted');
   wrap.querySelectorAll('.fb-btn').forEach(b => b.disabled = true);
   btn.classList.add('selected');
@@ -534,7 +535,45 @@ function sendFeedback(btn, domain, thumb) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ submission_id: _submissionId, domain, thumb })
-  }).catch(() => {});
+  })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && d.reveal) renderCoffeeReveal(d.reveal, wrap); })
+    .catch(() => {});
+}
+
+/* ═══ 커피 자아 리빌 카드 (콜드스타트, 게이트 ON일 때만 서버가 reveal 내려줌) ═══
+   fableself 결정: 측정창(커피 카드 리액션) lock 후 '피드백 산출물'로 리빌. 반전 카드(🎭)면
+   의외성=공유 훅. '현재 스냅샷' 프레이밍(고정 정체성 아님). */
+function renderCoffeeReveal(reveal, feedbackWrap) {
+  const card = feedbackWrap.closest('.domain-card');
+  if (!card || card.nextElementSibling?.classList.contains('coffee-reveal')) return;
+
+  const el = document.createElement('div');
+  el.className = 'domain-card coffee-reveal';
+  el.style.cssText = 'border:2px solid var(--primary,#c084fc); background:rgba(var(--primary-rgb,192,132,252),.10); text-align:center;';
+  el.innerHTML =
+    '<div style="font-size:.78rem; opacity:.6; letter-spacing:.04em; margin-bottom:6px;">' +
+    (reveal.snapshot || '지금 이 순간의 커피 취향') + '</div>' +
+    '<div style="font-size:2.4rem; line-height:1; margin-bottom:8px;">' + (reveal.emoji || '☕') + '</div>' +
+    '<div style="font-size:1.25rem; font-weight:800; margin-bottom:8px;">' + (reveal.name || '') + '</div>' +
+    '<div style="font-size:.95rem; opacity:.85; line-height:1.5; margin-bottom:16px;">' + (reveal.oneliner || '') + '</div>' +
+    '<button class="coffee-reveal-share" style="padding:11px 20px; font-size:.92rem; font-weight:700; ' +
+    'border:none; border-radius:11px; background:var(--primary,#c084fc); color:#fff; cursor:pointer;">📤 내 커피 자아 공유</button>';
+  card.insertAdjacentElement('afterend', el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  el.querySelector('.coffee-reveal-share').addEventListener('click', () => shareCoffeeReveal(reveal));
+}
+
+function shareCoffeeReveal(reveal) {
+  const C = window.QUIZ_CONFIG;
+  const url = window.location.origin + (C?.result?.shareUrl || '/cafe');
+  const text = (reveal.share || `내 커피 자아 = ${reveal.name} ${reveal.emoji}`) + ` | 너는? ${url}`;
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert('공유 문구를 복사했어요!')).catch(() => {});
+  }
 }
 
 /* 사주 모드: 팔주 디스플레이 */

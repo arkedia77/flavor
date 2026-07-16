@@ -75,12 +75,18 @@ class TestCoffeeReveal(unittest.TestCase):
         self.assertEqual(r["pole"], "black")
         self.assertIn("겉은 스위트", r["name"])
 
-    def test_neutral_reaction_falls_back_to_seed(self):
-        # 🤷(중립, -1은 미확정 취급 안 함 — 여기선 0 취급 없이 명시적 중립 케이스)
-        r = coffee_reveal("아메리카노", "카페라떼·바닐라라떼", 0)
+    def test_shrug_is_neutral_not_dislike(self):
+        # 🤷(-1)는 meh — 극 반전 안 하고 미확정 → seed로 폴백
+        r = coffee_reveal("아메리카노", "카페라떼·바닐라라떼", -1)
         self.assertEqual(r["basis"], "seed")
         self.assertEqual(r["pole"], "black")
         self.assertFalse(r["twist"])
+
+    def test_dislike_flips_pole(self):
+        # 👎(-2) 스위트 서빙 → 반대=black. said(블랙)와 일치
+        r = coffee_reveal("아메리카노", "카페라떼·바닐라라떼", -2)
+        self.assertEqual(r["basis"], "reaction")
+        self.assertEqual(r["pole"], "black")
 
     def test_no_seed_no_reaction_is_sprout(self):
         r = coffee_reveal(None, None, None)
