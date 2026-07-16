@@ -176,9 +176,15 @@ def age_from_birth_year(birth_year: int, reference_year: int) -> int:
 # ── 커피 자아 카드 (표현층, 2026-07-16) ──────────────────────────────
 # Leo 원칙: 참여자도 재밌고 공유할 개인 컨텐츠가 형성돼야 함. seed를 추출형으로 걷지 말고
 # '커피 자아 캐릭터'로 되돌려준다. 측정용 predict_coffee_type(코호트+seed 베이지안)과 분리된
-# 순수 표현 매핑 — seed 키워드로 결정. 축 a(black/sweet) 위에 결(flavor)을 얹어 개인화.
-# **노출 배치(피드백 전/후·공유카드 한정)는 측정 오염 우려로 fableself 결정 대기** —
-# 이 함수는 내용만 제공하고 어디서 렌더할지는 배선 시 확정.
+# 순수 표현 매핑.
+#
+# ★fableself 결정 (2026-07-16, Leo 위임): 예측 라벨을 참여자에게 보여주면 랜덤 arm으로도
+#   못 고치는 측정 오염(priming → 자기실현예언)이라, 자아 카드는 **측정창(커피 카드 노출·
+#   랜덤 arm·리액션 수집) 종료 + 피드백 lock 이후에만** 리빌하고, **피드백을 재료로 생성**한다.
+#   → coffee_persona(seed): seed의 '말한 극'(said) 표현 헬퍼(측정창 전 미노출).
+#   → coffee_reveal(seed, served, reaction): 측정창 후 리빌 카드. 반응이 가리키는 극(reacted)이
+#     주재료, said와 어긋나면 반전 카드('겉은 X 속은 Y')로 의외성↑. '현재 스냅샷' 프레이밍
+#     (고정 정체성 아님, Q3-①). 예측 축은 2분법 유지, 표현층만 변주(Q3-②).
 _PERSONA_UNKNOWN_KW = ["잘 몰라", "잘몰라", "모르", "아무거나", "글쎄", "안 마", "안마", "없"]
 _DESSERT_KW = ["프라푸치노", "프라페", "휘핑", "휘프", "생크림", "크림", "디저트", "밀크쉐이크", "쉐이크"]
 
@@ -225,6 +231,67 @@ def coffee_persona(seed_text: str) -> dict:
         "pole": p["pole"],
         "share": f"내 커피 자아 = {p['name']} {p['emoji']}",
     }
+
+
+_POLE_SHORT = {"black": "블랙", "sweet": "스위트"}
+# 반전 카드(said≠reacted): 말과 반응이 어긋날 때. fableself Q4: 의외성이 공유의 핵심.
+_TWIST = {
+    ("black", "sweet"): {"emoji": "🎭", "oneliner": "쿨하게 아메리카노 시켜놓고 결국 단 거에 반하는 반전 매력"},
+    ("sweet", "black"): {"emoji": "🥷", "oneliner": "달달구리 좋아하는 척, 의외로 쓴맛에 진심인 숨은 블랙파"},
+}
+
+
+def _opposite_pole(pole: str) -> str:
+    return {"black": "sweet", "sweet": "black"}.get(pole, "unknown")
+
+
+def coffee_reveal(seed_text=None, served_item=None, reaction=None) -> dict:
+    """피드백 산출물형 커피 자아 리빌 (fableself 결정 2026-07-16).
+
+    ★반드시 측정창 종료 + 피드백 lock '이후'에만 호출/노출. 측정창 중엔 예측/카드 미노출
+      (priming 오염 방지 — 랜덤 arm으로도 못 고침).
+    반응(reaction)이 가리키는 극이 주재료. seed의 '말한 극'과 어긋나면 반전 카드로 의외성↑.
+    고정 정체성 아닌 '현재 스냅샷' 프레이밍.
+
+    seed_text: 퀴즈 때 수집한 자연어 seed(선택). '말한 극(said)' 재료.
+    served_item: 측정창에서 실제 노출된 커피 아이템명(COFFEE_ITEM_TYPE 키). 반응 해석에 필요.
+    reaction: 그 아이템에 대한 thumb 정수(🎯2/👍1/🤷-1는 중립취급/👎-2). >0=좋아함, <0=싫어함.
+    """
+    said = coffee_persona(seed_text)["pole"] if seed_text else "unknown"
+
+    served_pole = coffee_item_type(served_item) if served_item else "unknown"
+    if reaction is None or served_pole in ("mixed", "unknown"):
+        reacted = "unknown"
+    elif reaction > 0:
+        reacted = served_pole            # 서빙 아이템을 좋아함 → 그 극
+    elif reaction < 0:
+        reacted = _opposite_pole(served_pole)  # 서빙을 싫어함 → 반대 극으로 기움
+    else:
+        reacted = "unknown"              # 🤷 중립 → 미확정
+
+    # 주재료 = 반응(피드백 산출물). 반응 미확정 시 seed로 폴백.
+    primary = reacted if reacted != "unknown" else said
+
+    if primary == "unknown":
+        p = COFFEE_PERSONA["sprout"]
+        card = {"key": "sprout", "name": p["name"], "emoji": p["emoji"],
+                "oneliner": p["oneliner"], "pole": "unknown", "twist": False}
+    elif said in ("black", "sweet") and reacted in ("black", "sweet") and said != reacted:
+        tw = _TWIST[(said, reacted)]
+        card = {"key": f"twist_{said}_{reacted}",
+                "name": f"겉은 {_POLE_SHORT[said]}, 속은 {_POLE_SHORT[reacted]}형",
+                "emoji": tw["emoji"], "oneliner": tw["oneliner"],
+                "pole": reacted, "twist": True}
+    else:
+        base = "black" if primary == "black" else "sweet"
+        p = COFFEE_PERSONA[base]
+        card = {"key": base, "name": p["name"], "emoji": p["emoji"],
+                "oneliner": p["oneliner"], "pole": base, "twist": False}
+
+    card["snapshot"] = "지금 이 순간의 커피 취향"  # 고정 정체성 아님(Q3-①)
+    card["share"] = f"내 커피 자아 = {card['name']} {card['emoji']}"
+    card["basis"] = "reaction" if reacted != "unknown" else ("seed" if said != "unknown" else "none")
+    return card
 
 
 # ── 랜덤 노출 arm (측정 무교란화) ────────────────────────────────────
