@@ -9,7 +9,7 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 커피 자아 카드 노출 배치 결정 | High | **fableself** | Leo가 결정 위임(7/16). seed 예측을 참여자에게 되돌려줄 때 lift 오염 여부·배치(피드백 전/후·공유카드 한정) 결정 요청 발신(fableself_flavor_20260716_151200). 캐릭터 내용층(coffee_persona)은 구현 완료, 회신 후 렌더 배선 |
+| 커피 자아 카드 프론트 배선 (측정창→lock→리빌) | High | reklcli | fableself 결정(7/16) 수신·반영: 카드=피드백 산출물, 측정창 종료+피드백 lock 후 리빌. 로직층 coffee_reveal 완료. **다음=프론트: 커피 카드 리액션 lock 후 리빌 카드 렌더**(게이트 ON일 때만) |
 | flavor 서비스 레오서버 이관 | High | **admin** | Leo 결정 (7/11, mukl 재시작 대신 이관). 요청 발신 admin_flavor_20260711_173956 — **7/12 무회신 확인, 서버 여전히 502. Leo 보고됨** |
 
 > **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
@@ -49,6 +49,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-16 | **커피 자아 카드 로직층 + fableself 배치 결정**: Leo 재미·공유 원칙 → seed를 캐릭터로 되돌림. fableself(Leo 위임) 결정=예측 라벨 노출은 랜덤 arm으로도 못 고치는 측정 오염 → 카드는 측정창 종료+피드백 lock 후 '피드백 산출물'로 리빌. `coffee_reveal()`(반응 주재료, said 어긋나면 반전카드 '겉은블랙 속은스위트') + `coffee_persona()`. 테스트 130개. 프론트 배선은 다음 |
 | 2026-07-16 | **seed 온보딩 프론트 배선** (Leo 지정 7/13): 커피 seed 1문항 자유입력 → submit `seeds:[]`. 서버 게이트 `/api/coldstart-config`(seed_collection, 기본 OFF) 노출 → quiz-engine.js가 플래그 ON일 때만 마지막 문항 후 seed 화면 **동적 주입**(HTML 쉘 20여개 무변경). OFF=완전 항등 엔드투엔드 확인(문항 미노출·`_coldstart` 미부착). 배정 규칙(랜덤 arm)은 서버 담당이라 프론트 미노출. 테스트 115개(+3). shared 엔진 vol4~20 커버, 레거시 vol2/vol3·종합설문은 별도 JS라 이후 확장 |
 | 2026-07-13 | **콜드스타트 커피 축 정직화 + 키워드 교정** (페플셀프 점검 Q1·Q3·Q6, Leo 승인): 쓴맛형/산미형 → 진한 블랙형/부드러운 스위트형(축 a=우유·단맛 유무). 핸드드립·산미=축 b 예약어 분리. seed 패밀리 계상+총 LR 캡 3배. pivot 변수화. 심볼 전수 동기, 테스트 112개 |
 | 2026-07-13 | **콜드스타트 랜덤 arm + seed 수집 + LLM 우도 인터페이스** (페플셀프 점검 Q2/Q3 반영, Leo "①리셋 전 필수" 선택): 리셋 순간부터 켜야 소급 가능한 2건 게이트형 구현. apply_random_arm(OFF=완전 항등) + config/coldstart_arm.json + submit 배선(seeds→results._coldstart) + lift 하네스 --arm random 무교란 필터 + build_llm_infer. 설계서 docs/COLDSTART_MEASUREMENT_DESIGN.md. 테스트 20개(전체 107). OFF/ON 엔드투엔드 스모크 확인. 커밋 push 완료 |
