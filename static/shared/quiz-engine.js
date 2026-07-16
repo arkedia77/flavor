@@ -53,6 +53,16 @@ let innateProfile = {};
 let sipsinData = {};
 let resultShareUrl = '';
 
+/* ═══ 콜드스타트 seed 온보딩 (파일럿 A, 2026-07-16) ═══
+   커피 카테고리 예측용 자연어 seed 1문항. 서버 게이트(config/coldstart_arm.json
+   seed_collection)로 노출 제어 — 기본 OFF면 문항을 아예 안 띄워 현 흐름과 완전 항등.
+   seed 텍스트는 소급 불가(안 물으면 영원히 없음)라 수집 시점에만 확보 가능.
+   저장은 submit payload seeds:[...] → 서버가 results._coldstart.seeds에 네임스페이스. */
+let seedAnswer = null;
+let coldstartCfg = { seed_collection: false };
+const SEED_PROMPT = '☕ 마지막 하나! 커피는 보통 뭐로 드세요?';
+const SEED_SUB = '한 줄이면 돼요 (예: 아메리카노 진하게 / 바닐라라떼 / 커피 잘 몰라요)';
+
 /* ═══ 초기화 ═══ */
 function initQuiz() {
   const C = window.QUIZ_CONFIG;
@@ -76,6 +86,12 @@ function initQuiz() {
 
   // 프로필 자동 채움
   prefillFromProfile();
+
+  // 콜드스타트 seed 게이트 조회 (fail-safe: 실패·미개방 → seed 문항 미노출 = 현 흐름 항등)
+  fetch(`${API_BASE}/api/coldstart-config`)
+    .then(r => r.ok ? r.json() : null)
+    .then(cfg => { if (cfg && cfg.seed_collection) coldstartCfg.seed_collection = true; })
+    .catch(() => {});
 }
 
 function populateSelects() {
@@ -304,9 +320,51 @@ function choose(side) {
 
   if (currentQ < C.questions.length) {
     setTimeout(() => showQuestion(currentQ), 220);
+  } else if (coldstartCfg.seed_collection) {
+    setTimeout(showSeedScreen, 300);  // seed 게이트 ON: 커피 seed 1문항 후 제출
   } else {
-    setTimeout(submitAnswers, 300);
+    setTimeout(submitAnswers, 300);   // OFF(기본): 바로 제출 = 현 흐름 항등
   }
+}
+
+/* ═══ 콜드스타트 seed 온보딩 화면 ═══
+   HTML 쉘 20여 개를 안 건드리려고 화면 div를 동적 주입(1회). 게이트 OFF면 호출 자체가
+   없어 DOM 무변경. 입력/건너뛰기 모두 submit으로 이어짐(seed는 선택 입력). */
+function showSeedScreen() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  let el = document.getElementById('screen-seed');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'screen-seed';
+    el.style.cssText = 'display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px 24px;';
+    el.innerHTML =
+      '<div style="font-size:1.35rem; font-weight:700; margin-bottom:10px; line-height:1.4;">' + SEED_PROMPT + '</div>' +
+      '<div style="opacity:.65; font-size:.9rem; margin-bottom:24px;">' + SEED_SUB + '</div>' +
+      '<input id="seed-input" type="text" maxlength="60" autocomplete="off" ' +
+      'style="width:100%; max-width:340px; padding:14px 16px; font-size:1rem; border-radius:12px; ' +
+      'border:1.5px solid var(--primary, #c084fc); background:rgba(255,255,255,.06); color:inherit; ' +
+      'text-align:center; margin-bottom:20px;" placeholder="여기에 한 줄" />' +
+      '<button id="seed-next" style="width:100%; max-width:340px; padding:14px; font-size:1rem; font-weight:700; ' +
+      'border:none; border-radius:12px; background:var(--primary, #c084fc); color:#fff; cursor:pointer;">결과 보기</button>' +
+      '<button id="seed-skip" style="margin-top:14px; background:none; border:none; color:inherit; opacity:.5; ' +
+      'font-size:.85rem; cursor:pointer; text-decoration:underline;">건너뛰기</button>';
+    document.body.appendChild(el);
+    const input = el.querySelector('#seed-input');
+    el.querySelector('#seed-next').addEventListener('click', () => confirmSeed(input.value));
+    el.querySelector('#seed-skip').addEventListener('click', () => confirmSeed(''));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') confirmSeed(input.value); });
+  }
+  el.style.display = 'flex';
+  const inp = el.querySelector('#seed-input');
+  if (inp) setTimeout(() => inp.focus(), 100);
+}
+
+function confirmSeed(text) {
+  const t = (text || '').trim();
+  seedAnswer = t.length ? t : null;
+  const el = document.getElementById('screen-seed');
+  if (el) el.style.display = 'none';
+  submitAnswers();
 }
 
 /* ═══ 프로필 계산 ═══ */
@@ -523,7 +581,8 @@ async function submitAnswers() {
         ab_answers: answers,
         survey: actualProfile,
         innate_profile: innateProfile,
-        sipsin_data: { dominant: sipsinData.dominant, distribution: sipsinData.distribution, day_stem: sipsinData.dayStem }
+        sipsin_data: { dominant: sipsinData.dominant, distribution: sipsinData.distribution, day_stem: sipsinData.dayStem },
+        seeds: seedAnswer ? [seedAnswer] : []
       })
     });
     const data = await resp.json();

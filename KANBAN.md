@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-07-13
+**최종 수정**: 2026-07-16
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -31,7 +31,7 @@
 |------|---------|------|------|
 | 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
 | 콜드스타트 arm 게이트 개방 | Medium | **Leo** | 리셋 시점. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
-| **seed 온보딩 문항 프론트 배선** | **High** | reklcli | ▶ **다음 세션 착수 (Leo 지정 7/13)**. 커피 진입 1문항 자유입력 → submit seeds[]. 백엔드 준비됨(results._coldstart 저장). 개방 전 배선 |
+| ~~seed 온보딩 문항 프론트 배선~~ | ~~High~~ | reklcli | ✅ **완료 (7/16)** — 아래 DONE 참조 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
@@ -48,6 +48,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-16 | **seed 온보딩 프론트 배선** (Leo 지정 7/13): 커피 seed 1문항 자유입력 → submit `seeds:[]`. 서버 게이트 `/api/coldstart-config`(seed_collection, 기본 OFF) 노출 → quiz-engine.js가 플래그 ON일 때만 마지막 문항 후 seed 화면 **동적 주입**(HTML 쉘 20여개 무변경). OFF=완전 항등 엔드투엔드 확인(문항 미노출·`_coldstart` 미부착). 배정 규칙(랜덤 arm)은 서버 담당이라 프론트 미노출. 테스트 115개(+3). shared 엔진 vol4~20 커버, 레거시 vol2/vol3·종합설문은 별도 JS라 이후 확장 |
 | 2026-07-13 | **콜드스타트 커피 축 정직화 + 키워드 교정** (페플셀프 점검 Q1·Q3·Q6, Leo 승인): 쓴맛형/산미형 → 진한 블랙형/부드러운 스위트형(축 a=우유·단맛 유무). 핸드드립·산미=축 b 예약어 분리. seed 패밀리 계상+총 LR 캡 3배. pivot 변수화. 심볼 전수 동기, 테스트 112개 |
 | 2026-07-13 | **콜드스타트 랜덤 arm + seed 수집 + LLM 우도 인터페이스** (페플셀프 점검 Q2/Q3 반영, Leo "①리셋 전 필수" 선택): 리셋 순간부터 켜야 소급 가능한 2건 게이트형 구현. apply_random_arm(OFF=완전 항등) + config/coldstart_arm.json + submit 배선(seeds→results._coldstart) + lift 하네스 --arm random 무교란 필터 + build_llm_infer. 설계서 docs/COLDSTART_MEASUREMENT_DESIGN.md. 테스트 20개(전체 107). OFF/ON 엔드투엔드 스모크 확인. 커밋 push 완료 |
 | 2026-07-13 | **페플셀프 파일럿 A 점검** 의뢰·회신: 방향 충실, 실질 결함 2건(키워드 축 혼동·lift 셀렉션 바이어스). 리셋 전 필수=랜덤 arm+seed 수집(소급 불가). exchange/flavor-pilotA-review-v01.md |

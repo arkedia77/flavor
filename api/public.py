@@ -4,7 +4,7 @@ import os
 import json
 from flask import Blueprint, redirect, jsonify, render_template_string
 
-from config import DOMAIN_EMOJI
+from config import DOMAIN_EMOJI, COLDSTART_ARM
 from engines.personality import get_personality_type
 from db.repository import get_submission
 
@@ -28,6 +28,15 @@ def hub_saju():
 @public.route("/health")
 def health():
     return jsonify({"status": "ok", "service": "flavor-saju"})
+
+
+@public.route("/api/coldstart-config")
+def coldstart_config():
+    """콜드스타트 프론트 게이트 노출 (읽기 전용). seed_collection=false 기본 →
+    퀴즈 엔진이 seed 온보딩 문항을 안 띄움 = 현 동작과 완전 항등. 개방(=true)은
+    config/coldstart_arm.json Leo 승인 커밋 + 재시작으로만. 배정 규칙(랜덤 arm)은
+    서버 submit에서 처리하므로 여기선 노출하지 않는다(프론트는 seed 수집만 담당)."""
+    return jsonify({"seed_collection": bool(COLDSTART_ARM.get("seed_collection"))})
 
 
 @public.route("/survey")
