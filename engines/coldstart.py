@@ -173,6 +173,60 @@ def age_from_birth_year(birth_year: int, reference_year: int) -> int:
     return reference_year - birth_year
 
 
+# ── 커피 자아 카드 (표현층, 2026-07-16) ──────────────────────────────
+# Leo 원칙: 참여자도 재밌고 공유할 개인 컨텐츠가 형성돼야 함. seed를 추출형으로 걷지 말고
+# '커피 자아 캐릭터'로 되돌려준다. 측정용 predict_coffee_type(코호트+seed 베이지안)과 분리된
+# 순수 표현 매핑 — seed 키워드로 결정. 축 a(black/sweet) 위에 결(flavor)을 얹어 개인화.
+# **노출 배치(피드백 전/후·공유카드 한정)는 측정 오염 우려로 fableself 결정 대기** —
+# 이 함수는 내용만 제공하고 어디서 렌더할지는 배선 시 확정.
+_PERSONA_UNKNOWN_KW = ["잘 몰라", "잘몰라", "모르", "아무거나", "글쎄", "안 마", "안마", "없"]
+_DESSERT_KW = ["프라푸치노", "프라페", "휘핑", "휘프", "생크림", "크림", "디저트", "밀크쉐이크", "쉐이크"]
+
+# 자아 = (키, 이름, 이모지, 한 줄, 축 a 극). 키워드 우선순위대로 첫 매칭 채택.
+COFFEE_PERSONA = {
+    "acidity":   {"name": "산미 헌터",     "emoji": "🫐", "pole": "black",
+                  "oneliner": "커피 한 잔에서 과일 향까지 사냥하는 미식가"},
+    "black":     {"name": "블랙 미니멀리스트", "emoji": "☕", "pole": "black",
+                  "oneliner": "군더더기 없는 쓴맛에서 평온을 찾는 타입"},
+    "dessert":   {"name": "디저트 겸용파",  "emoji": "🎂", "pole": "sweet",
+                  "oneliner": "이게 커피야 디저트야? 둘 다임"},
+    "sweet":     {"name": "달달 로맨티스트", "emoji": "🍦", "pole": "sweet",
+                  "oneliner": "인생은 달아야지, 커피도 예외 없음"},
+    "sprout":    {"name": "커피 새싹",      "emoji": "🌱", "pole": "unknown",
+                  "oneliner": "아직 내 취향을 찾는 중 — 그것도 매력"},
+}
+
+
+def coffee_persona(seed_text: str) -> dict:
+    """seed 자연어 → 커피 자아 카드(표현층, 결정적). 측정 예측과 독립.
+
+    키워드 우선순위: 산미(축 b 어휘)→디저트→블랙→스위트→무정보(새싹).
+    무정보 seed도 긍정적으로 되돌려줘(새싹) 추출감 제거. 반환 dict에 공유 문구 포함.
+    """
+    t = str(seed_text or "").lower().strip()
+    key = "sprout"
+    if not t or any(kw in t for kw in _PERSONA_UNKNOWN_KW):
+        key = "sprout"
+    elif any(kw in t for kw in _ACIDITY_RESERVED):
+        key = "acidity"
+    elif any(kw in t for kw in _DESSERT_KW):
+        key = "dessert"
+    elif any(any(kw in t for kw in fam) for fam in _BLACK_FAMILIES):
+        key = "black"
+    elif any(any(kw in t for kw in fam) for fam in _SWEET_FAMILIES):
+        key = "sweet"
+
+    p = COFFEE_PERSONA[key]
+    return {
+        "key": key,
+        "name": p["name"],
+        "emoji": p["emoji"],
+        "oneliner": p["oneliner"],
+        "pole": p["pole"],
+        "share": f"내 커피 자아 = {p['name']} {p['emoji']}",
+    }
+
+
 # ── 랜덤 노출 arm (측정 무교란화) ────────────────────────────────────
 # fableself 점검 Q2: 노출이 비랜덤(9차원 규칙이 아이템 선택)이면 concordance lift가
 # 셀렉션 바이어스로 교란된다 — match 셀에 "시스템이 원래 잘 서빙하던 유저×아이템"이
