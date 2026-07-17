@@ -50,6 +50,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-17 | **seed 분류기 오프라인 평가 하네스** (`scripts/eval_seed_classifier.py`): 대표 한국어 커피 seed 라벨셋(축 a)으로 분류기 품질을 실데이터 전에 검증. **측정 결과**: 키워드 휴리스틱 = 어휘 내 20/20(100%)이나 **어휘 밖 자연어("우유 없이 쓴맛으로", "설탕 팍팍") 0/8(0%) — 전부 중립으로 흘림** = LLM 경로 존재 이유 정량화. `--llm`로 Claude 회복률 비교(크레덴셜 필요). 테스트 141개(+4) |
 | 2026-07-17 | **콜드스타트 LLM seed 우도 = Claude 래퍼 주입** (개방 체크리스트 항목 4): `scripts/llm_claude.build_claude_complete_fn()`(anthropic 지연 임포트, engines/ SDK 무의존 유지) → `measure_coldstart_lift.py --llm [--llm-model]`로 seed 우도를 키워드 휴리스틱→LLM 승격. 미지정 시 현행 항등. 테스트 137개(+3, 클라이언트 주입으로 네트워크 없이 검증). 자격증명=SDK 기본 해석, 서버 서빙 경로 무영향 |
 | 2026-07-16 | **커피 자아 리빌 카드 렌더 프리뷰**(개방 전 비주얼 점검): 실제 coffee_reveal×renderCoffeeReveal 템플릿 그대로 아티팩트 발행. 카피/톤/카드 다양성 결정(산미·디저트 페르소나 미노출, 공유문구 펀치라인 미포함) **Leo 검토 대기(내일, kee)** |
 | 2026-07-16 | **커피 자아 리빌 프론트+서버 배선 완료**: /api/feedback가 게이트 ON·커피일 때 응답에 reveal 실어 내림(served 아이템+seed→coffee_reveal), sendFeedback가 lock 후 리빌 카드 렌더(스냅샷·반전·공유). thumb 정정(🤷=중립, 👎만 반전). OFF=항등 엔드투엔드 확인. 테스트 134개 |

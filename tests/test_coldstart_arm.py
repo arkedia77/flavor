@@ -216,6 +216,40 @@ class TestClaudeCompleteFn(unittest.TestCase):
         self.assertEqual(out["sweet"], 0.5)
 
 
+class TestSeedClassifierEval(unittest.TestCase):
+    """seed 분류기 오프라인 평가 하네스(scripts/eval_seed_classifier)."""
+
+    def test_pole_from_likelihood(self):
+        from scripts.eval_seed_classifier import pole_from_likelihood
+        self.assertEqual(pole_from_likelihood(1.6, 1.0), "black")
+        self.assertEqual(pole_from_likelihood(1.0, 1.6), "sweet")
+        self.assertEqual(pole_from_likelihood(1.0, 1.0), "neutral")
+
+    def test_keyword_perfect_in_vocab(self):
+        """어휘 내 대표 seed는 키워드 휴리스틱이 완벽 분류(라벨셋 정합 가드)."""
+        from scripts.eval_seed_classifier import evaluate, keyword_infer, LABELED
+        r = evaluate(keyword_infer, LABELED)
+        self.assertEqual(r["accuracy"], 1.0)
+
+    def test_keyword_blind_on_oov(self):
+        """어휘 밖 자연어는 키워드가 놓친다(LLM 경로 존재 이유 = OOV 갭)."""
+        from scripts.eval_seed_classifier import evaluate, keyword_infer, LABELED, LABELED_OOV
+        oov = evaluate(keyword_infer, LABELED_OOV)
+        inv = evaluate(keyword_infer, LABELED)
+        self.assertLess(oov["accuracy"], inv["accuracy"])  # OOV에서 뚜렷이 하락
+
+    def test_eval_with_injected_llm(self):
+        """build_llm_infer(가짜)로 평가 경로가 완주하는지 — 네트워크 없이."""
+        from scripts.eval_seed_classifier import evaluate, LABELED_OOV
+        from scripts.llm_claude import build_claude_complete_fn
+        # 항상 black 강판정하는 가짜 → 하네스가 예외 없이 정확도 산출
+        fake = TestClaudeCompleteFn._FakeClient('{"black": 3.0, "sweet": 0.33}')
+        infer = build_llm_infer(build_claude_complete_fn(client=fake))
+        r = evaluate(infer, LABELED_OOV)
+        self.assertEqual(r["n"], len(LABELED_OOV))
+        self.assertIsInstance(r["accuracy"], float)
+
+
 class TestLoaderFailSafe(unittest.TestCase):
     def test_bad_frac_falls_back(self):
         import json
