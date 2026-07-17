@@ -163,6 +163,59 @@ class TestLLMInfer(unittest.TestCase):
         self.assertEqual(out["black"], 1.5)
 
 
+class TestClaudeCompleteFn(unittest.TestCase):
+    """Claude 래퍼(scripts/llm_claude) — 네트워크 없이 클라이언트 주입으로 검증."""
+
+    class _FakeBlock:
+        def __init__(self, text):
+            self.type = "text"
+            self.text = text
+
+    class _FakeResp:
+        def __init__(self, text):
+            self.content = [TestClaudeCompleteFn._FakeBlock(text)]
+
+    class _FakeClient:
+        """messages.create 호출 횟수를 세는 스텁."""
+        def __init__(self, text):
+            self._text = text
+            self.calls = 0
+            outer = self
+
+            class _Messages:
+                def create(self, **kwargs):
+                    outer.calls += 1
+                    outer.last_kwargs = kwargs
+                    return TestClaudeCompleteFn._FakeResp(outer._text)
+            self.messages = _Messages()
+
+    def test_extracts_text_and_memoizes(self):
+        from scripts.llm_claude import build_claude_complete_fn
+        fake = self._FakeClient('{"black": 2.2, "sweet": 0.5}')
+        complete = build_claude_complete_fn(client=fake)
+        self.assertEqual(complete("아메리카노"), '{"black": 2.2, "sweet": 0.5}')
+        complete("아메리카노")  # 동일 프롬프트 재호출
+        self.assertEqual(fake.calls, 1)  # 메모이즈 = API 1회만
+        complete("바닐라라떼")           # 다른 프롬프트
+        self.assertEqual(fake.calls, 2)
+
+    def test_passes_model_and_small_max_tokens(self):
+        from scripts.llm_claude import build_claude_complete_fn
+        fake = self._FakeClient("{}")
+        build_claude_complete_fn(model="claude-haiku-4-5", client=fake)("x")
+        self.assertEqual(fake.last_kwargs["model"], "claude-haiku-4-5")
+        self.assertLessEqual(fake.last_kwargs["max_tokens"], 128)
+
+    def test_composes_with_build_llm_infer(self):
+        """래퍼 → build_llm_infer 통합: 텍스트 완성 → 우도 파싱/클램프."""
+        from scripts.llm_claude import build_claude_complete_fn
+        fake = self._FakeClient('{"black": 2.4, "sweet": 0.5}')
+        infer = build_llm_infer(build_claude_complete_fn(client=fake))
+        out = infer("아메리카노 진하게")
+        self.assertEqual(out["black"], 2.4)
+        self.assertEqual(out["sweet"], 0.5)
+
+
 class TestLoaderFailSafe(unittest.TestCase):
     def test_bad_frac_falls_back(self):
         import json

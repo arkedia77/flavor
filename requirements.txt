@@ -2,3 +2,7 @@ flask>=3.0.0
 gunicorn>=21.0.0
 lunar_python>=1.3.0
 python-dotenv>=1.0.0
+
+# 선택(콜드스타트 LLM seed 우도 경로에만 필요 — scripts/llm_claude, measure_coldstart_lift --llm).
+# 서버(gunicorn) 서빙 경로는 미사용이라 배포에 불필요. 로컬에서만: pip install anthropic
+# anthropic>=0.40.0

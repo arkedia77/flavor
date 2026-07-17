@@ -108,7 +108,11 @@ fableself에 위임 → 결정:
 2. ~~온보딩 seed 문항 프론트 배선(커피 진입 1문항).~~ ✅ 완료 (2026-07-16) — 게이트 ON만 남음.
 3. **클라이언트 렌더가 `results`의 `_`접두 메타키(`_arm`, `_coldstart`)를 건너뛰는지 확인** —
    OFF 상태에선 안 붙어 현재 무영향이나, 개방 시 도메인 카드 렌더가 메타키를 무시해야 함.
-4. (선택) `build_llm_infer`에 Claude 래퍼 주입 — seed 우도를 키워드→LLM으로 승격.
+4. ~~(선택) `build_llm_infer`에 Claude 래퍼 주입 — seed 우도를 키워드→LLM으로 승격.~~
+   ✅ **구현 완료 (2026-07-17)** — `scripts/llm_claude.build_claude_complete_fn()`
+   (anthropic SDK 지연 임포트, engines/ 무의존 유지). 하네스에서 활성화:
+   `measure_coldstart_lift.py --llm [--llm-model claude-haiku-4-5]`. 미지정 시 키워드 휴리스틱(현행).
+   자격증명은 SDK 기본 해석(ANTHROPIC_API_KEY 또는 `ant auth` 프로필). anthropic 미설치 서버엔 무영향.
 5. 수집 후: `measure_coldstart_lift.py --db <path> --arm random` → 무교란 lift. 셀당 n≥30 전엔
    수치 보고 보류(하네스가 n<30 경고). lift 확정 시 추천 교체 게이트 별도 개방(Leo 승인).
 

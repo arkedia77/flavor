@@ -33,10 +33,11 @@ from engines.recommend import THUMB_VALUE  # noqa: F401 (thumb 해석 일관성 
 COFFEE_DOMAIN = "커피"
 
 
-def compute_lift(records: list) -> dict:
+def compute_lift(records: list, llm_infer=None) -> dict:
     """records: [{age, gender, seeds?, shown_type('black'|'sweet'), positive(bool)}]
 
     shown_type이 black/sweet이 아닌 것(mixed/unknown)은 제외.
+    llm_infer: seed→우도 콜러블(선택). 미지정 시 오프라인 키워드 휴리스틱(현행).
     """
     match_pos = match_n = mis_pos = mis_n = pos_total = 0
     used = 0
@@ -45,7 +46,7 @@ def compute_lift(records: list) -> dict:
         if shown not in ("black", "sweet"):
             continue
         pred = predict_coffee_type(r.get("age"), r.get("gender"),
-                                   r.get("seeds"))["type"]
+                                   r.get("seeds"), llm_infer=llm_infer)["type"]
         pos = 1 if r.get("positive") else 0
         used += 1
         pos_total += pos
@@ -156,6 +157,11 @@ def main():
     ap.add_argument("--reference-year", type=int, default=datetime.now().year)
     ap.add_argument("--arm", choices=["random", "rule", "all"], default="all",
                     help="노출 arm 필터. 무교란 lift 추정=random (랜덤 arm 게이트 개방 후)")
+    ap.add_argument("--llm", action="store_true",
+                    help="seed 우도를 키워드 휴리스틱 대신 Claude로 추론(개방 체크리스트 항목 4). "
+                         "anthropic SDK + 자격증명 필요(ANTHROPIC_API_KEY 또는 ant 프로필)")
+    ap.add_argument("--llm-model", type=str, default=None,
+                    help="--llm 모델 ID(기본 opus-4-8). 대량 seed 분류엔 claude-haiku-4-5가 경제적")
     args = ap.parse_args()
 
     if args.self_test or not (args.db or os.environ.get("FLAVOR_ADMIN_TOKEN") or args.token):
@@ -172,8 +178,16 @@ def main():
     else:
         submissions, feedbacks = fetch_from_admin_api(args.url, args.token, since=None)
 
+    llm_infer = None
+    if args.llm:
+        from engines.coldstart import build_llm_infer
+        from scripts.llm_claude import build_claude_complete_fn, DEFAULT_LLM_MODEL
+        model = args.llm_model or DEFAULT_LLM_MODEL
+        llm_infer = build_llm_infer(build_claude_complete_fn(model=model))
+        print(f"[i] seed 우도 = Claude({model}) 추론 (미지정 seed는 코호트만)")
+
     records = records_from_stored(submissions, feedbacks, args.reference_year, arm=args.arm)
-    result = compute_lift(records)
+    result = compute_lift(records, llm_infer=llm_infer)
     n_random = sum(1 for r in records_from_stored(submissions, feedbacks, args.reference_year, arm="random"))
     print(json.dumps({"reference_year": args.reference_year, "arm": args.arm,
                       "n_coffee_feedback": sum(1 for f in feedbacks if f.get("domain") == COFFEE_DOMAIN),

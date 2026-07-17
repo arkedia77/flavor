@@ -33,6 +33,7 @@
 | 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
 | 콜드스타트 arm 게이트 개방 | Medium | **Leo** | 리셋 시점. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
 | ~~seed 온보딩 문항 프론트 배선~~ | ~~High~~ | reklcli | ✅ **완료 (7/16)** — 아래 DONE 참조 |
+| 커피 자아 리빌 카피/톤 결정 반영 | Low | Leo(kee)→reklcli | 프리뷰 아티팩트 검토 후. ① 카드 다양성(산미·디저트 리빌 반영 여부) ② 공유문구 펀치라인 포함 여부 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
@@ -49,6 +50,8 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-17 | **콜드스타트 LLM seed 우도 = Claude 래퍼 주입** (개방 체크리스트 항목 4): `scripts/llm_claude.build_claude_complete_fn()`(anthropic 지연 임포트, engines/ SDK 무의존 유지) → `measure_coldstart_lift.py --llm [--llm-model]`로 seed 우도를 키워드 휴리스틱→LLM 승격. 미지정 시 현행 항등. 테스트 137개(+3, 클라이언트 주입으로 네트워크 없이 검증). 자격증명=SDK 기본 해석, 서버 서빙 경로 무영향 |
+| 2026-07-16 | **커피 자아 리빌 카드 렌더 프리뷰**(개방 전 비주얼 점검): 실제 coffee_reveal×renderCoffeeReveal 템플릿 그대로 아티팩트 발행. 카피/톤/카드 다양성 결정(산미·디저트 페르소나 미노출, 공유문구 펀치라인 미포함) **Leo 검토 대기(내일, kee)** |
 | 2026-07-16 | **커피 자아 리빌 프론트+서버 배선 완료**: /api/feedback가 게이트 ON·커피일 때 응답에 reveal 실어 내림(served 아이템+seed→coffee_reveal), sendFeedback가 lock 후 리빌 카드 렌더(스냅샷·반전·공유). thumb 정정(🤷=중립, 👎만 반전). OFF=항등 엔드투엔드 확인. 테스트 134개 |
 | 2026-07-16 | **커피 자아 카드 로직층 + fableself 배치 결정**: Leo 재미·공유 원칙 → seed를 캐릭터로 되돌림. fableself(Leo 위임) 결정=예측 라벨 노출은 랜덤 arm으로도 못 고치는 측정 오염 → 카드는 측정창 종료+피드백 lock 후 '피드백 산출물'로 리빌. `coffee_reveal()`(반응 주재료, said 어긋나면 반전카드 '겉은블랙 속은스위트') + `coffee_persona()`. 테스트 130개. 프론트 배선은 다음 |
 | 2026-07-16 | **seed 온보딩 프론트 배선** (Leo 지정 7/13): 커피 seed 1문항 자유입력 → submit `seeds:[]`. 서버 게이트 `/api/coldstart-config`(seed_collection, 기본 OFF) 노출 → quiz-engine.js가 플래그 ON일 때만 마지막 문항 후 seed 화면 **동적 주입**(HTML 쉘 20여개 무변경). OFF=완전 항등 엔드투엔드 확인(문항 미노출·`_coldstart` 미부착). 배정 규칙(랜덤 arm)은 서버 담당이라 프론트 미노출. 테스트 115개(+3). shared 엔진 vol4~20 커버, 레거시 vol2/vol3·종합설문은 별도 JS라 이후 확장 |
