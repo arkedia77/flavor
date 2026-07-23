@@ -685,6 +685,17 @@ let sipsinData = {};
 let resultShareUrl = '';
 let _submissionId = null;
 
+/* ── 콜드스타트 seed 온보딩 (파일럿 A) — 서버 게이트 seed_collection OFF면 미노출 = 현 흐름 항등 ── */
+let seedAnswer = null;
+let coldstartCfg = { seed_collection: false };
+const SEED_PROMPT = '☕ 마지막 하나! 커피는 보통 뭐로 드세요?';
+const SEED_SUB = '한 줄이면 돼요 (예: 아메리카노 진하게 / 바닐라라떼 / 커피 잘 몰라요)';
+const SEED_ACCENT = '#c084fc';
+fetch(`${API_BASE}/api/coldstart-config`)
+  .then(r => r.ok ? r.json() : null)
+  .then(cfg => { if (cfg && cfg.seed_collection) coldstartCfg.seed_collection = true; })
+  .catch(() => {});
+
 /* ── 초기화 ── */
 (function() {
   const yearSel = document.getElementById('birth_year');
@@ -864,8 +875,10 @@ function choose(side) {
 
   if (currentQ < QUESTIONS.length) {
     setTimeout(() => showQuestion(currentQ), 220);
+  } else if (coldstartCfg.seed_collection) {
+    setTimeout(showSeedScreen, 300);  // seed 게이트 ON: 커피 seed 1문항 후 제출
   } else {
-    setTimeout(submitAnswers, 300);
+    setTimeout(submitAnswers, 300);   // OFF(기본): 바로 제출 = 현 흐름 항등
   }
 }
 
@@ -955,6 +968,44 @@ function getTraits(innate, actual) {
   });
 }
 
+/* ── 콜드스타트 seed 온보딩 화면 (동적 주입, 게이트 ON일 때만 호출) ── */
+function showSeedScreen() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  let el = document.getElementById('screen-seed');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'screen-seed';
+    el.style.cssText = 'display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px 24px;';
+    el.innerHTML =
+      '<div style="font-size:1.35rem; font-weight:700; margin-bottom:10px; line-height:1.4;">' + SEED_PROMPT + '</div>' +
+      '<div style="opacity:.65; font-size:.9rem; margin-bottom:24px;">' + SEED_SUB + '</div>' +
+      '<input id="seed-input" type="text" maxlength="60" autocomplete="off" ' +
+      'style="width:100%; max-width:340px; padding:14px 16px; font-size:1rem; border-radius:12px; ' +
+      'border:1.5px solid ' + SEED_ACCENT + '; background:rgba(255,255,255,.06); color:inherit; ' +
+      'text-align:center; margin-bottom:20px;" placeholder="여기에 한 줄" />' +
+      '<button id="seed-next" style="width:100%; max-width:340px; padding:14px; font-size:1rem; font-weight:700; ' +
+      'border:none; border-radius:12px; background:' + SEED_ACCENT + '; color:#fff; cursor:pointer;">결과 보기</button>' +
+      '<button id="seed-skip" style="margin-top:14px; background:none; border:none; color:inherit; opacity:.5; ' +
+      'font-size:.85rem; cursor:pointer; text-decoration:underline;">건너뛰기</button>';
+    document.body.appendChild(el);
+    const input = el.querySelector('#seed-input');
+    el.querySelector('#seed-next').addEventListener('click', () => confirmSeed(input.value));
+    el.querySelector('#seed-skip').addEventListener('click', () => confirmSeed(''));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') confirmSeed(input.value); });
+  }
+  el.style.display = 'flex';
+  const inp = el.querySelector('#seed-input');
+  if (inp) setTimeout(() => inp.focus(), 100);
+}
+
+function confirmSeed(text) {
+  const t = (text || '').trim();
+  seedAnswer = t.length ? t : null;
+  const el = document.getElementById('screen-seed');
+  if (el) el.style.display = 'none';
+  submitAnswers();
+}
+
 async function submitAnswers() {
   document.getElementById('screen-quiz').style.display = 'none';
   document.getElementById('screen-loading').style.display = 'flex';
@@ -967,6 +1018,7 @@ async function submitAnswers() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...userData,
+        seeds: seedAnswer ? [seedAnswer] : [],
         quiz_type: 'vol3_food',
         ab_answers: answers,
         survey: actualProfile,
