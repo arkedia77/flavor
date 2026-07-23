@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-07-16
+**최종 수정**: 2026-07-23
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -9,8 +9,8 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
+| **flavor.arkedia.work DNS CNAME repoint** | **High** | **Leo** | 이관 95% 완료(admin 7/23). 유일 잔여: CF 대시보드에서 CNAME → `78dc937e-7d00-4d9f-9671-27d76b6813f3.cfargotunnel.com`. admin은 origin cert 부재로 불가. repoint 즉시 200 |
 | 커피 자아 리빌 카피/UX 다듬기 | Low | Leo→reklcli | 배선 완료. 반전 카드 톤·캐릭터 카피·리빌 카드 비주얼은 개방 전 Leo 취향 반영 여지 |
-| flavor 서비스 레오서버 이관 | High | **admin** | Leo 결정 (7/11, mukl 재시작 대신 이관). 요청 발신 admin_flavor_20260711_173956 — **7/12 무회신 확인, 서버 여전히 502. Leo 보고됨** |
 
 > **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
 > 순서: 이론 검증 → 플랫폼(서버/카카오 로그인) → 유통. 배포·유통은 검증 완료까지 보류.
@@ -22,7 +22,7 @@
 
 | 항목 | 담당 | 사유 |
 |------|------|------|
-| Stage 1 검증 리포트 (실데이터) | reklcli | 서버 502 — 레오서버 이관(admin) 완료 대기 |
+| Stage 1 검증 리포트 (실데이터) | reklcli | leoserver 배포 완료(로컬 200), **DNS CNAME repoint(Leo) 1건**만 남음 → 해소 즉시 언블록 |
 
 ---
 
@@ -50,6 +50,8 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-23 | **flavor leoserver 이관 배포 (admin 집행, 95%)**: DB백업(.bak 보존)+신규 빈 DB 0리셋+systemd(재부팅 생존)+CF ingress. 로컬 /health·/=200 실측. 유일 잔여=DNS CNAME repoint(Leo 게이트, 위 IN PROGRESS). 이관 재요청 admin_flavor_20260723_110229, 6분 만에 회신 |
+| 2026-07-23 | **레거시 vol2/vol3·종합설문 seed 온보딩 배선**: shared vol4~20에만 있던 커피 seed 온보딩을 인라인 JS 5파일(romance_v2/food ±saju, survey.html)에 이식 → 콜드스타트 수집 커버리지 완결. 게이트 OFF=항등(서버 seeds 일반처리). node 문법검증 5파일 통과, 141 테스트 무회귀 |
 | 2026-07-17 | **키워드 seed 패밀리 자연어 확장** (Leo 승인, 엔진): OOV 회복 위해 black에 '우유 없이'류, sweet에 설탕·생크림·부드럽·달게·믹스·'우유 많이'류 패밀리 추가. **OOV 0%→87.5%(7/8), in-vocab 100% 유지(무회귀)**. bare '쓴'은 부정("안 쓴") 충돌로 제외 = 정직한 LLM 영역. 패밀리당 1회 계상+총 LR 캡 3배(fableself Q3) 유지. 테스트 141개 |
 | 2026-07-17 | **seed 분류기 오프라인 평가 하네스** (`scripts/eval_seed_classifier.py`): 대표 한국어 커피 seed 라벨셋(축 a)으로 분류기 품질을 실데이터 전에 검증. **측정 결과**: 키워드 휴리스틱 = 어휘 내 20/20(100%)이나 **어휘 밖 자연어("우유 없이 쓴맛으로", "설탕 팍팍") 0/8(0%) — 전부 중립으로 흘림** = LLM 경로 존재 이유 정량화. `--llm`로 Claude 회복률 비교(크레덴셜 필요). 테스트 141개(+4) |
 | 2026-07-17 | **콜드스타트 LLM seed 우도 = Claude 래퍼 주입** (개방 체크리스트 항목 4): `scripts/llm_claude.build_claude_complete_fn()`(anthropic 지연 임포트, engines/ SDK 무의존 유지) → `measure_coldstart_lift.py --llm [--llm-model]`로 seed 우도를 키워드 휴리스틱→LLM 승격. 미지정 시 현행 항등. 테스트 137개(+3, 클라이언트 주입으로 네트워크 없이 검증). 자격증명=SDK 기본 해석, 서버 서빙 경로 무영향 |
