@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-07-23
+**최종 수정**: 2026-07-29
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -9,7 +9,7 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| **flavor.arkedia.work DNS CNAME repoint** | **High** | **Leo** | 이관 95% 완료(admin 7/23). 유일 잔여: CF 대시보드에서 CNAME → `78dc937e-7d00-4d9f-9671-27d76b6813f3.cfargotunnel.com`. admin은 origin cert 부재로 불가. repoint 즉시 200 |
+| **flavor.arkedia.work DNS CNAME repoint** | **High** | **Leo→admin** | 이관 95%(admin 7/23). **7/29 경로확정: Leo가 옵션 A(CF API 토큰 Zone:DNS:Edit) 선택** → admin API 집행. flavor→admin 집행요청 발신(admin_flavor_20260729_205058). **Leo 액션 = arkedia.work 존 Zone:DNS:Edit 토큰 발급→bootstrap 경로 전달**. 그 후 admin이 CNAME→`78dc937e-7d00-4d9f-9671-27d76b6813f3.cfargotunnel.com` update→200. 7/29 20:50 실측 여전히 502 |
 | 커피 자아 리빌 카피/UX 다듬기 | Low | Leo→reklcli | 배선 완료. 반전 카드 톤·캐릭터 카피·리빌 카드 비주얼은 개방 전 Leo 취향 반영 여지 |
 
 > **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
