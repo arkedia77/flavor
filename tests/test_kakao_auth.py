@@ -175,5 +175,26 @@ class TestLoginOn(_DBTest):
             self.assertNotIn("evil.com", resp.headers["Location"])
 
 
+class TestSessionCookieFlags(_DBTest):
+    """세션 쿠키 보안 플래그 — 로그인 개방 전 고정.
+
+    Secure는 시크릿이 주입된 운영(=로그인 ON)에서만 켜진다. 로컬 http 개발에서
+    켜지면 세션이 아예 안 붙어 콜백이 깨지므로 조건부여야 한다.
+    """
+
+    def test_flags_off_when_no_secret(self):
+        with mock.patch("app.FLASK_SECRET_KEY", ""):
+            app = create_app()
+        self.assertTrue(app.config["SESSION_COOKIE_HTTPONLY"])
+        self.assertEqual(app.config["SESSION_COOKIE_SAMESITE"], "Lax")
+        self.assertFalse(app.config["SESSION_COOKIE_SECURE"])
+
+    def test_secure_on_when_secret_present(self):
+        with mock.patch("app.FLASK_SECRET_KEY", "fixed-secret"):
+            app = create_app()
+        self.assertTrue(app.config["SESSION_COOKIE_SECURE"])
+        self.assertEqual(app.secret_key, "fixed-secret")
+
+
 if __name__ == "__main__":
     unittest.main()

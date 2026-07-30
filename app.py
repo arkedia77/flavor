@@ -29,6 +29,15 @@ def create_app():
     # 미설정(로그인 OFF) 시 세션은 쓰이지 않으므로 고정 폴백 상수로 둔다.
     app.secret_key = FLASK_SECRET_KEY or "flavor-login-disabled-no-session-secret"
 
+    # 세션 쿠키 보안. SameSite=Lax = 카카오 콜백(top-level GET 리다이렉트)은 통과하되
+    # 크로스사이트 POST/서브리소스에는 안 실림. Secure는 시크릿이 주입된 경우(=운영,
+    # 로그인 ON)에만 켠다 — 로컬 http 개발에서 켜면 세션이 아예 안 붙기 때문.
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=bool(FLASK_SECRET_KEY),
+    )
+
     init_db()
 
     app.register_blueprint(public)
