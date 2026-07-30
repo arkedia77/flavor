@@ -2,6 +2,8 @@
 
 import os
 import json
+from html import escape as html_escape
+
 from flask import Blueprint, redirect, jsonify, render_template_string
 
 from config import DOMAIN_EMOJI, COLDSTART_ARM
@@ -9,6 +11,19 @@ from engines.personality import get_personality_type
 from db.repository import get_submission
 
 public = Blueprint('public', __name__)
+
+
+def js_literal(value):
+    """파이썬 문자열 → <script> 안에 안전하게 넣을 수 있는 JS 문자열 리터럴.
+
+    json.dumps만으로는 부족하다 — '<'를 그대로 두기 때문에 닉네임에 '</script>'가
+    들어오면 스크립트 블록을 탈출해 XSS가 된다. HTML 파서가 먼저 보는 문자들을
+    유니코드 이스케이프로 바꿔 <script> 문맥에서도 안전하게 만든다.
+    """
+    return (json.dumps(value)
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e")
+            .replace("&", "\\u0026"))
 
 
 @public.route("/")
@@ -28,6 +43,12 @@ def hub_saju():
 @public.route("/health")
 def health():
     return jsonify({"status": "ok", "service": "flavor-saju"})
+
+
+@public.route("/favicon.ico")
+def favicon():
+    """브라우저가 무조건 때리는 경로. 없으면 전 페이지 콘솔에 404가 찍힌다."""
+    return redirect("/static/favicon.ico", code=301)
 
 
 @public.route("/api/coldstart-config")
@@ -379,6 +400,15 @@ def result_page(result_id):
     ptagline  = pt["tagline"]
     pdetail   = pt["detail"]
 
+    # name은 유저가 직접 입력한 닉네임이라 그대로 템플릿에 박으면 안 된다.
+    # HTML 문맥은 escape(따옴표 포함 — og:title 등 속성값에도 들어간다),
+    # JS 문자열 문맥은 json.dumps로 따옴표째 생성해 인젝션·구문깨짐을 함께 막는다.
+    name_raw = name or ""
+    name = html_escape(name_raw, quote=True)
+    name_js = js_literal(name_raw)
+    ptype_js = js_literal(ptype)
+    ptagline_js = js_literal(ptagline)
+
     cards_html = ""
     for domain, rec in results.items():
         emoji = DOMAIN_EMOJI.get(domain, "✨")
@@ -401,9 +431,22 @@ def result_page(result_id):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="flavor">
+<meta property="og:locale" content="ko_KR">
 <meta property="og:title" content="{name}의 취향 유형: {ptype} {pemoji}">
 <meta property="og:description" content="{ptagline} — 생년월일 × 27문항 취향 분석">
 <meta property="og:url" content="{share_url}">
+<meta property="og:image" content="https://flavor.arkedia.work/static/og_dna.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{name}의 취향 유형: {ptype} {pemoji}">
+<meta name="twitter:description" content="{ptagline} — 생년월일 × 27문항 취향 분석">
+<meta name="twitter:image" content="https://flavor.arkedia.work/static/og_dna.png">
+<meta name="description" content="{ptagline} — 생년월일 × 27문항 취향 분석">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <title>{name}의 취향 유형: {ptype}</title>
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -629,6 +672,17 @@ body {{
 </div>
 <script>
 function copyLink() {{
+  // 모바일은 네이티브 공유 시트(카톡 등)를 우선. 링크 복사는 데스크톱 폴백.
+  if (navigator.share) {{
+    navigator.share({{
+      title: {name_js} + '의 취향 유형: ' + {ptype_js},
+      text: {ptagline_js},
+      url: '{share_url}'
+    }}).catch(() => {{}});
+    return;
+  }}
+  const fallback = () => prompt('아래 링크를 복사하세요', '{share_url}');
+  if (!navigator.clipboard) return fallback();
   navigator.clipboard.writeText('{share_url}').then(() => {{
     const btn = document.getElementById('btn-share');
     btn.textContent = '✅ 링크 복사됐어요! 친구에게 보내세요';
@@ -637,9 +691,7 @@ function copyLink() {{
       btn.textContent = '🔗 이 결과 공유하기';
       btn.classList.remove('copied');
     }}, 2500);
-  }}).catch(() => {{
-    prompt('아래 링크를 복사하세요', '{share_url}');
-  }});
+  }}).catch(fallback);
 }}
 </script>
 </body>

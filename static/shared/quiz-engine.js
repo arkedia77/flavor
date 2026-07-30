@@ -743,12 +743,32 @@ function updateFlavorProfile(quizType, innate, actual) {
 function copyResult() {
   const C = window.QUIZ_CONFIG;
   const shareUrl = `${API_BASE}${C.result.shareUrl || '/'}`;
-  navigator.clipboard.writeText(shareUrl).then(() => {
+
+  // 모바일이 주 유입이므로 네이티브 공유 시트(카톡·인스타 등)를 우선 쓴다.
+  // 링크 복사는 데스크톱/미지원 브라우저 폴백.
+  if (navigator.share) {
+    navigator.share({
+      title: C.result.shareTitle || document.title,
+      text: C.result.shareText || '',
+      url: shareUrl
+    }).catch(() => {});                 // 사용자가 취소하면 조용히 종료
+    return;
+  }
+
+  const done = () => {
     const btn = document.querySelector('.btn-primary');
+    if (!btn) return;
     const originalText = btn.textContent;
     btn.textContent = C.result.shareConfirm || '✅ 복사 완료! 보내서 도발해 🔥';
     setTimeout(() => { btn.textContent = originalText; }, 2500);
-  }).catch(() => { prompt('아래 링크를 복사하세요', shareUrl); });
+  };
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareUrl).then(done)
+      .catch(() => { prompt('아래 링크를 복사하세요', shareUrl); });
+  } else {
+    prompt('아래 링크를 복사하세요', shareUrl);
+  }
 }
 
 /* ═══ DOM Ready ═══ */
