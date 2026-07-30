@@ -308,6 +308,9 @@ body::before {
     <div class="hero-sub">🔮 사주팔자가 아는<br>내 진짜 취향, 맞나 까보자ㅋ</div>
   </div>
 
+  <!-- 카카오 로그인 (활성화 시에만 노출 — OFF면 완전히 숨김 = 현 UI 항등) -->
+  <div id="login-row" style="display:none;"></div>
+
   <div class="profile-card" id="profile-card"></div>
 
   <!-- Season Tabs -->
@@ -525,6 +528,23 @@ function prefillForm(profile) {
 function selectGender(btn) { document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }
 function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || null; } catch(e) { return null; } }
 
+// 카카오 로그인 상태 표시. enabled=false면 아무것도 안 함 = 현 UI 완전 항등.
+function renderLogin() {
+  fetch('/api/me').then(r => r.json()).then(m => {
+    if (!m || !m.enabled) return;                 // 로그인 OFF → 숨김 유지
+    const row = document.getElementById('login-row');
+    const next = encodeURIComponent(location.pathname);
+    if (m.logged_in) {
+      row.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:0.85rem;">
+        <span style="color:#f59e0b;font-weight:700;">🗨️ ${m.nickname || '카카오'} 님 로그인됨</span>
+        <a href="/auth/logout?next=${next}" style="color:#9988bb;text-decoration:none;font-size:0.78rem;">로그아웃</a></div>`;
+    } else {
+      row.innerHTML = `<a href="/auth/kakao/login?next=${next}" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#FEE500;color:#191600;border-radius:12px;padding:12px;margin-bottom:12px;font-weight:800;text-decoration:none;font-size:0.9rem;">🗨️ 카카오로 로그인하고 기록 저장</a>`;
+    }
+    row.style.display = 'block';
+  }).catch(() => {});                              // 실패 시 숨김 유지(항등)
+}
+
 function saveProfile() {
   const name = document.getElementById('pf-name').value.trim();
   const year = document.getElementById('pf-year').value;
@@ -578,6 +598,7 @@ function updateBadges(profile) {
 renderQuizCards(S1_QUIZZES, 'list-s1');
 renderQuizCards(S2_QUIZZES, 'list-s2');
 renderProfile();
+renderLogin();
 </script>
 </body>
 </html>

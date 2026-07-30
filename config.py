@@ -108,6 +108,23 @@ def load_coldstart_arm(path: str = None) -> dict:
 
 COLDSTART_ARM = load_coldstart_arm()
 
+# ── 카카오 로그인 (선택적 유저 식별) ──
+# 목적: localStorage(이름+생년월일) 익명 식별 → 서버 세션 기반 안정 식별(중복제거).
+#       person n_persons 신뢰도 확립 = Stage 2 게이트/유통의 전제.
+# 사주는 생년월일'시'가 필요한데 카카오는 시간 미제공 → 카카오 = 신원/dedup 전용,
+#       생년월일 입력은 앱 내 유지(최소 동의범위, 리뷰·마찰 최소).
+# fail-safe: KAKAO_REST_API_KEY 미설정 = 로그인 완전 OFF. 라우트는 503, 프론트 버튼 숨김,
+#       익명 흐름과 완전 항등. 활성화 = Kakao Developers 앱 등록 후 env 3종 주입 + 재배포
+#       (사주/학습/콜드스타트 게이트와 동일한 '배선 완료·크레덴셜로 개방' 철학).
+KAKAO_REST_API_KEY = os.environ.get("KAKAO_REST_API_KEY", "")
+KAKAO_REDIRECT_URI = os.environ.get(
+    "KAKAO_REDIRECT_URI", "https://flavor.arkedia.work/auth/kakao/callback")
+FLASK_SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "")
+# 로그인은 REST 키 + 안정적 세션 시크릿이 둘 다 있어야 켜진다.
+# (gunicorn 다중 워커가 세션 쿠키를 공유하려면 시크릿이 워커 간 동일·재시작 간 고정이어야 함.
+#  os.urandom 폴백은 워커마다 달라 로그인이 깨지므로 금지 — 시크릿 없으면 로그인 OFF로 둔다.)
+KAKAO_LOGIN_ENABLED = bool(KAKAO_REST_API_KEY) and bool(FLASK_SECRET_KEY)
+
 # 추천 경계값 상수
 HIGH = 0.65
 LOW = 0.35

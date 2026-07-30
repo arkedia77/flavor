@@ -10,7 +10,7 @@ import json
 import random
 import uuid
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 
 from config import ENGINE_VERSION, SAJU_GATE, COLDSTART_ARM
 from engines.survey import raw_to_survey
@@ -150,6 +150,9 @@ def submit():
         if any_weight_open(applied_w):
             profile_version += f"_g{SAJU_GATE.get('gate_version')}"
 
+        # 로그인 상태면 서버 user 연결(익명이면 None = 기존 동작 항등)
+        user_id = session.get("user_id")
+
         # DB 저장 (elements_json에 persona 저장, 하위호환 / saju_json에 피처 벡터)
         save_submission(
             result_id, name, birth_date, birth_time, gender,
@@ -160,6 +163,7 @@ def submit():
             profile_version,
             datetime.now().isoformat(),
             saju=saju_record,
+            user_id=user_id,
         )
 
         total = get_submission_count()

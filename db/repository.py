@@ -6,15 +6,15 @@ from db.connection import get_db_connection
 
 def save_submission(result_id, name, birth_date, birth_time, gender,
                     elements, raw_answers, survey, profile, results, profile_version, created_at,
-                    saju=None):
+                    saju=None, user_id=None):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("""
         INSERT INTO submissions (id, name, birth_date, birth_time, gender,
                                  elements_json, raw_survey_json, survey_json,
                                  profile_json, results_json, profile_version, created_at,
-                                 saju_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 saju_json, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         result_id, name, birth_date, birth_time, gender,
         json.dumps(elements, ensure_ascii=False),
@@ -24,10 +24,52 @@ def save_submission(result_id, name, birth_date, birth_time, gender,
         json.dumps(results, ensure_ascii=False),
         profile_version,
         created_at,
-        json.dumps(saju, ensure_ascii=False) if saju else None
+        json.dumps(saju, ensure_ascii=False) if saju else None,
+        user_id
     ))
     conn.commit()
     conn.close()
+
+
+def upsert_user_by_kakao(kakao_id, nickname=None, email=None):
+    """카카오 로그인 유저 upsert → user_id(TEXT) 반환.
+
+    kakao_id로 기존 유저 조회, 없으면 신규 생성(uuid). nickname/email은 로그인마다 갱신.
+    person 식별의 안정 키 = kakao_id (기기·localStorage 무관하게 동일 유저).
+    """
+    import uuid
+    from datetime import datetime
+    kakao_id = str(kakao_id)
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id FROM users WHERE kakao_id=?", (kakao_id,))
+    row = c.fetchone()
+    if row:
+        user_id = row[0]
+        c.execute("UPDATE users SET nickname=?, email=? WHERE id=?",
+                  (nickname, email, user_id))
+    else:
+        user_id = str(uuid.uuid4())
+        c.execute("INSERT INTO users (id, kakao_id, nickname, email, created_at) VALUES (?,?,?,?,?)",
+                  (user_id, kakao_id, nickname, email, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return user_id
+
+
+def get_user(user_id):
+    """user_id로 유저 조회 → dict 또는 None."""
+    if not user_id:
+        return None
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, kakao_id, nickname, email, created_at FROM users WHERE id=?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {"id": row[0], "kakao_id": row[1], "nickname": row[2],
+            "email": row[3], "created_at": row[4]}
 
 
 def get_submission(result_id):

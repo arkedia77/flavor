@@ -31,11 +31,22 @@ def init_db():
         ("raw_survey_json", "TEXT"),
         ("profile_version", "TEXT"),
         ("saju_json", "TEXT"),
+        ("user_id", "TEXT"),          # 카카오 로그인 시 서버 user 연결 (익명이면 NULL)
     ]:
         try:
             c.execute(f"ALTER TABLE submissions ADD COLUMN {col} {col_type}")
         except Exception:
             pass
+    # 카카오 로그인 유저 (익명 흐름은 이 테이블을 안 씀 — 로그인 시에만 upsert)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            kakao_id TEXT UNIQUE,
+            nickname TEXT,
+            email TEXT,
+            created_at TEXT
+        )
+    """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS feedbacks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
