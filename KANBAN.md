@@ -39,7 +39,7 @@
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
 | v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
 | DB 리셋 실행 | High | flavor2 | Leo 확정 (7/10). 유통 재시작 직전에 실행 |
-| 카카오 로그인 | High | reklcli+Leo | 유저 식별 확립 (person n 신뢰도) — 유통 전 필수 |
+| 카카오 로그인 **활성화** | High | **Leo** | 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Leo가 Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
 | 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
 | Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
 | Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후, 하네스 Ridge CV 활성화 |
@@ -50,6 +50,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-07-30 | **카카오 로그인 배선** (fail-safe OFF): users 테이블+submissions.user_id(additive) + api/auth.py 인가코드 플로우(/auth/kakao/login·/callback·/logout·/api/me, stdlib urllib=무의존, state CSRF+오픈리다이렉트 차단) + 세션 user_id 부착(익명=None 항등) + 허브 로그인 버튼(enabled일 때만). **키 미설정=익명 흐름 완전 항등**(OFF/ON 런타임 스모크 확인). 테스트 +11(전체 152). 활성화=Kakao앱 등록+env 3종+재배포(Leo) |
 | 2026-07-29 | **★flavor.arkedia.work DNS repoint 완료 — 이관 100% 종료**: admin이 본인 보유 CF 토큰으로 직접 집행(Leo 토큰 발급 불요였음). CNAME 982b1f34(구 mukl)→78dc937e(leoserver) update, 502→200. flavor 재검증: 퀴즈 라우트 6종+제출 스모크(id 120fa77f→/result 200) **전건 200 엔드투엔드 확인**. 부수: mukl stale ingress(→8082, 502 직접원인) 주석 처리(cloudflared 미재기동, 타 서비스 15종 보호). 회신 admin_flavor_20260729_224800 |
 | 2026-07-23 | **flavor leoserver 이관 배포 (admin 집행, 95%)**: DB백업(.bak 보존)+신규 빈 DB 0리셋+systemd(재부팅 생존)+CF ingress. 로컬 /health·/=200 실측. 유일 잔여=DNS CNAME repoint(Leo 게이트, 위 IN PROGRESS). 이관 재요청 admin_flavor_20260723_110229, 6분 만에 회신 |
 | 2026-07-23 | **레거시 vol2/vol3·종합설문 seed 온보딩 배선**: shared vol4~20에만 있던 커피 seed 온보딩을 인라인 JS 5파일(romance_v2/food ±saju, survey.html)에 이식 → 콜드스타트 수집 커버리지 완결. 게이트 OFF=항등(서버 seeds 일반처리). node 문법검증 5파일 통과, 141 테스트 무회귀 |
