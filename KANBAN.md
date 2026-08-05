@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-07-29
+**최종 수정**: 2026-08-05
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -9,7 +9,6 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| leoserver git pull 재배포 (게이트 개방 전) | Medium | reklcli | 배포가 7/23 클론이라 이후 push분(레거시 seed 배선·KANBAN 등) 미반영. **게이트 OFF라 현재 항등**(엔드투엔드 스모크 통과), 게이트 개방 시점에 Leo 승인 커밋과 묶어 `git pull` + `sudo systemctl restart flavor`. admin 개입 불요 |
 | 커피 자아 리빌 카피/UX 다듬기 | Low | Leo→reklcli | 배선 완료. 반전 카드 톤·캐릭터 카피·리빌 카드 비주얼은 개방 전 Leo 취향 반영 여지 |
 
 > **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
@@ -23,6 +22,7 @@
 | 항목 | 담당 | 사유 |
 |------|------|------|
 | Stage 1 검증 리포트 (실데이터) | reklcli | ✅ **서버 언블록 완료(7/29 DNS 해소, flavor.arkedia.work 라이브)**. 이제 실데이터 수집(DB 리셋 + 카카오 로그인 + 유통)이 새 전제 — 데이터 대기 |
+| 자가배포(`/api/admin/deploy`) 실사용 | reklcli | **ADMIN_TOKEN이 reklcli에 없음** — leoserver `~/.config/leofamily/flavor_admin_token.env`에만 존재하고 leoserver ssh 미보유. 8/4 admin 발주(전달 경로 A/B/C + gunicorn `--pid` 확인) → 회신 대기. **배포 대기 커밋 0건이라 급하지 않음**. ⚠️ 미해결 리스크: PID 파일 부재 시 `git pull`만 되고 리로드 실패해도 HTTP 200 반환(조용한 실패) — 첫 실사용 때 `reload:"ok"` 확인 필수 |
 
 ---
 
@@ -50,6 +50,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-08-04 | **leoserver 재배포 종결 확인 + 자가배포 개통(부분)**: 7/31 admin이 이미 `git pull`+재기동 집행 → 배포 HEAD **69ab835=origin/main 최신**. flavor가 외부 도메인 층에서 재검증(`/health` 200, `/api/me` 200 `enabled:false`=카카오 배선 라이브·키 OFF, `/static/og_dna.png` 200, `/`·`/romance-v2`·`/food-saju` OG 주입 실재) — **배포 대기분 0건**. ADMIN_TOKEN도 systemd drop-in으로 주입 완료(무토큰 403 실측)이나 **값이 reklcli에 없어 자가배포는 미개통** → 전달 경로 발주(admin_flavor_20260804_134431). 부수 발견: `/api/admin/deploy`의 SIGHUP 리로드가 systemd PID 파일 부재 시 조용히 실패(200 반환)할 수 있어 admin에 `--pid` 확인 동봉 |
 | 2026-07-30 | **카카오 로그인 배선** (fail-safe OFF): users 테이블+submissions.user_id(additive) + api/auth.py 인가코드 플로우(/auth/kakao/login·/callback·/logout·/api/me, stdlib urllib=무의존, state CSRF+오픈리다이렉트 차단) + 세션 user_id 부착(익명=None 항등) + 허브 로그인 버튼(enabled일 때만). **키 미설정=익명 흐름 완전 항등**(OFF/ON 런타임 스모크 확인). 테스트 +11(전체 152). 활성화=Kakao앱 등록+env 3종+재배포(Leo) |
 | 2026-07-29 | **★flavor.arkedia.work DNS repoint 완료 — 이관 100% 종료**: admin이 본인 보유 CF 토큰으로 직접 집행(Leo 토큰 발급 불요였음). CNAME 982b1f34(구 mukl)→78dc937e(leoserver) update, 502→200. flavor 재검증: 퀴즈 라우트 6종+제출 스모크(id 120fa77f→/result 200) **전건 200 엔드투엔드 확인**. 부수: mukl stale ingress(→8082, 502 직접원인) 주석 처리(cloudflared 미재기동, 타 서비스 15종 보호). 회신 admin_flavor_20260729_224800 |
 | 2026-07-23 | **flavor leoserver 이관 배포 (admin 집행, 95%)**: DB백업(.bak 보존)+신규 빈 DB 0리셋+systemd(재부팅 생존)+CF ingress. 로컬 /health·/=200 실측. 유일 잔여=DNS CNAME repoint(Leo 게이트, 위 IN PROGRESS). 이관 재요청 admin_flavor_20260723_110229, 6분 만에 회신 |
