@@ -22,7 +22,7 @@
 | 항목 | 담당 | 사유 |
 |------|------|------|
 | Stage 1 검증 리포트 (실데이터) | reklcli | ✅ **서버 언블록 완료(7/29 DNS 해소, flavor.arkedia.work 라이브)**. 이제 실데이터 수집(DB 리셋 + 카카오 로그인 + 유통)이 새 전제 — 데이터 대기 |
-| 자가배포(`/api/admin/deploy`) 실사용 | reklcli | **ADMIN_TOKEN이 reklcli에 없음** — leoserver `~/.config/leofamily/flavor_admin_token.env`에만 존재하고 leoserver ssh 미보유. 8/4 admin 발주(전달 경로 A/B/C + gunicorn `--pid` 확인) → 회신 대기. **배포 대기 커밋 0건이라 급하지 않음**. ⚠️ 미해결 리스크: PID 파일 부재 시 `git pull`만 되고 리로드 실패해도 HTTP 200 반환(조용한 실패) — 첫 실사용 때 `reload:"ok"` 확인 필수 |
+| 자가배포 수정분(33ebafa) 서버 반영 | **Leo** | ssh 개통·토큰 회수·코드 수정 전부 완료(아래 DONE 8/5). 남은 건 **첫 적용 1회** — 고칠 대상이 배포 경로 자신이라 자가배포로는 못 고침(구코드가 처리 → 또 무산). `ssh leoserver` + `sudo systemctl restart flavor` 필요 = **Leo 배포 승인 대기**. 급하지 않음(현 69ab835 정상·게이트 전부 OFF) — DB 리셋·카카오 활성화와 묶어도 무방 |
 
 ---
 
@@ -50,6 +50,8 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-08-05 | **★자가배포 리로드 결함 발견·수정 (33ebafa)**: admin이 ssh 공개키가 이미 등재돼 있음을 실측 회신 → reklcli `~/.ssh/config` 3줄 추가로 leoserver 개통(tailscale 100.110.3.116), ADMIN_TOKEN 회수. **ssh가 열리자마자 리로드 쟁점을 직접 실측** — 예상('PID 파일 부재로 warn')이 틀렸고 실제는 **파일이 있고 값이 stale**: `ExecStart`에 `--pid` 없음 + `logs/gunicorn.pid`=31344(7/23자, **사망**) vs 실제 마스터 1758506 → `os.kill` OSError를 except가 삼키고 **HTTP 200** = pull만 되고 구코드가 도는 조용한 실패. 잠재 위험=stale PID 재활용 시 무관 프로세스에 SIGHUP(기본 동작=종료), leoserver 15종 서비스 물림(pid_max 4.19M/현재 2.2M이라 아직 도달 전). **조치**: PID 파일 참조 폐기 → 워커의 부모가 곧 마스터(`os.getppid()`)+커맨드라인 `gunicorn` 검증 후에만 시그널, 리로드 실패는 **200이 아니라 500**+복구 힌트. 테스트 +8(전체 **168**). admin `--pid` 권고는 철회(유닛 무변경). 서버 반영은 Leo 승인 대기(위 BLOCKED) |
+| 2026-08-05 | **수신함 전수 점검 + project_docs 제출**: 루트 잔류 12건 판정 → 4/2 `project_docs` 자기소개서가 **4개월 미이행**임을 발견(타 10건 등재, flavor만 누락). 작성 후 `admin/` 직접 커밋은 스코프훅 차단 → **`AGENT_ID_BYPASS` 우회하지 않고** 정규 경로(내 스코프 원고+admin 등록요청)로 처리 → admin 등재 완료(4,335B 실물 확인) 및 "우회 안 한 판단이 맞다"는 평가 수령. 나머지 11건(완료보고·broadcast·본인 발신분)은 `processed/` 이관, 루트 0건. 부수: `agent-comm/projects/flavor/CLAUDE.md`의 CHANNEL_RULES 버전 핀(v5.5, 현행 v5.11) 제거 → 정본 참조 |
 | 2026-08-04 | **leoserver 재배포 종결 확인 + 자가배포 개통(부분)**: 7/31 admin이 이미 `git pull`+재기동 집행 → 배포 HEAD **69ab835=origin/main 최신**. flavor가 외부 도메인 층에서 재검증(`/health` 200, `/api/me` 200 `enabled:false`=카카오 배선 라이브·키 OFF, `/static/og_dna.png` 200, `/`·`/romance-v2`·`/food-saju` OG 주입 실재) — **배포 대기분 0건**. ADMIN_TOKEN도 systemd drop-in으로 주입 완료(무토큰 403 실측)이나 **값이 reklcli에 없어 자가배포는 미개통** → 전달 경로 발주(admin_flavor_20260804_134431). 부수 발견: `/api/admin/deploy`의 SIGHUP 리로드가 systemd PID 파일 부재 시 조용히 실패(200 반환)할 수 있어 admin에 `--pid` 확인 동봉 |
 | 2026-07-30 | **카카오 로그인 배선** (fail-safe OFF): users 테이블+submissions.user_id(additive) + api/auth.py 인가코드 플로우(/auth/kakao/login·/callback·/logout·/api/me, stdlib urllib=무의존, state CSRF+오픈리다이렉트 차단) + 세션 user_id 부착(익명=None 항등) + 허브 로그인 버튼(enabled일 때만). **키 미설정=익명 흐름 완전 항등**(OFF/ON 런타임 스모크 확인). 테스트 +11(전체 152). 활성화=Kakao앱 등록+env 3종+재배포(Leo) |
 | 2026-07-29 | **★flavor.arkedia.work DNS repoint 완료 — 이관 100% 종료**: admin이 본인 보유 CF 토큰으로 직접 집행(Leo 토큰 발급 불요였음). CNAME 982b1f34(구 mukl)→78dc937e(leoserver) update, 502→200. flavor 재검증: 퀴즈 라우트 6종+제출 스모크(id 120fa77f→/result 200) **전건 200 엔드투엔드 확인**. 부수: mukl stale ingress(→8082, 502 직접원인) 주석 처리(cloudflared 미재기동, 타 서비스 15종 보호). 회신 admin_flavor_20260729_224800 |
