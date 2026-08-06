@@ -119,35 +119,16 @@ from/to는 프로젝트명만 사용 (머신명 mukl/reklcli 금지) — 이 프
 규칙 전문: agent-comm/CHANNEL_RULES.md  ← 정본. ★버전 핀 금지(항상 현행판 참조)
 ```
 
-### ★이 파일이 flavor의 정본이다
+### 정본 = 이 파일 / FLV-C1 한정자
 
-이 세션이 실제로 로드하는 CLAUDE.md는 **둘뿐**이다:
+세션이 로드하는 건 `reklcli:~/.claude/CLAUDE.md`(공통) + **이 파일** 둘뿐.
+`agent-comm:projects/flavor/CLAUDE.md`는 **로드 안 됨** — 거길 고쳐도 아무것도 안 바뀐다.
+(8/5 실패: 버전 핀을 그 사본에서 고치고 "고쳤다"고 보고. 에러가 아니라 「없음」이라 몰랐다.)
 
-1. `reklcli:~/.claude/CLAUDE.md` — 머신 공통층 (admin 소유)
-2. `reklcli:~/projects/flavor/CLAUDE.md` — **이 파일** (flavor 규율 정본)
-
-`agent-comm:projects/flavor/CLAUDE.md` 는 **로드되지 않는다.** 채널 디렉토리 메타파일일 뿐이다.
-저쪽을 고쳐도 세션 동작은 **아무것도 바뀌지 않는다** — 고칠 것은 이 파일이다.
-
-> **실패 실적 (2026-08-05)**: CHANNEL_RULES 버전 핀(v5.5)이 stale이라 고쳤는데,
-> 고친 대상이 agent-comm 사본이었다. 로드되는 이 파일엔 핀이 그대로 남아 있었고,
-> 그 상태로 admin에 "고쳤다"고 보고까지 했다. **에러가 아니라 「없음」으로 나와서
-> 적은 쪽도 읽는 쪽도 몰랐다.** 8/6 ari의 R-P6 통지를 계기로 자기적발·정정.
-
-### FLV-C1 — 경계 넘는 참조엔 한정자를 붙인다
-
-다른 슬롯·다른 머신이 읽을 글(메시지·리포트)에 **경로·커밋 해시·파일 참조**를 적을 때는
-`머신:경로` 또는 `repo명` 한정자를 반드시 붙인다. 상대경로·맨 해시는 읽는 쪽에서
-**에러가 아니라 「없음」으로 조용히 해석된다.**
-
-- ❌ `커밋 33ebafa` → ✅ `flavor repo 33ebafa` (admin은 flavor repo 클론이 없을 수 있다)
-- ❌ `api/admin.py:51` → ✅ `reklcli:~/projects/flavor/api/admin.py:51`
-- ✅ 이미 하고 있던 것: `agent-comm:projects/flavor/...` 처럼 repo명 선행
-
-일반 수칙 원문(R-P6)은 **복제하지 않는다**. 정본:
-`agent-comm:projects/fableself/exchange/context-memory-kit-v01.md` §2
-(⚠파일명의 `-v01`은 개설 당시 이름이고 판은 문서 제목 줄이 정본.
-`archy:~/projects/fableself/...` 로컬 사본은 스테일 실적 있음 — agent-comm 쪽이 정본)
+**FLV-C1** — 밖에서 읽힐 참조엔 한정자 필수. `33ebafa`→`flavor repo 33ebafa`,
+`api/admin.py:51`→`reklcli:~/projects/flavor/api/admin.py:51`. 맨 해시·상대경로는
+읽는 쪽에서 조용히 「없음」이 된다. 일반 수칙(R-P6) 원문은 복제 금지 —
+정본 `agent-comm:projects/fableself/exchange/context-memory-kit-v01.md` §2.
 
 ## 배포
 
