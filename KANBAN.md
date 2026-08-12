@@ -9,7 +9,7 @@
 
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
-| 커피 자아 리빌 카피/UX 다듬기 | Low | Leo→reklcli | 배선 완료. 반전 카드 톤·캐릭터 카피·리빌 카드 비주얼은 개방 전 Leo 취향 반영 여지 |
+| 커피 자아 리빌 카피/UX 다듬기 | Low | **LEO 결정** | 배선 완료. 반전 카드 톤·캐릭터 카피·리빌 카드 비주얼은 개방 전 LEO 취향 반영 여지 (위 TODO 「리빌 카피/톤 결정」과 같은 건 — kee 반려로 LEO 전속 확정) |
 
 > **Leo 결정 (7/10)**: 실데이터 수집은 0으로 리셋 후 재시작. 그 전에 이론·가설 완전 검증.
 > 순서: 이론 검증 → 플랫폼(서버/카카오 로그인) → 유통. 배포·유통은 검증 완료까지 보류.
@@ -31,14 +31,14 @@
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
 | 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
-| 콜드스타트 arm 게이트 개방 | Medium | **Leo** | 리셋 시점. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
+| 콜드스타트 arm 게이트 개방 | Medium | **Leo** | ★**「DB 리셋 실행」과 순서 종속 — 따로 결재받으면 순서가 어긋난다**(kee 8/12, 상신 때 순서까지 함께 올림). 리셋 **순간**에 켜야 소급 가능. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
 | ~~seed 온보딩 문항 프론트 배선~~ | ~~High~~ | reklcli | ✅ **완료 (7/16)** — 아래 DONE 참조 |
-| 커피 자아 리빌 카피/톤 결정 반영 | Low | kee→reklcli | ★**8/12 자기적발: 7/16~8/12 26일간 「kee 검토 대기」로 적혀 있었으나 kee에 발신된 적이 없었다**(`find projects -name "kee_flavor_*"` → 0건). 「대기」는 상대의 상태가 아니라 내 기재였음. **8/12 실제 발신 완료**(아티팩트 URL 동봉, kee 인박스 21건 적치 고려해 기한 없음). 결정 2건: ① 카드 다양성(산미·디저트 리빌 반영 여부) ② 공유문구 펀치라인 포함 여부. kee가 「내 것 아님」 반려 시 Leo께 직접 상신 |
+| 커피 자아 리빌 카피/톤 결정 반영 | Low | **LEO 결정** | ★**kee 반려(8/12) — 취향·브랜드는 LEO 전속, kee 소관 아님.** kee가 상신 큐에 자리만 확보(판정 안 함). 프리뷰: https://claude.ai/code/artifact/246649d9-7b4b-4922-98de-d53c5b51047b · 결정 ① 산미🫐·디저트🎂 리빌 노출 여부(현재 `coffee_reveal()`이 pole을 black/sweet로 접어 **정의된 5종 중 2종이 최종 카드에 절대 안 나옴**) ② 공유문구에 oneliner 펀치라인 포함 여부(현재 `내 커피 자아 = {name} {emoji}`만). **게이트 OFF라 비가역 아님**<br>⚠**8/12 자기적발**: 7/16~8/12 **26일간 「kee 검토 대기」로 적혀 있었으나 발신 이력 0건**(`find projects -name "kee_flavor_*"` → 0). ***「대기」는 상대의 상태가 아니라 내 기재였다.*** kee 판정: 「보드에 두 이름이 같이 적히면 둘 다 자기 것이 아니라고 읽는다」 → 표기를 **LEO 단일**로 정정 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
 | v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
-| DB 리셋 실행 | High | flavor2 | Leo 확정 (7/10). 유통 재시작 직전에 실행 |
+| DB 리셋 실행 | High | flavor2 | Leo 확정 (7/10). 유통 재시작 직전에 실행. ★**콜드스타트 arm 개방과 한 판으로 결재**(순서 종속 — kee 8/12) |
 | 카카오 로그인 **활성화** | High | **Leo** | 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Leo가 Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
 | 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
 | Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
@@ -114,3 +114,9 @@
   그 판별선을 낳은 규율 자신. admin 상정(8/9)+kee 보고(8/12) 완료, **재촉 없이 대기**(규율 C).
   착지 안 되면 브로드캐스트는 어느 세션 컨텍스트에도 안 남아 다음 세션이 규율을 모른다.
   ⚠**미결 2건이 정본 없이 떠 있음**: 「무응답 시효」·차단 전환/`pre-push` 축 (판정 소관=kee).
+  → **kee가 admin에 발주 완료 (8/12)**. ★**flavor는 admin에 다시 보내지 않는다**(중복 재촉 — kee 지시).
+- **L0 (kee 8/12 판정)**: flavor는 **ⓒ형+제품repo**라 L0 래칫이 권하는 「agent-comm 정본+로컬 심링크」
+  처방이 **부적합**(제품 repo가 leoserver 배포 → 서버에서 dangling symlink). ⇒ ★**현 판정=초과 감수·감축
+  압박 없음.** 처방 유형별 분기는 kee가 admin 발주.
+  ★**표기 규칙**: L0는 **항상 두 값 병기** — **2파일 107% / 머신공통층 포함 157%**.
+  (공통층 `~/.claude/CLAUDE.md` 3,080B를 모집단에 넣을지는 **미결** — 157%만 인용하면 위험)
