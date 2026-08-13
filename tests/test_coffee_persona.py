@@ -101,9 +101,82 @@ class TestCoffeeReveal(unittest.TestCase):
 
     def test_reveal_shape_and_snapshot_framing(self):
         r = coffee_reveal("바닐라라떼", "달달한 라떼·플랫화이트", 1)
-        for k in ("key", "name", "emoji", "oneliner", "pole", "twist", "snapshot", "share", "basis"):
+        for k in ("key", "name", "emoji", "oneliner", "pole", "twist", "snapshot", "share", "basis",
+                  "refined"):
             self.assertIn(k, r)
         self.assertEqual(r["snapshot"], "지금 이 순간의 커피 취향")  # 고정 정체성 아님
+
+
+class CoffeeRevealRefinementTest(unittest.TestCase):
+    """LEO 결정 2026-08-13 B안 ① — 산미🫐·디저트🎂를 리빌에 노출(표현층만).
+
+    이전에는 `coffee_reveal()`이 pole을 black/sweet 둘로 접어서 정의된 5종 중
+    acidity·dessert **2종이 최종 카드에 원리상 안 나왔다**. 이제 seed가 그 극의
+    하위 유형을 말했으면 그 카드를 보여준다 — ★단 pole(측정 축)은 그대로다.
+    """
+
+    def test_산미_seed가_black_확인되면_산미헌터로_표시(self):
+        r = coffee_reveal("핸드드립 산미 좋아", "따뜻한 아메리카노·단골 블렌드", 2)
+        self.assertEqual(r["key"], "acidity")
+        self.assertEqual(r["emoji"], "🫐")
+        self.assertTrue(r["refined"])
+
+    def test_디저트_seed가_sweet_확인되면_디저트겸용파로_표시(self):
+        r = coffee_reveal("프라푸치노 휘핑 추가", "달달한 라떼·플랫화이트", 2)
+        self.assertEqual(r["key"], "dessert")
+        self.assertTrue(r["refined"])
+
+    def test_세분화해도_측정축은_안_바뀐다(self):
+        """이 테스트가 B안의 전제다 — 표현만 갈리고 pole은 두 축 그대로여야 한다."""
+        acid = coffee_reveal("핸드드립 산미 좋아", "따뜻한 아메리카노·단골 블렌드", 2)
+        plain = coffee_reveal("아메리카노 진하게", "따뜻한 아메리카노·단골 블렌드", 2)
+        self.assertEqual(acid["pole"], "black")
+        self.assertEqual(plain["pole"], "black")      # 같은 극
+        self.assertNotEqual(acid["key"], plain["key"])  # 표시만 다름
+
+    def test_반응_없이_seed만_있어도_세분화된다(self):
+        r = coffee_reveal("핸드드립 산미 좋아", None, None)
+        self.assertEqual(r["key"], "acidity")
+        self.assertEqual(r["basis"], "seed")
+
+    def test_일반_seed는_세분화_안_함(self):
+        r = coffee_reveal("아메리카노 진하게", "따뜻한 아메리카노·단골 블렌드", 2)
+        self.assertEqual(r["key"], "black")
+        self.assertFalse(r["refined"])
+
+    def test_반전_카드는_세분화하지_않는다(self):
+        """극이 갈리면 반전 카드가 이미 그 대비를 표현한다 — 건드리지 않는다."""
+        r = coffee_reveal("핸드드립 산미 좋아", "카페라떼·바닐라라떼", 2)
+        self.assertTrue(r["twist"])
+        self.assertEqual(r["name"], "겉은 블랙, 속은 스위트형")
+
+    def test_무정보_seed는_새싹_유지(self):
+        r = coffee_reveal(None, None, None)
+        self.assertEqual(r["key"], "sprout")
+        self.assertFalse(r["refined"])
+
+
+class CoffeeShareTextTest(unittest.TestCase):
+    """LEO 결정 2026-08-13 B안 ② — 공유 문구에 펀치라인(oneliner) 포함."""
+
+    def test_공유문구에_펀치라인이_들어간다(self):
+        r = coffee_reveal("아메리카노", "카페라떼·바닐라라떼", 2)
+        self.assertTrue(r["share"].startswith("내 커피 자아 ="))
+        self.assertIn(r["oneliner"], r["share"])       # ★핵심 가드
+        self.assertIn(r["name"], r["share"])
+
+    def test_페르소나_카드_공유문구도_같은_형식(self):
+        p = coffee_persona("핸드드립 산미 좋아")
+        self.assertIn(p["oneliner"], p["share"])
+
+    def test_페르소나_5종_전건_펀치라인_포함(self):
+        seeds = {"acidity": "핸드드립 산미 좋아", "black": "아메리카노 진하게",
+                 "dessert": "프라푸치노 휘핑 추가", "sweet": "바닐라라떼", "sprout": ""}
+        self.assertEqual(set(seeds), set(COFFEE_PERSONA))  # 페르소나 추가 시 이 테스트가 먼저 깨진다
+        for key, seed in seeds.items():
+            p = coffee_persona(seed)
+            self.assertEqual(p["key"], key)
+            self.assertIn(COFFEE_PERSONA[key]["oneliner"], p["share"])
 
 
 if __name__ == "__main__":

@@ -239,8 +239,18 @@ def coffee_persona(seed_text: str) -> dict:
         "emoji": p["emoji"],
         "oneliner": p["oneliner"],
         "pole": p["pole"],
-        "share": f"내 커피 자아 = {p['name']} {p['emoji']}",
+        "share": _share_text(p["name"], p["emoji"], p["oneliner"]),
     }
+
+
+def _share_text(name: str, emoji: str, oneliner: str) -> str:
+    """공유 문구. LEO 결정 2026-08-13(B안): 펀치라인(oneliner) 포함.
+
+    링크만 보는 사람에게 '왜 눌러야 하는지'를 준다 — 유통 재개 전 결정.
+    프론트(quiz-engine.shareCoffeeReveal)가 뒤에 ' | 너는? {url}'을 붙인다.
+    """
+    head = f"내 커피 자아 = {name} {emoji}"
+    return f"{head} — {oneliner}" if oneliner else head
 
 
 _POLE_SHORT = {"black": "블랙", "sweet": "스위트"}
@@ -253,6 +263,22 @@ _TWIST = {
 
 def _opposite_pole(pole: str) -> str:
     return {"black": "sweet", "sweet": "black"}.get(pole, "unknown")
+
+
+def _refine_persona(base_pole: str, said_key: str) -> str:
+    """표현층 세분화. LEO 결정 2026-08-13(B안): 산미🫐·디저트🎂를 리빌에 노출.
+
+    측정은 여전히 두 축(black/sweet)뿐이다 — 반응이 그 두 축으로만 측정되기 때문.
+    ★바꾸는 것은 '어느 카드를 보여줄까'뿐이고 pole(측정 축)은 손대지 않는다.
+    예) seed "핸드드립 산미 좋아"(축 b) + 반응이 black 확인 → ☕ 블랙 미니멀리스트가 아니라
+        🫐 산미 헌터로 표시. 축 b는 검증 전이라 측정에 안 쓰지만, 유저가 말한 것을
+        되돌려주는 표현 재료로는 쓴다.
+    세분화 후보가 base_pole과 같은 극일 때만 승격 — 극이 갈리면 반전 카드가 이미 처리한다.
+    """
+    if said_key in COFFEE_PERSONA and said_key != base_pole:
+        if COFFEE_PERSONA[said_key]["pole"] == base_pole:
+            return said_key
+    return base_pole
 
 
 def coffee_reveal(seed_text=None, served_item=None, reaction=None) -> dict:
@@ -268,7 +294,9 @@ def coffee_reveal(seed_text=None, served_item=None, reaction=None) -> dict:
     reaction: 그 아이템에 대한 thumb 정수(🎯2/👍1=좋아함, 🤷-1=중립, 👎-2=싫어함).
               🤷(-1)는 'meh'이지 dislike가 아니므로 극 반전 안 함 — 오직 👎(-2)만 반대 극.
     """
-    said = coffee_persona(seed_text)["pole"] if seed_text else "unknown"
+    _said_card = coffee_persona(seed_text) if seed_text else None
+    said = _said_card["pole"] if _said_card else "unknown"
+    said_key = _said_card["key"] if _said_card else "unknown"  # 표현층 세분화 재료(축 b 포함)
 
     served_pole = coffee_item_type(served_item) if served_item else "unknown"
     if reaction is None or served_pole in ("mixed", "unknown"):
@@ -295,12 +323,15 @@ def coffee_reveal(seed_text=None, served_item=None, reaction=None) -> dict:
                 "pole": reacted, "twist": True}
     else:
         base = "black" if primary == "black" else "sweet"
-        p = COFFEE_PERSONA[base]
-        card = {"key": base, "name": p["name"], "emoji": p["emoji"],
-                "oneliner": p["oneliner"], "pole": base, "twist": False}
+        shown = _refine_persona(base, said_key)   # 표현층만 세분화, pole은 base 유지
+        p = COFFEE_PERSONA[shown]
+        card = {"key": shown, "name": p["name"], "emoji": p["emoji"],
+                "oneliner": p["oneliner"], "pole": base, "twist": False,
+                "refined": shown != base}
 
+    card.setdefault("refined", False)
     card["snapshot"] = "지금 이 순간의 커피 취향"  # 고정 정체성 아님(Q3-①)
-    card["share"] = f"내 커피 자아 = {card['name']} {card['emoji']}"
+    card["share"] = _share_text(card["name"], card["emoji"], card["oneliner"])
     card["basis"] = "reaction" if reacted != "unknown" else ("seed" if said != "unknown" else "none")
     return card
 
