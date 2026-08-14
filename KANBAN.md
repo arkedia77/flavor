@@ -1,6 +1,6 @@
 # Leoflavor KANBAN
 
-**최종 수정**: 2026-08-13
+**최종 수정**: 2026-08-14
 **엔진**: Leoflavor v0.2 (사주 검증 게이트, 피처 sf-3 — sf-4 국 감지는 검증 후 미채택)
 
 ---
@@ -21,7 +21,7 @@
 
 | 항목 | 담당 | 사유 |
 |------|------|------|
-| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ **서버 언블록 완료(7/29 DNS 해소, flavor.arkedia.work 라이브)**. 이제 실데이터 수집(DB 리셋 + 카카오 로그인 + 유통)이 새 전제 — 데이터 대기 |
+| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ 서버 언블록(7/29) ✅ **DB 0 리셋 + arm 개방 완료(8/14)** → ★**이제 남은 전제는 「유입」 하나** = 카카오 활성화 + 유통 채널(둘 다 LEO). 수집 시작선에 서 있고 **유입이 0이면 데이터도 0** |
 | ~~자가배포 수정분 서버 반영~~ | ~~Leo~~ | ✅ **완료 (8/7, Leo 승인 후 flavor 직접 집행)** — 아래 DONE 참조. 배포 HEAD **f6d3d90**, 자가배포 첫 실사용에서 `reload:"ok"` + 워커 실교체 확인 |
 
 ---
@@ -31,14 +31,14 @@
 | 항목 | 우선순위 | 담당 | 비고 |
 |------|---------|------|------|
 | 콜드스타트 실 lift 측정 | Medium | reklcli | 리셋 후 커피 피드백 축적 시 `measure_coldstart_lift.py --db --arm random`(무교란). lift 확인 시 seed+LLM 주입 → 추천 교체 게이트(Leo 승인) |
-| 콜드스타트 arm 게이트 개방 | Medium | **Leo** | ★**「DB 리셋 실행」과 순서 종속 — 따로 결재받으면 순서가 어긋난다**(kee 8/12, 상신 때 순서까지 함께 올림). 리셋 **순간**에 켜야 소급 가능. `config/coldstart_arm.json` enabled=true·frac 0.10~0.20·seed_collection=true. 개방 체크리스트=docs/COLDSTART_MEASUREMENT_DESIGN.md §개방 |
+| ~~콜드스타트 arm 게이트 개방~~ | ~~Medium~~ | ~~Leo~~ | ✅ **완료 (8/14, LEO 승인 — DB 리셋과 한 판)** — 아래 DONE 참조. `csa1-open-20260814` enabled=true·frac 0.15·seed_collection=true 라이브 |
 | ~~seed 온보딩 문항 프론트 배선~~ | ~~High~~ | reklcli | ✅ **완료 (7/16)** — 아래 DONE 참조 |
 | ~~커피 자아 리빌 카피/톤 결정 반영~~ | ~~Low~~ | ~~LEO~~ | ✅ **완료 (8/13, LEO 둘 다 B안)** — 아래 DONE 참조 |
 | 파일럿 B (음악 콜드스타트) | Low | reklcli | 커피 파일럿 실 lift 검증 후. Music4All-Onion 코호트+경량 성격 |
 | 학습 게이트 개방 (learning_gate enabled=true) | Medium | **Leo** | 리셋 후 도메인별 피드백 신뢰 규모 도달 시. 구현·테스트 완료, 활성화만 |
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
 | v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
-| DB 리셋 실행 | High | flavor2 | Leo 확정 (7/10). 유통 재시작 직전에 실행. ★**콜드스타트 arm 개방과 한 판으로 결재**(순서 종속 — kee 8/12) |
+| ~~DB 리셋 실행~~ | ~~High~~ | ~~flavor2~~ | ✅ **완료 (8/14, flavor 직접 집행)** — 아래 DONE 참조. **submissions/feedbacks/users/milestones 전부 0행** |
 | 카카오 로그인 **활성화** | High | **Leo** | 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Leo가 Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
 | 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
 | Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
@@ -50,6 +50,7 @@
 
 | 날짜 | 항목 |
 |------|------|
+| 2026-08-14 | **★★DB 0 리셋 + 콜드스타트 arm 개방 (LEO 승인, 한 판 집행)** — 실데이터 수집 개시. 배포 `e4ff290`.<br>**집행 순서**(리셋 중 쓰기 차단): 백업(`saju_submissions.db.bak_pre_reset_20260814_233350`) → `git pull` → `systemctl stop` → 구 DB 퇴역(`.retired_20260814_233400`) → 기동(`init_db` 신규 생성) → 검증 → **스모크 행 3건 삭제**. **최종 submissions/feedbacks/users/milestones 전부 0행**. 지워진 실데이터 = 7/29 DNS 스모크 1건(`120fa77f`)뿐<br>**게이트**: `csa1-open-20260814` — enabled=true·**random_frac 0.15**·seed_collection=true. 라이브 `/api/coldstart-config`=`{"seed_collection":true}` 확인. 실제 제출로 `_coldstart{seeds, arm_gate}`·도메인 `_arm` 저장 실측<br>★**개방 체크리스트 3번이 실결함을 잡았다** — 「클라이언트 렌더가 `_`접두 메타키를 건너뛰는지 확인」 → **아무도 안 건너뜀**(프론트 9곳·서버 1곳 전부 무필터). 게이트 켜는 순간 `/result`에 **라벨 `_coldstart`인 빈 9번째 카드**가 렌더되는 것을 재현. 렌더러 10곳 대신 **서버 경계 2곳**(`config.public_results()` → 제출 응답·`/result`)에서 차단 = 새 퀴즈 페이지가 추가돼도 자동 안전, **DB 저장본은 보존**(lift 분석이 `_coldstart.seeds`를 읽음). 테스트 +7(전체 **185**)<br>**롤백**: `enabled=false`면 즉시 항등 복귀. 구 DB는 `.retired_*`·`.bak_pre_reset_*`로 서버에 보존 |
 | 2026-08-13 | **커피 리빌 결정 2건 반영 — 산미🫐·디저트🎂 노출 + 공유문구 펀치라인** (`6cd9340`, LEO 둘 다 B안): ① `COFFEE_PERSONA` 5종인데 `coffee_reveal()`이 pole을 black/sweet로 접어 **acidity·dessert 2종이 최종 카드에 원리상 안 나오던 것**을 `_refine_persona()`로 해소 — seed가 확정된 극의 하위 유형이면 그 카드로 승격. ★**pole(측정 축)은 불변** — 반응은 여전히 두 축으로만 측정하고 바뀌는 건 '어느 카드를 보여줄까'뿐(축 b 산미는 검증 전이라 측정 미사용·표현 재료로만). 반전 카드는 세분화 안 함(극 대비는 반전이 이미 표현). 감사용 `refined` 플래그 ② `_share_text()` 일원화로 oneliner 부착 — `내 커피 자아 = 겉은 블랙, 속은 스위트형 🎭 — 쿨하게 아메리카노 시켜놓고 결국 단 거에 반하는 반전 매력`. 테스트 +10(전체 **178**), 핵심 가드=「세분화해도 측정축은 안 바뀐다」. 엔드투엔드 OFF=항등/ON=실림 확인. **게이트 OFF라 사용자 화면 변화 0**<br>경위: kee 반려(8/12, 취향·브랜드는 LEO 전속) → LEO 직접 결정 |
 | 2026-08-12 | **★26일 미발신 자기적발 + kee 판정 3건**: KANBAN에 7/16부터 「kee 검토 대기」로 적힌 리빌 결정이 **발신된 적 없음**을 발견(`find projects -name "kee_flavor_*"` → 0건). ***「대기」는 상대의 상태가 아니라 내 기재였다.*** kee 채택 — kee의 적치 처방(「가장 오래된 미처리 age」)이 **자기 인박스를 모집단으로 삼아 이 건을 원리상 못 잡음**(인박스에 없으니 age=0) → kee가 축 신설(「내 보드에 남 대기로 적힌 항목에 실제 발신 이력이 있는가」). 같은 형태가 그날 **세 곳 독립 발생**(flavor 26일·kee→sens 19일·kee→lmb 19일). kee 판정: ⑴리빌=**반려**(LEO 전속) ⑵속도규율 문서층 미착지=admin 발주(**flavor 재발신 금지**) ⑶L0 ⓒ형+제품repo에 심링크 처방 **부적합 인정**(제품 repo가 leoserver 배포 → dangling symlink) = **초과 감수·감축 압박 없음**. 표기 정정: `Leo(kee)` → **LEO 단일**(「보드에 두 이름이 같이 적히면 둘 다 자기 것이 아니라고 읽는다」) |
 | 2026-08-07 | **★배포 f6d3d90 + 자가배포 첫 실사용 성공 (Leo 승인, flavor 직접 집행)**: `ssh leoserver` → `git pull`(69ab835→f6d3d90, 5커밋) + `sudo systemctl restart flavor`(MainPID 1758506→2526223). 선행 확인=의존성·스키마 변경 0(런타임 코드는 `api/admin.py` 1건). 검증: `/health`·`/api/me`·`/`·`/food-saju` 200, 무토큰 deploy 403. ★**그리고 자가배포를 처음으로 실제 집행** — `POST /api/admin/deploy` → `{"status":"ok","reload":"ok","master_pid":2526223}` + **워커 실교체**(2526225/226→2526478/480, 마스터 유지) = SIGHUP이 올바른 프로세스에 닿아 실제로 일했다는 증거. 구코드였다면 사망 PID 31344에 쏘고 `warn`+200이었음. 부수: 버그 근원인 stale PID 파일을 삭제 대신 `.stale_20260723_removed_20260807`로 개명(현 코드 참조 0회, 되돌림 여지 보존) |
