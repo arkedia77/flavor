@@ -6,7 +6,7 @@ from html import escape as html_escape
 
 from flask import Blueprint, redirect, jsonify, render_template_string
 
-from config import DOMAIN_EMOJI, COLDSTART_ARM
+from config import DOMAIN_EMOJI, COLDSTART_ARM, public_results
 from engines.personality import get_personality_type
 from db.repository import get_submission
 
@@ -410,7 +410,7 @@ def result_page(result_id):
     ptagline_js = js_literal(ptagline)
 
     cards_html = ""
-    for domain, rec in results.items():
+    for domain, rec in public_results(results).items():
         emoji = DOMAIN_EMOJI.get(domain, "✨")
         desc_html = f'<p class="d-desc">"{rec.get("description","")}"</p>' if rec.get("description") else ""
         cards_html += f"""

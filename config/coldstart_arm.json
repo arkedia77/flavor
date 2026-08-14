@@ -1,8 +1,8 @@
 {
-  "gate_version": "csa0-off",
-  "enabled": false,
-  "random_frac": 0.0,
+  "gate_version": "csa1-open-20260814",
+  "enabled": true,
+  "random_frac": 0.15,
   "domains": ["커피"],
-  "seed_collection": false,
-  "_note": "랜덤 노출 arm + seed 수집 게이트. enabled=false ∧ random_frac=0.0 = 현 동작과 완전 항등(노출·저장 무변경). 개방은 DB 리셋 시점부터 Leo 승인 커밋으로만 — 비랜덤 노출은 소급 불가라 리셋 순간부터 켜야 무교란 lift 추정 가능(fableself 점검 Q2). random_frac 권장 0.10~0.20."
+  "seed_collection": true,
+  "_note": "랜덤 노출 arm + seed 수집 게이트. ★2026-08-14 LEO 승인으로 개방 — DB 0 리셋과 한 판(비랜덤 노출은 소급 불가라 리셋 순간부터 켜야 무교란 lift 추정 가능, fableself 점검 Q2). random_frac=0.15(권장 0.10~0.20 중앙). 개방 체크리스트 5항 전건 확인, 3번(메타키 렌더)은 개방 직전 결함 발견·수정(config.public_results). 닫으려면 enabled=false — 즉시 항등 복귀."
 }

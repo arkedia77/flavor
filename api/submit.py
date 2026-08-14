@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 
-from config import ENGINE_VERSION, SAJU_GATE, COLDSTART_ARM
+from config import ENGINE_VERSION, SAJU_GATE, COLDSTART_ARM, public_results
 from engines.survey import raw_to_survey
 from engines.persona import get_persona
 from engines.personality import get_personality_type
@@ -176,7 +176,7 @@ def submit():
             "id": result_id,
             "name": name,
             "profile": profile,
-            "results": results,
+            "results": public_results(results),
             "personality": personality,
             "persona": persona,
         })

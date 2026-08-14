@@ -141,3 +141,22 @@ DOMAIN_EMOJI = {
     "커피": "☕", "향수": "🌸", "음악": "🎵", "식당": "🍽️",
     "운동": "🏃", "여행": "✈️", "패션": "👗", "인테리어": "🏠",
 }
+
+
+def public_results(results):
+    """results에서 `_` 접두 메타키를 제거한 사본. 저장본은 그대로 둔다.
+
+    `results`에는 도메인 카드 외에 분석용 메타가 섞인다 — `_coldstart`(seed 수집분).
+    도메인 렌더러는 전부 `Object.entries(results)`/`results.items()`를 그대로 도는데
+    (프론트 9곳·서버 1곳, 어느 쪽도 `_` 필터가 없다) 메타키가 섞이면
+    **라벨이 `_coldstart`인 빈 카드가 사용자에게 렌더된다.**
+    콜드스타트 게이트 OFF 동안엔 메타키가 안 붙어 드러나지 않았고,
+    개방 체크리스트 3번(docs/COLDSTART_MEASUREMENT_DESIGN.md)이 이걸 잡으라고 있었다.
+
+    ★렌더러 10곳을 각각 고치는 대신 서버 경계 두 곳(제출 응답·/result)에서 막는다.
+      새 퀴즈 페이지가 추가돼도 자동으로 안전하고, 저장·분석 경로는 무영향이다.
+      (도메인 rec 안의 `_arm` 태그는 렌더가 참조하지 않으므로 건드리지 않는다.)
+    """
+    if not isinstance(results, dict):
+        return results
+    return {k: v for k, v in results.items() if not str(k).startswith("_")}
