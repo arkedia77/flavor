@@ -21,7 +21,7 @@
 
 | 항목 | 담당 | 사유 |
 |------|------|------|
-| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ 서버 언블록(7/29) ✅ **DB 0 리셋 + arm 개방 완료(8/14)** → ★**이제 남은 전제는 「유입」 하나** = 카카오 활성화 + 유통 채널(둘 다 LEO). 수집 시작선에 서 있고 **유입이 0이면 데이터도 0** |
+| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ 서버 언블록(7/29) ✅ **DB 0 리셋 + arm 개방 완료(8/14)** → ★**이제 남은 전제는 「유입」 하나** = 카카오 활성화(**8/15 kimsecretary로 이관·문의 발신·회신 대기**) + 유통 채널(LEO). 수집 시작선에 서 있고 **유입이 0이면 데이터도 0** |
 | ~~자가배포 수정분 서버 반영~~ | ~~Leo~~ | ✅ **완료 (8/7, Leo 승인 후 flavor 직접 집행)** — 아래 DONE 참조. 배포 HEAD **f6d3d90**, 자가배포 첫 실사용에서 `reload:"ok"` + 워커 실교체 확인 |
 
 ---
@@ -39,7 +39,7 @@
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
 | v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
 | ~~DB 리셋 실행~~ | ~~High~~ | ~~flavor2~~ | ✅ **완료 (8/14, flavor 직접 집행)** — 아래 DONE 참조. **submissions/feedbacks/users/milestones 전부 0행** |
-| 카카오 로그인 **활성화** | High | **Leo** | 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Leo가 Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
+| 카카오 로그인 **활성화** | High | **kimsecretary** ← Leo | ★담당 이관(8/15 LEO 지시 「카카오 건은 김비서에게」) → **문의 발신 완료** `kimsecretary_flavor_20260815_131015_카카오로그인활성화_앱등록문의` (agent-comm df81f10eb), 회신 대기. 실측 `/api/me` → `enabled:false` = **배선 라이브·키만 OFF**. 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
 | 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
 | Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
 | Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후, 하네스 Ridge CV 활성화 |
