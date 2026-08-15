@@ -21,7 +21,7 @@
 
 | 항목 | 담당 | 사유 |
 |------|------|------|
-| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ 서버 언블록(7/29) ✅ **DB 0 리셋 + arm 개방 완료(8/14)** → ★**이제 남은 전제는 「유입」 하나** = 카카오 활성화(**8/15 kimsecretary로 이관·문의 발신·회신 대기**) + 유통 채널(LEO). 수집 시작선에 서 있고 **유입이 0이면 데이터도 0** |
+| Stage 1 검증 리포트 (실데이터) | reklcli | ✅ 서버 언블록(7/29) ✅ **DB 0 리셋 + arm 개방 완료(8/14)** → ★**이제 남은 전제는 「유입」 하나** = **유통 채널(LEO) 단독**. ★**8/15 교정** — 그전까지 「카카오 활성화 + 유통」 둘로 적어뒀으나 **카카오 로그인은 유입 수단이 아니다**(kimsecretary 지적, 수용): 들어온 사람을 붙잡는 장치일 뿐 데려오는 장치가 아님. 게다가 실측상 person dedupe 키가 `(name, birth_date, gender)`(`scripts/data_io.py:151`)라 **user_id에 안 물려 있어 검증 모수 품질 기여도 현재 0**. ⇒ 카카오 로그인 카드는 유입 전제에서 **분리**(TODO로 강등). 수집 시작선에 서 있고 **유입이 0이면 데이터도 0** |
 | ~~자가배포 수정분 서버 반영~~ | ~~Leo~~ | ✅ **완료 (8/7, Leo 승인 후 flavor 직접 집행)** — 아래 DONE 참조. 배포 HEAD **f6d3d90**, 자가배포 첫 실사용에서 `reload:"ok"` + 워커 실교체 확인 |
 
 ---
@@ -39,8 +39,8 @@
 | vol1_taste(27문항) 메타 문항 적용 여부 | Low | Leo→reklcli | 별도 포맷이라 미적용 — 유통 재개 전 결정 |
 | v0.2 서버 배포 | High | Leo→reklcli | 이론 검증 완료 후. Leo 배포 승인 필요 |
 | ~~DB 리셋 실행~~ | ~~High~~ | ~~flavor2~~ | ✅ **완료 (8/14, flavor 직접 집행)** — 아래 DONE 참조. **submissions/feedbacks/users/milestones 전부 0행** |
-| 카카오 로그인 **활성화** | High | **kimsecretary** ← Leo | ★담당 이관(8/15 LEO 지시 「카카오 건은 김비서에게」) → **문의 발신 완료** `kimsecretary_flavor_20260815_131015_카카오로그인활성화_앱등록문의` (agent-comm df81f10eb), 회신 대기. 실측 `/api/me` → `enabled:false` = **배선 라이브·키만 OFF**. 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
-| 유통/바이럴 채널 결정 | Medium | Leo | 이론 검증 + 플랫폼 완료 후 |
+| 카카오 로그인 **활성화** | ~~High~~ **Medium** | **LEO 본인** (kimsecretary 상신 중) | ★**8/15 강등** — 유입 수단 아님이 확정돼 「수집 개시」를 막는 카드가 아니게 됨(BLOCKED 24행 참조). ★**김비서 회신 결론(8/15 14:13)**: A-1 기등록 앱 **김비서 기록엔 0건**(단 「세상에 없다」는 아님 — LEO 계정에서 직접 앱 목록 확인 필요) / A-2 **대행 불가, LEO 본인 로그인 필수** — 김비서 카카오 MCP는 커넥터 제공 앱 경유라 **REST 키를 만들지도 꺼내지도 못함**. 김비서가 LEO께 3스텝 카드 상신 중(★flavor 재발신 불요). 실측 `/api/me` → `enabled:false` = **배선 라이브·키만 OFF**. 배선 완료(7/30, fail-safe OFF). **활성화 3스텝**: ① LEO 본인이 Kakao Developers 앱 등록(REST 키·Redirect URI `https://flavor.arkedia.work/auth/kakao/callback`·동의항목 profile_nickname) ② leoserver env 3종(`KAKAO_REST_API_KEY`·`KAKAO_REDIRECT_URI`·`FLASK_SECRET_KEY`) ③ `git pull`+재배포. 키 없으면 익명 흐름 항등 |
+| 유통/바이럴 채널 결정 | **High** ← Medium | **LEO** | ★**8/15 승격 — 이제 이게 수집 개시를 막는 유일한 카드**. 김비서 실측으로 카카오 후보 2종이 걸러짐: ⑴ 김비서 카카오 MCP = 발송 도구가 전부 `send_*_template_to_me`(**수신자 파라미터가 스키마에 아예 없음**) ⇒ **유입 수단 아님, 계획에서 제외** ⑵ kmsg(카톡 데스크톱 자동화) = 실발송 되지만 **LEO 개인 계정으로 지인·기존 대화방**에 보내는 것 ⇒ n≥200 규모 아님, **LEO 결정 없이 집행 금지**(선 그어둠). ★남은 카카오 정공법 = **카카오톡 채널(비즈니스)/친구톡/알림톡** — 사업자 등록이 붙는 별건이고 **보유 여부 미확인, 개설은 LEO 결정**. 김비서가 이 건도 LEO께 별도 상신 예정 |
 | Stage 2 게이트 판정 | Medium | reklcli | 리셋 후 n_persons 200 도달 시 `scripts/validate_saju_signal.py` |
 | Phase D: ML 전환 | Low | reklcli | 200명+ 데이터 후, 하네스 Ridge CV 활성화 |
 
