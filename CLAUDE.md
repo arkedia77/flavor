@@ -1,7 +1,9 @@
-> **나는 flavor 프로젝트다.** reklcli는 내가 돌아가는 머신의 에이전트 이름일 뿐이다.
+> **나는 flavor 프로젝트다.** olive는 내가 돌아가는 머신 이름일 뿐이다.
+> ★**2026-09-11 이사 집행: reklcli → olive**(LEO 지시, 정본=agent-comm `admin/tools/iterm_config.json` `projects.flavor.migration_note_20260911`). 이 문서의 `reklcli:` 한정자는 전부 `olive:`로 교정됐다 — 옛 전사·메시지에 남은 `reklcli:` 경로는 **이 머신에 없다**.
 > - 내 이름: flavor
 > - 내 작업 폴더: ~/projects/flavor (여기서 코드/파일 작업)
-> - 내 통신 채널: agent-comm/projects/flavor (메시지만 주고받는 곳)
+> - 내 통신 채널: agent-comm `projects/flavor` (메시지만 주고받는 곳)
+> - ⚠**olive의 agent-comm 클론 실경로 = `~/projects/agent-comm-plume`** (`~/projects/agent-comm`은 **없다**). 폴더명이 plume인 건 독립 클론 생성 유래일 뿐 — 레포는 `arkedia77/agent-comm` 본체이고, 전용키 `~/.ssh/id_ed25519_agentcomm`+Host alias `github-agentcomm`로 접속한다.
 > - 세션 저장/메모리: 이 폴더(~/projects/flavor)의 .claude/ 스코프에 저장
 > - agent-comm 안에 저장하지 않는다
 
@@ -31,7 +33,7 @@
 ## 역할 분리
 
 ```
-reklcli (Leo+나)          mukl (Mac mini 서버)
+olive (Leo+나)            mukl (Mac mini 서버)
 ─────────────────         ──────────────────
 프로젝트 총괄              서버 배포 (git pull + restart)
 엔진 설계·코드 작성        DB 관리 (실 서버 DB)
@@ -112,23 +114,31 @@ agent-comm 태스크 발행     Cloudflare 터널 운영
 ## 통신 규칙
 
 ```
-수신함: ~/projects/agent-comm/projects/flavor/messages/
+수신함: ~/projects/agent-comm-plume/projects/flavor/messages/   ← ★olive 실경로
 발신: 받는 쪽 프로젝트의 projects/{to}/messages/에 파일 생성
 파일명: {to}_{from}_YYYYMMDD_HHMMSS_{키워드}.json
-from/to는 프로젝트명만 사용 (머신명 mukl/reklcli 금지) — 이 프로젝트는 "flavor"
+from/to는 프로젝트명만 사용 (머신명 mukl/olive/reklcli 금지) — 이 프로젝트는 "flavor"
 규칙 전문: agent-comm/CHANNEL_RULES.md  ← 정본. ★버전 핀 금지(항상 현행판 참조)
 ```
 
 ### 정본 = 이 파일 / FLV-C1 한정자
 
-세션이 로드하는 건 `reklcli:~/.claude/CLAUDE.md`(공통) + **이 파일** 둘뿐.
+세션이 로드하는 건 `olive:~/.claude/CLAUDE.md`(공통) + **이 파일** 둘뿐.
 `agent-comm:projects/flavor/CLAUDE.md`는 **로드 안 됨** — 거길 고쳐도 아무것도 안 바뀐다.
 (8/5 실패: 버전 핀을 그 사본에서 고치고 "고쳤다"고 보고. 에러가 아니라 「없음」이라 몰랐다.)
 
 **FLV-C1** — 밖에서 읽힐 참조엔 한정자 필수. `33ebafa`→`flavor repo 33ebafa`,
-`api/admin.py:51`→`reklcli:~/projects/flavor/api/admin.py:51`. 맨 해시·상대경로는
+`api/admin.py:51`→`olive:~/projects/flavor/api/admin.py:51`. 맨 해시·상대경로는
 읽는 쪽에서 조용히 「없음」이 된다. 일반 수칙(R-P6) 원문은 복제 금지 —
 정본 `agent-comm:projects/fableself/exchange/context-memory-kit-v01.md` §2.
+
+### 계측·기록 정직성 (ari 함대 교육 v1.1 — 1줄 반영)
+
+기계가 준 값은 「내가 잰 것」이지 「대상의 상태」가 아니다. **막힘 기재엔 `blocked_as_of` 시각·검색 폭을 병기**하고,
+**빈 출력 ≠ 없음 · 성공 출력 ≠ 도달 ≠ 보존 · 무출력 ≠ 초록**으로 읽는다.
+★자기 실물 2건(2026-09-11 측정): ⒜테스트를 **아무도 돌리지 않은 28일**이 「초록」으로 읽혔다(8/14 게이트 개방 후 3건 적색·커밋이 문서뿐).
+⒝이사 후 `agent-comm` pull 성공을 「깃은 산다」로 읽으면 **flavor 레포는 push 불가**인 채 묻힌다 — **한 축만 재고 둘을 판정하지 않는다.**
+(L0 상한: kee 8/12 판정으로 flavor는 **초과 감수·감축 압박 없음** ⇒ 이 줄을 넣으며 **뺀 문면 0건**.)
 
 ## 배포
 
