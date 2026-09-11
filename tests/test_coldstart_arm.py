@@ -16,6 +16,11 @@ from engines.domains import DOMAIN_POOL, run_all_domains
 from config import load_coldstart_arm, _ARM_OFF
 from scripts.measure_coldstart_lift import records_from_stored, compute_lift
 
+# ★실 config(config/coldstart_arm.json)의 현 게이트 버전 = 장부값.
+# 이 값을 바꾸는 것은 게이트 개방/폐쇄를 바꾸는 것과 같으므로 **Leo 승인 커밋에서만** 손댄다.
+# 연혁: csa0-off → csa1-open-20260814 (e4ff290, 8/14 LEO 승인 · DB 0 리셋과 한 판).
+LIVE_GATE_VERSION = "csa1-open-20260814"
+
 
 def _sample_results():
     prof = {d: 0.5 for d in
@@ -41,10 +46,30 @@ class TestArmGateOff(unittest.TestCase):
         cfg = {"enabled": True, "random_frac": 0.0, "domains": ["커피"]}
         self.assertIs(apply_random_arm(r, cfg, random.Random(1)), r)
 
-    def test_default_config_is_off(self):
-        cfg = load_coldstart_arm()  # config/coldstart_arm.json
-        self.assertFalse(cfg["enabled"])
-        self.assertEqual(cfg["random_frac"], 0.0)
+    def test_live_config_matches_ledger(self):
+        """실 config가 장부(LIVE_GATE_VERSION)와 일치하는지만 본다 — 조용한 변경 차단.
+
+        ★2026-09-11 교체: 종전 이 테스트는 실 파일에 「enabled=False·random_frac=0.0」을
+        못박아, 8/14 LEO 승인 개방(e4ff290)이 착지한 뒤 **28일간 적색**이었다.
+        가드의 본래 의도는 「게이트가 닫혀 있어야 한다」가 아니라
+        **「실 파일이 Leo 승인 없이 조용히 바뀌지 않는다」**였다. 게이트 기구의 항등성은
+        명시 config로 재는 위 테스트들(test_disabled_identity·test_zero_frac_identity)이
+        이미 보증하므로, 실 파일에 대해서는 **버전 일치 + 내부 정합**만 검사한다.
+        ⇒ 개방·축소·재폐쇄 어느 쪽이든 이 테스트가 먼저 빨개지고, 고치려면
+        LIVE_GATE_VERSION을 손대야 하므로 **Leo 승인 커밋의 흔적이 남는다.**
+        """
+        cfg = load_coldstart_arm()
+        self.assertEqual(cfg["gate_version"], LIVE_GATE_VERSION)
+
+    def test_live_config_is_coherent(self):
+        """열렸으면 frac>0·domains 비지 않음 / 닫혔으면 기구가 항등 — 반쯤 열린 상태 차단."""
+        cfg = load_coldstart_arm()
+        if cfg["enabled"]:
+            self.assertGreater(cfg["random_frac"], 0.0)
+            self.assertTrue(cfg["domains"])
+        else:
+            r = _sample_results()
+            self.assertIs(apply_random_arm(r, cfg, random.Random(1)), r)
 
 
 class TestArmGateOn(unittest.TestCase):
