@@ -209,7 +209,9 @@ COFFEE_PERSONA = {
     "sweet":     {"name": "달달 로맨티스트", "emoji": "🍦", "pole": "sweet",
                   "oneliner": "인생은 달아야지, 커피도 예외 없음"},
     "sprout":    {"name": "커피 새싹",      "emoji": "🌱", "pole": "unknown",
-                  "oneliner": "아직 내 취향을 찾는 중 — 그것도 매력"},
+                  # ★줄표 금지(LEO 2026-09-12): _share_text가 이름과 한 줄을 '—'로 잇는다.
+                  # 한 줄 안에 '—'가 있으면 공유 문구에 줄표가 두 번 나온다(새싹만 해당했음).
+                  "oneliner": "아직 내 취향을 찾는 중, 그것도 매력"},
 }
 
 

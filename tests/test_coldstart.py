@@ -10,6 +10,7 @@ import unittest
 from engines.coldstart import (
     predict_coffee_type, cohort_black_prior, coffee_item_type,
     COFFEE_ITEM_TYPE, _P_MIN, _P_MAX, _SEED_TOTAL_LR_CAP,
+    COFFEE_PERSONA, _TWIST, coffee_reveal,
 )
 from scripts.measure_coldstart_lift import (
     compute_lift, records_from_stored, _synthetic_records,
@@ -147,6 +148,43 @@ class TestLiftHarness(unittest.TestCase):
         self.assertEqual(recs[0]["age"], 66)
         self.assertEqual(recs[0]["shown_type"], "black")
         self.assertTrue(recs[0]["positive"])
+
+
+class TestShareTextNoDoubleDash(unittest.TestCase):
+    """공유 문구에 줄표가 두 번 나오지 않는다 (LEO 2026-09-12 지시로 신설).
+
+    `_share_text()`가 「이름 {emoji} — 한 줄」로 잇기 때문에, 한 줄 자체에 '—'가 있으면
+    한 문장에 줄표가 두 번 나온다. 🌱 새싹이 그 상태였고(「…찾는 중 — 그것도 매력」)
+    유입 전에 적발됐다. ★값 하나를 고치는 대신 **다음 카드가 같은 함정을 밟는 것**을 막는다 —
+    카피는 앞으로도 추가되고, 이 결함은 카드 단위가 아니라 «잇는 방식»에서 나온다.
+    """
+
+    def test_no_oneliner_contains_em_dash(self):
+        for key, p in COFFEE_PERSONA.items():
+            self.assertNotIn("—", p["oneliner"],
+                             f"COFFEE_PERSONA[{key!r}] 한 줄에 '—'가 있으면 공유 문구에 줄표가 2번 난다")
+        for pair, tw in _TWIST.items():
+            self.assertNotIn("—", tw["oneliner"],
+                             f"_TWIST[{pair!r}] 한 줄에 '—'가 있으면 공유 문구에 줄표가 2번 난다")
+
+    def test_share_text_has_single_dash_every_card(self):
+        """실제 산출물로 확인 — 전 카드(기본 5 + 반전 2)의 share에 '—'가 정확히 1개."""
+        cases = [
+            ("아메리카노 진하게", "따뜻한 아메리카노·단골 블렌드", 1),    # ☕
+            ("바닐라라떼", "카페라떼·바닐라라떼", 1),                    # 🍦
+            ("핸드드립 산미 좋아요", "스페셜티 싱글오리진 핸드드립", 2),   # 🫐
+            ("생크림 올린 거", "달달한 라떼·플랫화이트", 1),              # 🎂
+            ("아메리카노만 마셔요", "카페라떼·바닐라라떼", 1),            # 🎭
+            ("바닐라라떼 좋아요", "따뜻한 아메리카노·단골 블렌드", 1),     # 🥷
+            ("커피 잘 몰라요", None, None),                             # 🌱
+        ]
+        seen = set()
+        for seed, item, rx in cases:
+            card = coffee_reveal(seed, item, rx)
+            seen.add(card["key"])
+            self.assertEqual(card["share"].count("—"), 1,
+                             f"{card['name']} 공유 문구 줄표 개수: {card['share']!r}")
+        self.assertEqual(len(seen), 7, f"7종을 다 덮어야 한다 — 실제 덮은 키: {sorted(seen)}")
 
 
 if __name__ == "__main__":
