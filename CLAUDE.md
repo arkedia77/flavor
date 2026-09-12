@@ -99,7 +99,12 @@ agent-comm 태스크 발행     Cloudflare 터널 운영
 
 ### 4. DB 규칙
 - 로컬 테스트: DB_PATH=/tmp/test_flavor.db
-- 서버 실 DB: /Users/mushin/data/saju_submissions.db (mukl 관리)
+- **서버 실 DB = `leoserver:/home/leo/apps/flavor/var/saju_submissions.db`**
+  (근거=systemd `Environment=DB_PATH=`. 배포 위치도 `leoserver:/home/leo/apps/flavor`)
+- ⛔**2026-09-12 정정**: 종전 「서버 실 DB: `/Users/mushin/data/saju_submissions.db` (mukl 관리)」는
+  **틀렸다** — 그 파일은 **3월 21일자 사본**이고 라이브가 아니다(실측). ★***파일이 살아 있다는 것과
+  라이브라는 것은 다른 축인데 이 문면이 둘을 한 낱말로 묶고 있었다*** ⇒ 그 문면을 믿고 모수를 세면
+  6개월 전 데이터를 현재로 읽는다. 구 파일 처분은 admin 발주.
 
 ---
 
