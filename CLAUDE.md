@@ -95,7 +95,13 @@ agent-comm 태스크 발행     Cloudflare 터널 운영
 
 ### 3. 기존 데이터 호환
 - /result/<id> URL 기존 60건 정상 동작 보장
-- DB 스키마 유지 (submissions, feedbacks, milestones 테이블)
+- DB 스키마 유지 — 실 테이블 **4종**: `submissions` · `feedbacks` · `milestones` · **`users`**
+  (`users`는 카카오 로그인용. 키 미주입이라 현재 0행이고 `KAKAO_LOGIN_ENABLED=False`)
+- ⛔**`persons` 테이블은 없다** — person 중복제거는 `scripts/data_io.py dedupe_persons()`가
+  `(name, birth_date, gender)`로 **계산**하는 파생 지표다. ★따라서 `users`(=카카오 안정키)와
+  dedupe 키는 **물려 있지 않다**. 그 상태가 의도된 것이고 ⛔**dedupe 키를 `user_id`로 바꾸는
+  발주는 금지**(8/15 기록 — 로그인이 안 켜졌고, 당시 근거였던 「기존 60건 호환」은 8/14 리셋으로
+  소멸했으나 첫 사유는 유효). ★2026-09-12 admin이 실 테이블 열거로 이 누락을 지적해 보강.
 
 ### 4. DB 규칙
 - 로컬 테스트: DB_PATH=/tmp/test_flavor.db
