@@ -18,6 +18,7 @@ from engines.persona import get_persona
 from engines.personality import get_personality_type
 from engines.recommend import recommend
 from engines.coldstart import apply_random_arm, coffee_reveal
+from engines.source import parse_source
 from engines.saju_features import (
     extract_features_from_birth, saju_prior_9d, SCHEMA_VERSION as SAJU_SCHEMA_VERSION,
 )
@@ -153,6 +154,14 @@ def submit():
         # 로그인 상태면 서버 user 연결(익명이면 None = 기존 동작 항등)
         user_id = session.get("user_id")
 
+        # 유입 출처 (2026-09-21, LEO 승인). 같은 오리진 XHR이라 Referer에 퀴즈 페이지 URL이
+        # 쿼리스트링째 온다 → utm을 서버에서 읽는다(프론트 무변경). 없으면 None = 항등.
+        # ⛔출처 파싱이 제출을 막으면 안 된다 — fail-safe.
+        try:
+            source = parse_source(request.referrer) or None
+        except Exception:
+            source = None
+
         # DB 저장 (elements_json에 persona 저장, 하위호환 / saju_json에 피처 벡터)
         save_submission(
             result_id, name, birth_date, birth_time, gender,
@@ -164,6 +173,7 @@ def submit():
             datetime.now().isoformat(),
             saju=saju_record,
             user_id=user_id,
+            source=source,
         )
 
         total = get_submission_count()

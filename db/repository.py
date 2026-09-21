@@ -6,15 +6,15 @@ from db.connection import get_db_connection
 
 def save_submission(result_id, name, birth_date, birth_time, gender,
                     elements, raw_answers, survey, profile, results, profile_version, created_at,
-                    saju=None, user_id=None):
+                    saju=None, user_id=None, source=None):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("""
         INSERT INTO submissions (id, name, birth_date, birth_time, gender,
                                  elements_json, raw_survey_json, survey_json,
                                  profile_json, results_json, profile_version, created_at,
-                                 saju_json, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 saju_json, user_id, source_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         result_id, name, birth_date, birth_time, gender,
         json.dumps(elements, ensure_ascii=False),
@@ -25,7 +25,10 @@ def save_submission(result_id, name, birth_date, birth_time, gender,
         profile_version,
         created_at,
         json.dumps(saju, ensure_ascii=False) if saju else None,
-        user_id
+        user_id,
+        # ⛔빈 dict는 NULL로 — 직접 유입·기존 행과 완전히 항등이어야 한다(「{}」를 남기면
+        #   「출처 없음」과 「계측 전」이 구분 안 된다).
+        json.dumps(source, ensure_ascii=False) if source else None,
     ))
     conn.commit()
     conn.close()
