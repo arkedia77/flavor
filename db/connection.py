@@ -14,7 +14,14 @@ def init_db():
     # 잠가 «읽기»까지 busy_timeout 뒤 실패한다 — 동시 제출이 몰리는 유통 개시 때 터지는 축.
     # WAL은 읽기가 쓰기와 겹쳐도 통과한다. journal_mode는 **DB 파일에 영속**하므로 여기서 1회.
     # ⛔백업과의 상호작용(admin 지적): 백업이 파일 `cp`였다면 WAL 전환 순간부터 `-wal`·`-shm`을
-    #   빠뜨려 «조용히» 깨졌을 것이다. 현 백업은 sqlite3 `Connection.backup()`이라 안전하다.
+    #   빠뜨려 «조용히» 깨졌을 것이다(에러 없이 「과거 시점」 DB가 나온다). 현 백업은 sqlite3
+    #   `Connection.backup()`이라 안전 — 2026-09-21 admin이 백업본을 «열어서» 교차검증 통과.
+    # ⚠★**이 마지막 문장은 이 repo 밖 자산에 달려 있다** — 백업 스크립트는
+    #   `leoserver:~/.local/bin/flavor_db_backup.sh`(admin 소관)다. 그쪽이 `cp` 방식으로 바뀌면
+    #   ***이 주석은 코드 한 줄 안 바뀌고도 거짓이 된다.*** ⇒ 인용 전 현물 확인.
+    #   (같은 형태가 반대 방향으로 실제 발생했다: 이 WAL 전환이 admin 스크립트의 주석
+    #    「journal_mode=delete라 더 위험」을 낡게 만들었고 admin이 자진 적발·교체했다.
+    #    ⛔WAL에서 `cp`는 delete 때보다 **더** 위험하다 — 거꾸로 읽히던 문면이었다.)
     try:
         conn.execute("PRAGMA journal_mode=WAL")
     except Exception:
