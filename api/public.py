@@ -55,6 +55,12 @@ ROBOTS_TXT = """\
 #   공유가 `navigator.share`(OS 공유 시트)를 타므로 목적지 앱을 우리가 열거할 수 없고,
 #   목록에 없는 미리보기 크롤러가 robots를 지키면 그 앱에서만 카드가 조용히 깨진다.
 #   ⇒ 새 공유 경로가 생기면 이 목록에 UA를 추가해야 한다(그 사실을 잊으면 증상이 안 보인다).
+#
+# ⛔★이 목록을 «늘리거나 줄이면» creev의 판정 화이트리스트도 같이 고쳐야 한다 —
+#   `agent-comm:projects/creev/notes/tools/verify_robots_block.sh`(v0.3~, creev 소관).
+#   그쪽 기준 ⑵가 「화이트리스트 «밖» UA가 열리면 FAIL」이라, **같은 목록이 두 repo에 복제돼 있다.**
+#   ⇒ 한쪽만 바뀌면 판정이 «조용히» 틀린다(양방향 다 「거짓 FAIL」로 나오고, 그럼 내가
+#     미이행자로 기록된다). ★이 목록을 건드리면 creev에 1줄 통지하는 것까지가 한 작업이다.
 User-agent: kakaotalk-scrap
 Allow: /
 
