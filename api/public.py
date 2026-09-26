@@ -4,7 +4,7 @@ import os
 import json
 from html import escape as html_escape
 
-from flask import Blueprint, redirect, jsonify, render_template_string
+from flask import Blueprint, redirect, jsonify, render_template_string, Response
 
 from config import DOMAIN_EMOJI, COLDSTART_ARM, public_results
 from engines.personality import get_personality_type
@@ -43,6 +43,57 @@ def hub_saju():
 @public.route("/health")
 def health():
     return jsonify({"status": "ok", "service": "flavor-saju"})
+
+
+ROBOTS_TXT = """\
+# flavor.arkedia.work
+# LEO 결정 2026-09-26 (kee A-222 / 원 선언 C109 2026-08-27 「이 4개는 내부 프로젝트야」)
+# 방식 = 검색 엔진 «전면 차단» + 링크 미리보기 크롤러만 «예외 허용».
+# ⇒ 검색 색인은 막고, 공유 카드(커피 자아·취향 리포트)는 살린다.
+#
+# ⚠이 방식의 잔여 위험(설계상 알고 채택): 허용 목록은 «완전할 수 없다».
+#   공유가 `navigator.share`(OS 공유 시트)를 타므로 목적지 앱을 우리가 열거할 수 없고,
+#   목록에 없는 미리보기 크롤러가 robots를 지키면 그 앱에서만 카드가 조용히 깨진다.
+#   ⇒ 새 공유 경로가 생기면 이 목록에 UA를 추가해야 한다(그 사실을 잊으면 증상이 안 보인다).
+User-agent: kakaotalk-scrap
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: *
+Disallow: /
+"""
+
+
+@public.route("/robots.txt")
+def robots_txt():
+    """검색 차단 + 미리보기 허용 (LEO 결정 2026-09-26 · kee A-222 · 검증=creev).
+
+    ⛔파일이 아니라 라우트인 이유: 원천이 앱(CF 터널 → leoserver:8000)이라 정적 파일을
+    둘 자리가 없다(admin 실측).
+    ⚠엣지 캐시: CF가 이 경로를 `max-age=14400`으로 캐싱하고 content-signal 주석을 덧붙인다
+    ⇒ 배포 직후 검증하면 «옛 엣지 사본»이 잡혀 거짓 미해소가 난다(배포 +4h 후 또는 퍼지 후 측정).
+    """
+    return Response(ROBOTS_TXT, mimetype="text/plain; charset=utf-8")
 
 
 @public.route("/favicon.ico")
