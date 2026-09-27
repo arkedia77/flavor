@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 
+from api.authz import require_token
 from config import ENGINE_VERSION, SAJU_GATE, COLDSTART_ARM, public_results
 from engines.survey import raw_to_survey
 from engines.persona import get_persona
@@ -227,7 +228,14 @@ def feedback():
 
 
 @submit_bp.route("/api/results")
+@require_token
 def api_results():
+    """★관리자 전용 — 참가자 `name`·`birth_date`·`gender`를 내보낸다.
+
+    09-24까지 **무인증 200**이었다(프론트 사용처는 0건이라 아무도 안 쓰고 있었다).
+    DB가 0행이라 `[]`만 나와 무해했을 뿐이고, 유통을 여는 순간 실제 참가자
+    데이터가 공개 URL로 내려갈 자리였다 ⇒ 유통 «전» 선행 게이트로 닫았다.
+    """
     rows = get_recent_submissions()
     return jsonify([{
         "id": r[0], "name": r[1], "birth_date": r[2],
@@ -236,7 +244,14 @@ def api_results():
 
 
 @submit_bp.route("/api/calibration-data")
+@require_token
 def calibration_data():
+    """★관리자 전용 — `birth_date`·`birth_time`·`gender` + 원답안 전량.
+
+    이름은 없지만 **생년월일+시+성별은 준식별자**이고 원답안까지 붙는다 ⇒
+    `/api/results`와 같은 등급으로 닫는다. 소비처는 0건이다(측정 스크립트는
+    `scripts/data_io.py`가 이미 토큰 게이트된 `/api/admin/export`를 쓴다).
+    """
     rows, total = get_calibration_data()
     return jsonify({
         "total": total,

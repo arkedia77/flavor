@@ -4,10 +4,10 @@ import os
 import signal
 import subprocess
 from datetime import datetime
-from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
+from api.authz import require_token  # 토큰 게이트 단일본 — PII 엔드포인트가 같이 쓴다
 from db.connection import get_db_connection
 
 admin_bp = Blueprint('admin', __name__)
@@ -48,17 +48,6 @@ def resolve_gunicorn_master():
     if "gunicorn" not in cmd:
         return None, cmd, "부모가 gunicorn이 아님 (개발 서버로 실행 중일 수 있음)"
     return pid, cmd, None
-
-
-def require_token(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        token = os.environ.get("ADMIN_TOKEN", "")
-        auth = request.headers.get("Authorization", "")
-        if not token or auth != f"Bearer {token}":
-            return jsonify({"status": "error", "message": "Unauthorized"}), 403
-        return f(*args, **kwargs)
-    return wrapper
 
 
 @admin_bp.route("/api/admin/deploy", methods=["POST"])

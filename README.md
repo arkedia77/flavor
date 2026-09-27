@@ -27,5 +27,7 @@ DB_PATH=/var/data/saju_submissions.db DEBUG=false \
 |---|---|---|
 | `/api/submit` | POST | 설문 제출 → 결과 반환 |
 | `/result/<id>` | GET | 결과 조회 |
-| `/api/results` | GET | 전체 제출 목록 |
+| `/api/results` | GET | 전체 제출 목록 — ★**관리자 토큰 필수**(`Authorization: Bearer $ADMIN_TOKEN`) |
+| `/api/calibration-data` | GET | 보정용 원답안 — ★**관리자 토큰 필수** |
+| `/dashboard` | GET | 관리자 통계 화면 — ★**`?token=$ADMIN_TOKEN`** (브라우저는 헤더를 못 붙인다) |
 | `/health` | GET | 헬스체크 |

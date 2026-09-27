@@ -6,6 +6,7 @@ from html import escape as html_escape
 
 from flask import Blueprint, redirect, jsonify, render_template_string, Response
 
+from api.authz import require_token_page
 from config import DOMAIN_EMOJI, COLDSTART_ARM, public_results
 from engines.personality import get_personality_type
 from db.repository import get_submission
@@ -426,7 +427,13 @@ def my_report_saju():
 
 
 @public.route("/dashboard")
+@require_token_page
 def dashboard():
+    """★관리자 전용(브라우저) — `?token=<ADMIN_TOKEN>`으로 연다.
+
+    페이지가 부르는 API(`/api/admin/export`)는 전부터 토큰 게이트였지만, 페이지
+    자체가 무인증 200이라 내부 구조·운영 지표 화면이 URL만 알면 열렸다.
+    """
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "dashboard.html")
     with open(path, "r", encoding="utf-8") as f:
         return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
