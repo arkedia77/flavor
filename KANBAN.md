@@ -46,6 +46,12 @@
 - **이 머신(olive) 복구 조건**(2026-09-21 실측): FileVault **Off**(부팅 암호 불요) · 자동 로그인 **없음**
   (재부팅 시 **로그인 화면에서 멈춘다**) · tmux/claude **자동 기동 배선 없음** ⇒ ***재부팅하면 사람이
   로그인해야 하고, 슬롯 기동은 admin이 한다.*** 내 세션은 스스로 안 돌아온다.
+- ⚠**내 슬랙 발신 경로**(2026-09-27 실측, ari 3축 청구 이행 중 확인): **olive엔 `~/leobridge`가 없다**
+  = 자립 발신 배선 **0**. 팀장 게이트 `hive_send.sh`는 **HTTP 400 `bad fromAgent`**(채널맵 밖 슬롯이라
+  발신 주체가 아니다). ★유일 경로 = **`ssh mukl '~/leobridge/room_send.sh flavor C0BHM1S0E9W <본문>'`**
+  (본문은 **파일→stdin**으로 넘긴다 — 셸 인자 금지). 게시 확인은 `chat.postMessage` 실응답 **+
+  `conversations.history` 되읽기**로 한다(⛔릴레이의 `sent:true`는 없는 채널에도 나온다).
+  ⇒ ***olive→mukl ssh가 끊기면 내 슬랙 발신은 0이 된다.***
 - **작업 재개 명령**: `cd ~/projects/flavor && DB_PATH=/tmp/test_flavor.db .venv/bin/python -m unittest discover -s tests`
   (224 OK가 기준선 — 09-27 인증 게이트 13건 추가) · 수신함 = `~/projects/agent-comm-plume/projects/flavor/messages/`
   · push 전 동기화는 **`admin/scripts/sync_shared_clone.sh`**(⛔raw rebase 금지).
