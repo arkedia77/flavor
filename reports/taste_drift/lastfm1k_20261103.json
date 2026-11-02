@@ -1,0 +1,204 @@
+{
+  "preregistration": "reports/taste_drift/lastfm1k_preregistration.md",
+  "data_sha256": "c8075a048b0e14737c0b38d708f9e8e56a37193f33c6592e599bfcaa982bdb70",
+  "seed": 20261103,
+  "counts": {
+    "users_total": 992,
+    "eligible_span": 631,
+    "analysed": 298,
+    "unparsed_lines": 0,
+    "excluded_from_M_W_le_O": 0
+  },
+  "H1_changes": {
+    "positive": 298,
+    "nonzero": 298,
+    "p_one_sided": 1.2231923053033328e-66,
+    "pass": true
+  },
+  "H2_partly": {
+    "positive": 294,
+    "nonzero": 298,
+    "p_one_sided": 3.275922978679988e-63,
+    "pass": true
+  },
+  "W_within_period": {
+    "q25": 0.7211,
+    "median": 0.8423,
+    "q75": 0.9165,
+    "n": 298
+  },
+  "X_across_period": {
+    "q25": 0.156,
+    "median": 0.2599,
+    "q75": 0.411,
+    "n": 298
+  },
+  "O_other_user": {
+    "q25": 0.0028,
+    "median": 0.0137,
+    "q75": 0.0348,
+    "n": 298
+  },
+  "M_moved_share": {
+    "q25": 0.5164,
+    "median": 0.7011,
+    "q75": 0.8243,
+    "n": 298
+  },
+  "span_years": {
+    "q25": 2.6858,
+    "median": 3.1896,
+    "q75": 3.6742,
+    "n": 298
+  },
+  "S1_gap_months": {
+    "1": {
+      "mean_cos": 0.4622,
+      "n_pairs": 16503
+    },
+    "2": {
+      "mean_cos": 0.3777,
+      "n_pairs": 15426
+    },
+    "3": {
+      "mean_cos": 0.3434,
+      "n_pairs": 14534
+    },
+    "4": {
+      "mean_cos": 0.3232,
+      "n_pairs": 13786
+    },
+    "5": {
+      "mean_cos": 0.3074,
+      "n_pairs": 13131
+    },
+    "6": {
+      "mean_cos": 0.2949,
+      "n_pairs": 12452
+    },
+    "7": {
+      "mean_cos": 0.2828,
+      "n_pairs": 11839
+    },
+    "8": {
+      "mean_cos": 0.2757,
+      "n_pairs": 11260
+    },
+    "9": {
+      "mean_cos": 0.2661,
+      "n_pairs": 10721
+    },
+    "10": {
+      "mean_cos": 0.26,
+      "n_pairs": 10211
+    },
+    "11": {
+      "mean_cos": 0.2532,
+      "n_pairs": 9754
+    },
+    "12": {
+      "mean_cos": 0.2481,
+      "n_pairs": 9299
+    },
+    "13": {
+      "mean_cos": 0.24,
+      "n_pairs": 8813
+    },
+    "14": {
+      "mean_cos": 0.2344,
+      "n_pairs": 8348
+    },
+    "15": {
+      "mean_cos": 0.229,
+      "n_pairs": 7855
+    },
+    "16": {
+      "mean_cos": 0.2241,
+      "n_pairs": 7449
+    },
+    "17": {
+      "mean_cos": 0.2207,
+      "n_pairs": 7022
+    },
+    "18": {
+      "mean_cos": 0.2165,
+      "n_pairs": 6613
+    },
+    "19": {
+      "mean_cos": 0.2126,
+      "n_pairs": 6196
+    },
+    "20": {
+      "mean_cos": 0.209,
+      "n_pairs": 5816
+    },
+    "21": {
+      "mean_cos": 0.2061,
+      "n_pairs": 5452
+    },
+    "22": {
+      "mean_cos": 0.2052,
+      "n_pairs": 5107
+    },
+    "23": {
+      "mean_cos": 0.2034,
+      "n_pairs": 4781
+    },
+    "24": {
+      "mean_cos": 0.2002,
+      "n_pairs": 4444
+    },
+    "25": {
+      "mean_cos": 0.1974,
+      "n_pairs": 4158
+    },
+    "26": {
+      "mean_cos": 0.1953,
+      "n_pairs": 3846
+    },
+    "27": {
+      "mean_cos": 0.1937,
+      "n_pairs": 3552
+    },
+    "28": {
+      "mean_cos": 0.1908,
+      "n_pairs": 3268
+    },
+    "29": {
+      "mean_cos": 0.19,
+      "n_pairs": 2992
+    },
+    "30": {
+      "mean_cos": 0.1896,
+      "n_pairs": 2727
+    },
+    "31": {
+      "mean_cos": 0.185,
+      "n_pairs": 2476
+    },
+    "32": {
+      "mean_cos": 0.1828,
+      "n_pairs": 2255
+    },
+    "33": {
+      "mean_cos": 0.1823,
+      "n_pairs": 2039
+    },
+    "34": {
+      "mean_cos": 0.1814,
+      "n_pairs": 1810
+    },
+    "35": {
+      "mean_cos": 0.1796,
+      "n_pairs": 1594
+    },
+    "36": {
+      "mean_cos": 0.1743,
+      "n_pairs": 1413
+    }
+  },
+  "S2_age": {
+    "n": 105,
+    "spearman_age_vs_moved_share": -0.1555
+  }
+}
