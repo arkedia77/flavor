@@ -1,0 +1,97 @@
+{
+  "preregistration": "reports/saju_signal/og_screen_preregistration.md",
+  "data_sha256": "248e43c8a1da8ccbeaf89531fca432d0bc66740e3c44f180bafe3bb67d541e9e",
+  "seed": 20261103,
+  "counts": {
+    "main": 15039,
+    "aux": 6233,
+    "skipped": {
+      "occupation": 2728,
+      "no_usable_date": 526,
+      "malformed_hour": 13
+    },
+    "feature_errors": {}
+  },
+  "P1": {
+    "all": {
+      "n": 15039,
+      "chi2": 138.562,
+      "p_perm": 0.7948205179482052,
+      "B": 10000,
+      "cramers_v": 0.032,
+      "null_v_p99": 0.0381,
+      "n_strata": null
+    },
+    "FR": {
+      "n": 12377,
+      "chi2": 144.54,
+      "p_perm": 0.6707329267073293,
+      "B": 10000,
+      "cramers_v": 0.03602,
+      "null_v_p99": 0.04207,
+      "n_strata": null
+    },
+    "nonFR": {
+      "n": 2662,
+      "chi2": 137.256,
+      "p_perm": 0.4203579642035796,
+      "B": 10000,
+      "cramers_v": 0.07569,
+      "null_v_p99": 0.0856,
+      "n_strata": null
+    },
+    "pass": false,
+    "cv_logloss_gain_nats": -0.006254
+  },
+  "secondary": {
+    "S1_yongsin": {
+      "n": 15039,
+      "chi2": 90.74,
+      "p_perm": 0.06446776611694154,
+      "B": 2000,
+      "cramers_v": 0.03884,
+      "null_v_p99": 0.04119,
+      "n_strata": 1731,
+      "pass_bonferroni_0.0025": false
+    },
+    "S2_strength": {
+      "n": 15039,
+      "chi2": 25.83,
+      "p_perm": 0.9045477261369316,
+      "B": 2000,
+      "cramers_v": 0.0293,
+      "null_v_p99": 0.04387,
+      "n_strata": 1731,
+      "pass_bonferroni_0.0025": false
+    },
+    "S3_gyeok_group": {
+      "n": 15039,
+      "chi2": 86.555,
+      "p_perm": 0.42528735632183906,
+      "B": 2000,
+      "cramers_v": 0.03393,
+      "null_v_p99": 0.03921,
+      "n_strata": 1731,
+      "pass_bonferroni_0.0025": false
+    },
+    "S4_hour_branch": {
+      "n": 15039,
+      "chi2": 190.379,
+      "p_perm": 0.5702148925537232,
+      "B": 2000,
+      "cramers_v": 0.03392,
+      "null_v_p99": 0.03853,
+      "n_strata": 89,
+      "pass_bonferroni_0.0025": false
+    }
+  },
+  "sensitivity_aux_P1": {
+    "n": 6233,
+    "chi2": 106.872,
+    "p_perm": 0.2555744425557444,
+    "B": 10000,
+    "cramers_v": 0.04365,
+    "null_v_p99": 0.04872,
+    "n_strata": null
+  }
+}

@@ -45,12 +45,16 @@ def load_rows(path):
             if r["OCCU"] not in OCCUPATIONS:
                 skipped["occupation"] += 1
                 continue
+            if r["Y"] and r["H"] and not (r["H"].isdigit() and 0 <= int(r["H"]) <= 23):
+                # 실행 중 발견(사전등록 밖 파싱 규칙): '.2'·'  '·'24' 등은 버린다
+                skipped["malformed_hour"] += 1
+                continue
             if r["Y"] and r["MON"] and r["D"] and r["H"]:
                 rec = dict(id=r["OGID"], occ=r["OCCU"], cy=r["CY"],
                            y=int(r["Y"]), m=int(r["MON"]), d=int(r["D"]),
                            h=int(r["H"]), sample="main")
                 main.append(rec)
-            elif (r["Y-UT"] and r["H-UT"] and r["CY"] in EUROPE
+            elif (r["Y-UT"] and r["H-UT"].isdigit() and r["CY"] in EUROPE
                   and 0 <= int(r["H-UT"]) <= 21):
                 rec = dict(id=r["OGID"], occ=r["OCCU"], cy=r["CY"],
                            y=int(r["Y-UT"]), m=int(r["MON-UT"]), d=int(r["D-UT"]),
