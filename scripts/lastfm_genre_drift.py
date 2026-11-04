@@ -14,7 +14,7 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lastfm_drift import (MIN_GAP, SEED, WINDOW, cos, members, parse,  # noqa: E402
+from lastfm_drift import (MIN_GAP, MIN_PLAYS, SEED, WINDOW, cos, members, parse,  # noqa: E402
                           quantiles, read_lines, sha256, sign_test)
 
 MIN_GENRE_PLAYS = 200
@@ -72,6 +72,7 @@ def main():
 
     halves = defaultdict(lambda: {k: Counter() for k in HALVES})
     total = Counter()
+    seg_total = Counter()  # 사전등록 §1: 원 표본 규칙(E·L 각 1,000건 이상)
     for line in read_lines(a.tgz, plays_name):
         r = parse(line)
         if r is None:
@@ -87,11 +88,13 @@ def main():
         else:
             continue
         total[u] += 1
+        seg_total[(u, seg[0])] += 1
         if key in genres:
             halves[u][seg][key] += 1
 
     users = sorted(u for u, h in halves.items()
-                   if all(sum(h[k].values()) >= MIN_GENRE_PLAYS for k in HALVES))
+                   if all(sum(h[k].values()) >= MIN_GENRE_PLAYS for k in HALVES)
+                   and seg_total[(u, "E")] >= MIN_PLAYS and seg_total[(u, "L")] >= MIN_PLAYS)
     covered = sum(sum(sum(halves[u][k].values()) for k in HALVES) for u in users)
     coverage = covered / sum(total[u] for u in users) if users else 0
 

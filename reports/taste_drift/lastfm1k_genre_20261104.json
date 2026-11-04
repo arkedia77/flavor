@@ -1,0 +1,55 @@
+{
+  "preregistration": "reports/taste_drift/lastfm1k_genre_preregistration.md",
+  "data_sha256": "c8075a048b0e14737c0b38d708f9e8e56a37193f33c6592e599bfcaa982bdb70",
+  "genres_sha256": "10600e9d4d7eafe03b41315c0582293872cadb02293d26a778b5f80ce04dacb2",
+  "seed": 20261103,
+  "counts": {
+    "artists_with_genres": 4688,
+    "eligible_span": 631,
+    "users_min_plays": 294,
+    "analysed": 294,
+    "play_coverage_by_genre_artists": 0.7551
+  },
+  "G1_layer2_moves_less": {
+    "positive": 251,
+    "nonzero": 294,
+    "p_one_sided": 7.380411011724551e-34,
+    "pass": true
+  },
+  "G2_genre_changes": {
+    "positive": 293,
+    "nonzero": 294,
+    "p_one_sided": 6.677948188579527e-65,
+    "pass": true
+  },
+  "M_artist_restricted": {
+    "q25": 0.477,
+    "median": 0.6631,
+    "q75": 0.793,
+    "n": 294
+  },
+  "M_genre": {
+    "q25": 0.1109,
+    "median": 0.2797,
+    "q75": 0.5841,
+    "n": 294
+  },
+  "genre_W": {
+    "q25": 0.9537,
+    "median": 0.9774,
+    "q75": 0.9897,
+    "n": 294
+  },
+  "genre_X": {
+    "q25": 0.6892,
+    "median": 0.8267,
+    "q75": 0.914,
+    "n": 294
+  },
+  "genre_O": {
+    "q25": 0.2213,
+    "median": 0.3951,
+    "q75": 0.5988,
+    "n": 294
+  }
+}
