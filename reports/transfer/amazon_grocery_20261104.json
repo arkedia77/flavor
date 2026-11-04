@@ -1,0 +1,193 @@
+{
+  "preregistration": "reports/transfer/amazon_grocery_preregistration.md",
+  "meta_sha256": "ed9b24ea707f7010b5cb321462a8e896ad1fcd59620fbc55f05084c3da59842e",
+  "reviews_sha256": "bd68ea63cd101de7a0f8ae53896a0ce6b4d1d61fdef63cc02fad303e5f1244c6",
+  "seed": 20261103,
+  "B": 10000,
+  "counts": {
+    "reviews": 14318520,
+    "unparsed": 0,
+    "axis_items": 46398,
+    "axis_items_by_side": {
+      "coffee:B": 4186,
+      "T1_chocolate:B": 8334,
+      "T2_tea:A": 6360,
+      "T3_spicy:A": 10341,
+      "T2_tea:B": 5348,
+      "T1_chocolate:A": 8313,
+      "T3_spicy:B": 2576,
+      "coffee:A": 940
+    },
+    "excluded_multi_axis_items": 762
+  },
+  "main_liked": {
+    "n_users_coffee_direction": 262649,
+    "T1_chocolate": {
+      "n": 13191,
+      "cells": {
+        "pair_A": 6223,
+        "pair_B": 4763,
+        "other_A": 1097,
+        "other_B": 1108
+      },
+      "min_cell": 1097,
+      "odds_ratio": 1.3196,
+      "null_or_p5_p95": [
+        0.9248,
+        1.0815
+      ],
+      "p_one_sided": 9.999000099990002e-05,
+      "hit_rate": 0.5558,
+      "base_rate": 0.5549,
+      "lift_pp": 0.08,
+      "alpha": 0.01,
+      "verdict": "통과"
+    },
+    "T2_tea": {
+      "n": 11796,
+      "cells": {
+        "pair_A": 755,
+        "pair_B": 1028,
+        "other_A": 4748,
+        "other_B": 5265
+      },
+      "min_cell": 755,
+      "odds_ratio": 0.8145,
+      "null_or_p5_p95": [
+        0.919,
+        1.0891
+      ],
+      "p_one_sided": 1.0,
+      "hit_rate": 0.5103,
+      "base_rate": 0.5335,
+      "lift_pp": -2.31,
+      "alpha": 0.0033333333333333335,
+      "verdict": "실패"
+    },
+    "T3_spicy": {
+      "n": 10643,
+      "cells": {
+        "pair_A": 7084,
+        "pair_B": 2042,
+        "other_A": 1139,
+        "other_B": 378
+      },
+      "min_cell": 378,
+      "odds_ratio": 1.1521,
+      "null_or_p5_p95": [
+        0.8953,
+        1.1143
+      ],
+      "p_one_sided": 0.016298370162983702,
+      "hit_rate": 0.7011,
+      "base_rate": 0.7726,
+      "lift_pp": -7.15,
+      "alpha": 0.0033333333333333335,
+      "verdict": "실패"
+    },
+    "S2_placebo_organic": {
+      "n": 129270,
+      "cells": {
+        "pair_A": 777,
+        "pair_B": 18351,
+        "other_A": 7600,
+        "other_B": 102542
+      },
+      "min_cell": 777,
+      "odds_ratio": 0.5716,
+      "null_or_p5_p95": [
+        0.9477,
+        1.054
+      ],
+      "p_one_sided": 1.0,
+      "hit_rate": 0.7992,
+      "base_rate": 0.9352,
+      "lift_pp": -13.59
+    }
+  },
+  "S1_all_reviews": {
+    "n_users_coffee_direction": 317139,
+    "T1_chocolate": {
+      "n": 17641,
+      "cells": {
+        "pair_A": 8397,
+        "pair_B": 6345,
+        "other_A": 1450,
+        "other_B": 1449
+      },
+      "min_cell": 1449,
+      "odds_ratio": 1.3225,
+      "null_or_p5_p95": [
+        0.9339,
+        1.0695
+      ],
+      "p_one_sided": 9.999000099990002e-05,
+      "hit_rate": 0.5581,
+      "base_rate": 0.5582,
+      "lift_pp": -0.01,
+      "alpha": 0.01,
+      "verdict": "통과"
+    },
+    "T2_tea": {
+      "n": 15142,
+      "cells": {
+        "pair_A": 984,
+        "pair_B": 1275,
+        "other_A": 6223,
+        "other_B": 6660
+      },
+      "min_cell": 984,
+      "odds_ratio": 0.8261,
+      "null_or_p5_p95": [
+        0.9272,
+        1.0797
+      ],
+      "p_one_sided": 1.0,
+      "hit_rate": 0.5048,
+      "base_rate": 0.524,
+      "lift_pp": -1.92,
+      "alpha": 0.0033333333333333335,
+      "verdict": "실패"
+    },
+    "T3_spicy": {
+      "n": 14153,
+      "cells": {
+        "pair_A": 9520,
+        "pair_B": 2595,
+        "other_A": 1550,
+        "other_B": 488
+      },
+      "min_cell": 488,
+      "odds_ratio": 1.1557,
+      "null_or_p5_p95": [
+        0.9093,
+        1.0978
+      ],
+      "p_one_sided": 0.006399360063993601,
+      "hit_rate": 0.7071,
+      "base_rate": 0.7822,
+      "lift_pp": -7.5,
+      "alpha": 0.0033333333333333335,
+      "verdict": "실패"
+    },
+    "S2_placebo_organic": {
+      "n": 166205,
+      "cells": {
+        "pair_A": 1022,
+        "pair_B": 23443,
+        "other_A": 9250,
+        "other_B": 132490
+      },
+      "min_cell": 1022,
+      "odds_ratio": 0.6247,
+      "null_or_p5_p95": [
+        0.9544,
+        1.0486
+      ],
+      "p_one_sided": 1.0,
+      "hit_rate": 0.8033,
+      "base_rate": 0.9382,
+      "lift_pp": -13.49
+    }
+  }
+}
