@@ -1,0 +1,267 @@
+{
+  "preregistration": "reports/transfer/amazon_cross_domain_preregistration.md",
+  "sha256": {
+    "meta_g": "ed9b24ea707f7010b5cb321462a8e896ad1fcd59620fbc55f05084c3da59842e",
+    "rev_g": "bd68ea63cd101de7a0f8ae53896a0ce6b4d1d61fdef63cc02fad303e5f1244c6",
+    "meta_c": "c52275a5bce63bf293f987bff5ff1f2b268982797545f3df2b7662ab638e8aec",
+    "rev_c": "4692a40ee4b9bcc5f7ee58edeffb211138e02641c3fdfd55f77843430cb34cbc",
+    "meta_m": "beb82feef266bfa6d2e279903fd823a8b3b9c065059e1048226d0b74dc16b47d",
+    "rev_m": "4eb7428d5f48baae5a7f1132ef556e6e98181b122085ac24b34b25e033c3130a"
+  },
+  "seed": 20261106,
+  "B": 10000,
+  "counts": {
+    "reviews": {
+      "grocery": 14318520,
+      "cds": 4827273,
+      "movies": 17328314
+    },
+    "unparsed": 0,
+    "items": {
+      "food": {
+        "A": 22982,
+        "B": 10963
+      },
+      "music": {
+        "A": 50603,
+        "B": 41525
+      },
+      "movie": {
+        "B": 8888,
+        "A": 53538
+      }
+    },
+    "users_with_direction": {
+      "food": 684222,
+      "music": 346602,
+      "movie": 747013,
+      "organic": 5014406
+    }
+  },
+  "X1_food_music": {
+    "n": 16032,
+    "cells": {
+      "A_A": 3922,
+      "A_B": 8344,
+      "B_A": 1043,
+      "B_B": 2723
+    },
+    "min_cell": 1043,
+    "odds_ratio": 1.2269,
+    "null_or_p5_p95": [
+      0.9363,
+      1.0679
+    ],
+    "p_one_sided": 9.999000099990002e-05,
+    "hit_rate": 0.4145,
+    "base_rate": 0.6903,
+    "lift_pp": -27.58,
+    "alpha": 0.01,
+    "verdict": "통과"
+  },
+  "X2_food_movie": {
+    "n": 37962,
+    "cells": {
+      "A_A": 22668,
+      "A_B": 5808,
+      "B_A": 7721,
+      "B_B": 1765
+    },
+    "min_cell": 1765,
+    "odds_ratio": 0.8923,
+    "null_or_p5_p95": [
+      0.9522,
+      1.05
+    ],
+    "p_one_sided": 1.0,
+    "hit_rate": 0.6436,
+    "base_rate": 0.8005,
+    "lift_pp": -15.69,
+    "alpha": 0.005,
+    "verdict": "실패"
+  },
+  "X3_music_movie": {
+    "n": 48279,
+    "cells": {
+      "A_A": 16851,
+      "A_B": 1411,
+      "B_A": 24295,
+      "B_B": 5722
+    },
+    "min_cell": 1411,
+    "odds_ratio": 2.812,
+    "null_or_p5_p95": [
+      0.9564,
+      1.0445
+    ],
+    "p_one_sided": 9.999000099990002e-05,
+    "hit_rate": 0.4676,
+    "base_rate": 0.8523,
+    "lift_pp": -38.47,
+    "alpha": 0.005,
+    "verdict": "통과"
+  },
+  "P1_organic_music": {
+    "n": 79496,
+    "cells": {
+      "A_A": 1556,
+      "A_B": 3953,
+      "B_A": 22639,
+      "B_B": 51348
+    },
+    "min_cell": 1556,
+    "odds_ratio": 0.893,
+    "null_or_p5_p95": [
+      0.9515,
+      1.052
+    ],
+    "p_one_sided": 0.9999000099990001,
+    "hit_rate": 0.6655,
+    "base_rate": 0.6956,
+    "lift_pp": -3.02
+  },
+  "P2_organic_movie": {
+    "n": 194216,
+    "cells": {
+      "A_A": 9560,
+      "A_B": 3343,
+      "B_A": 143209,
+      "B_B": 38104
+    },
+    "min_cell": 3343,
+    "odds_ratio": 0.7608,
+    "null_or_p5_p95": [
+      0.9631,
+      1.0383
+    ],
+    "p_one_sided": 1.0,
+    "hit_rate": 0.2454,
+    "base_rate": 0.7866,
+    "lift_pp": -54.12
+  },
+  "exploratory_food_subaxes_NOT_PREREGISTERED": {
+    "note": "사전등록 밖 탐색. B=2000. coffee는 다크 vs 라이트 로스트(본 검정의 식품 축과 다름).",
+    "results": {
+      "spicy": {
+        "music": {
+          "n": 5543,
+          "cells": {
+            "A_A": 1780,
+            "A_B": 2810,
+            "B_A": 262,
+            "B_B": 691
+          },
+          "min_cell": 262,
+          "odds_ratio": 1.6689,
+          "null_or_p5_p95": [
+            0.8882,
+            1.1286
+          ],
+          "p_one_sided": 0.0004997501249375312,
+          "hit_rate": 0.4458,
+          "base_rate": 0.6316,
+          "lift_pp": -18.58
+        },
+        "movie": {
+          "n": 13276,
+          "cells": {
+            "A_A": 9010,
+            "A_B": 1910,
+            "B_A": 1903,
+            "B_B": 453
+          },
+          "min_cell": 453,
+          "odds_ratio": 1.1236,
+          "null_or_p5_p95": [
+            0.9103,
+            1.0974
+          ],
+          "p_one_sided": 0.019490254872563718,
+          "hit_rate": 0.7128,
+          "base_rate": 0.822,
+          "lift_pp": -10.92
+        }
+      },
+      "coffee": {
+        "music": {
+          "n": 6175,
+          "cells": {
+            "A_A": 1648,
+            "A_B": 3574,
+            "B_A": 233,
+            "B_B": 720
+          },
+          "min_cell": 233,
+          "odds_ratio": 1.4231,
+          "null_or_p5_p95": [
+            0.8819,
+            1.1343
+          ],
+          "p_one_sided": 0.0004997501249375312,
+          "hit_rate": 0.3835,
+          "base_rate": 0.6954,
+          "lift_pp": -31.19
+        },
+        "movie": {
+          "n": 14727,
+          "cells": {
+            "A_A": 9830,
+            "A_B": 2632,
+            "B_A": 1813,
+            "B_B": 452
+          },
+          "min_cell": 452,
+          "odds_ratio": 0.9318,
+          "null_or_p5_p95": [
+            0.9137,
+            1.0968
+          ],
+          "p_one_sided": 0.9120439780109945,
+          "hit_rate": 0.6982,
+          "base_rate": 0.7906,
+          "lift_pp": -9.24
+        }
+      },
+      "choc": {
+        "music": {
+          "n": 7588,
+          "cells": {
+            "A_A": 955,
+            "A_B": 3135,
+            "B_A": 955,
+            "B_B": 2543
+          },
+          "min_cell": 955,
+          "odds_ratio": 0.8112,
+          "null_or_p5_p95": [
+            0.9152,
+            1.0867
+          ],
+          "p_one_sided": 1.0,
+          "hit_rate": 0.461,
+          "base_rate": 0.7483,
+          "lift_pp": -28.73
+        },
+        "movie": {
+          "n": 17457,
+          "cells": {
+            "A_A": 6723,
+            "A_B": 1905,
+            "B_A": 7234,
+            "B_B": 1595
+          },
+          "min_cell": 1595,
+          "odds_ratio": 0.7782,
+          "null_or_p5_p95": [
+            0.9388,
+            1.0601
+          ],
+          "p_one_sided": 1.0,
+          "hit_rate": 0.4765,
+          "base_rate": 0.7995,
+          "lift_pp": -32.3
+        }
+      }
+    }
+  }
+}
