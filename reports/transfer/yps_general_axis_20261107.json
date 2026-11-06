@@ -1,0 +1,46 @@
+{
+  "preregistration": "reports/transfer/yps_general_axis_preregistration.md",
+  "data_sha256": "e6b2297a06292c439f58d33ea11e35d154dbe4ebdad0e2bff032ddf07d14af01",
+  "seed": 20261107,
+  "B": 10000,
+  "counts": {
+    "rows_used": 998,
+    "dropped_no_gender_or_age": 12
+  },
+  "Y1_music_movie": {
+    "n": 981,
+    "spearman_raw": 0.2169,
+    "spearman_partial_age_gender": 0.1695,
+    "p_one_sided": 9.999000099990002e-05,
+    "alpha": 0.01,
+    "verdict": "통과"
+  },
+  "Y2_adrenaline_music": {
+    "n": 986,
+    "spearman_raw": 0.0814,
+    "spearman_partial_age_gender": 0.0566,
+    "p_one_sided": 0.039196080391960805,
+    "alpha": 0.005,
+    "verdict": "실패"
+  },
+  "Y3_adrenaline_movie": {
+    "n": 987,
+    "spearman_raw": 0.1823,
+    "spearman_partial_age_gender": 0.1096,
+    "p_one_sided": 0.00019998000199980003,
+    "alpha": 0.005,
+    "verdict": "통과"
+  },
+  "P1_healthyfood_music": {
+    "n": 987,
+    "spearman_raw": -0.0016,
+    "spearman_partial_age_gender": -0.0029,
+    "p_one_sided": 0.5346465353464653
+  },
+  "P2_healthyfood_movie": {
+    "n": 988,
+    "spearman_raw": -0.0556,
+    "spearman_partial_age_gender": -0.0664,
+    "p_one_sided": 0.9805019498050195
+  }
+}
