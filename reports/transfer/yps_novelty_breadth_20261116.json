@@ -1,0 +1,78 @@
+{
+  "preregistration": "reports/transfer/yps_novelty_breadth_preregistration.md",
+  "data_sha256": "e6b2297a06292c439f58d33ea11e35d154dbe4ebdad0e2bff032ddf07d14af01",
+  "seed": 20261116,
+  "B": 10000,
+  "blocks": {
+    "music": [
+      "Dance",
+      "Opera",
+      17
+    ],
+    "movie": [
+      "Horror",
+      "Action",
+      11
+    ],
+    "hobby": [
+      "History",
+      "Pets",
+      32
+    ],
+    "fear": [
+      "Flying",
+      "Fear of public speaking",
+      10
+    ],
+    "acq": [
+      "Daily events",
+      "Spending on healthy eating",
+      64
+    ]
+  },
+  "counts": {
+    "rows_used": 998,
+    "dropped_no_gender_or_age": 12
+  },
+  "N1_music_movie": {
+    "n": 996,
+    "spearman_raw": 0.2706,
+    "partial_age_gender": 0.2855,
+    "partial_age_gender_acq": 0.2571,
+    "p_one_sided": 9.999000099990002e-05,
+    "alpha": 0.01,
+    "verdict": "통과"
+  },
+  "N2_music_hobby": {
+    "n": 997,
+    "spearman_raw": 0.3919,
+    "partial_age_gender": 0.3908,
+    "partial_age_gender_acq": 0.3389,
+    "p_one_sided": 9.999000099990002e-05,
+    "alpha": 0.005,
+    "verdict": "통과"
+  },
+  "N3_movie_hobby": {
+    "n": 997,
+    "spearman_raw": 0.2722,
+    "partial_age_gender": 0.2784,
+    "partial_age_gender_acq": 0.2289,
+    "p_one_sided": 9.999000099990002e-05,
+    "alpha": 0.005,
+    "verdict": "통과"
+  },
+  "P1_fear_music": {
+    "n": 997,
+    "spearman_raw": 0.0409,
+    "partial_age_gender": 0.0166,
+    "partial_age_gender_acq": -0.0176,
+    "p_one_sided": 0.7126287371262874
+  },
+  "P2_fear_movie": {
+    "n": 997,
+    "spearman_raw": -0.0788,
+    "partial_age_gender": -0.0086,
+    "partial_age_gender_acq": -0.0371,
+    "p_one_sided": 0.879012098790121
+  }
+}
