@@ -1,0 +1,44 @@
+{
+  "preregistration": "reports/transfer/yps_axis_distinct_preregistration.md",
+  "data_sha256": "e6b2297a06292c439f58d33ea11e35d154dbe4ebdad0e2bff032ddf07d14af01",
+  "seed": 20261120,
+  "B": 1000,
+  "items": {
+    "music": 15,
+    "movie": 7,
+    "hobby": 31
+  },
+  "counts": {
+    "rows_used": 978,
+    "dropped_any_missing": 32
+  },
+  "within_axis": {
+    "BM-BV": 0.245,
+    "BM-BH": 0.3382,
+    "BV-BH": 0.2402,
+    "M-V": 0.1598,
+    "M-A": 0.0713,
+    "V-A": 0.1397
+  },
+  "cross_axis": {
+    "BM-V": -0.0037,
+    "BM-A": 0.08,
+    "BV-M": 0.1393,
+    "BV-A": 0.0347,
+    "BH-M": 0.1329,
+    "BH-V": 0.0261
+  },
+  "D1": {
+    "delta": 0.1308,
+    "ci95": [
+      0.0941,
+      0.1674
+    ],
+    "pass": true
+  },
+  "D2": {
+    "composite_partial": 0.2137,
+    "pass": true
+  },
+  "verdict": "두 축은 구별된다"
+}
