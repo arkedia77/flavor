@@ -1,0 +1,77 @@
+{
+  "preregistration": "reports/transfer/yps_food_link_preregistration.md",
+  "data_sha256": "e6b2297a06292c439f58d33ea11e35d154dbe4ebdad0e2bff032ddf07d14af01",
+  "seed": 20261122,
+  "B": 10000,
+  "acq_items": 63,
+  "acq_dropped": [
+    "Eating to survive"
+  ],
+  "counts": {
+    "rows_used": 998,
+    "dropped_no_gender_or_age": 12
+  },
+  "F1_food_breadth": {
+    "n": 996,
+    "spearman_raw": 0.0144,
+    "partial_age_gender": 0.0187,
+    "partial_age_gender_acq": 0.0206,
+    "p_one_sided": 0.25007499250074994,
+    "alpha": 0.01,
+    "verdict": "실패"
+  },
+  "F2_food_intensity": {
+    "n": 978,
+    "spearman_raw": -0.0834,
+    "partial_age_gender": -0.0461,
+    "partial_age_gender_acq": -0.0461,
+    "p_one_sided": 0.9268073192680731,
+    "alpha": 0.01,
+    "verdict": "실패"
+  },
+  "placebo_food_fear": {
+    "n": 998,
+    "spearman_raw": -0.0095,
+    "partial_age_gender": -0.0517,
+    "partial_age_gender_acq": -0.0518,
+    "p_one_sided": 0.9516048395160484
+  },
+  "exploratory": {
+    "BM": {
+      "n": 997,
+      "spearman_raw": 0.0218,
+      "partial_age_gender": 0.0139,
+      "partial_age_gender_acq": 0.0146
+    },
+    "BV": {
+      "n": 997,
+      "spearman_raw": -0.0368,
+      "partial_age_gender": -0.0182,
+      "partial_age_gender_acq": -0.0179
+    },
+    "BH": {
+      "n": 998,
+      "spearman_raw": 0.0398,
+      "partial_age_gender": 0.0383,
+      "partial_age_gender_acq": 0.0436
+    },
+    "M": {
+      "n": 989,
+      "spearman_raw": -0.0318,
+      "partial_age_gender": -0.0169,
+      "partial_age_gender_acq": -0.017
+    },
+    "V": {
+      "n": 990,
+      "spearman_raw": -0.0726,
+      "partial_age_gender": -0.0264,
+      "partial_age_gender_acq": -0.0272
+    },
+    "A": {
+      "n": 995,
+      "spearman_raw": -0.0615,
+      "partial_age_gender": -0.044,
+      "partial_age_gender_acq": -0.044
+    }
+  }
+}

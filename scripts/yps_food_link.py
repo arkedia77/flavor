@@ -61,9 +61,10 @@ def main():
         cols = {k: block(header, k) for k in ("music", "movie", "hobby", "fear", "acq")}
         for k, n in SIZE.items():
             assert len(cols[k]) == n, k
-        assert ACQ_DROP <= set(cols["acq"])
+        assert FOOD in cols["acq"]  # Healthy eating은 ACQ 구간 바로 앞(75열)이라 원래 ACQ에 없다 — 리포트에 공개
+        res_acq_dropped = sorted(ACQ_DROP & set(cols["acq"]))
         cols["acq"] = [c for c in cols["acq"] if c not in ACQ_DROP]
-        assert not any(w in c.lower() for c in cols["hobby"] for w in ("cook", "food", "eat"))
+        assert not any(w in c.lower().split() for c in cols["hobby"] for w in ("cooking", "food", "eating"))  # 부분 문자열은 Theatre에 걸린다
         rows, dropped = [], 0
         for r in rd:
             g = {"female": 1.0, "male": 0.0}.get((r.get("Gender") or "").strip())
@@ -84,7 +85,7 @@ def main():
     rng = random.Random(SEED)
     res = {"preregistration": "reports/transfer/yps_food_link_preregistration.md",
            "data_sha256": sha256(a.responses), "seed": SEED, "B": B,
-           "acq_items": len(cols["acq"]),
+           "acq_items": len(cols["acq"]), "acq_dropped": res_acq_dropped,
            "counts": {"rows_used": len(rows), "dropped_no_gender_or_age": dropped}}
     for key, ky in (("F1_food_breadth", "CB"), ("F2_food_intensity", "CI")):
         t = partial_test(rows, "FE", ky, rng)
