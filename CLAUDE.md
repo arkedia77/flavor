@@ -3,7 +3,7 @@
 > - 내 이름: flavor
 > - 내 작업 폴더: ~/projects/flavor (여기서 코드/파일 작업)
 > - 내 통신 채널: agent-comm `projects/flavor` (메시지만 주고받는 곳)
-> - ⚠**olive의 agent-comm 클론 실경로 = `~/projects/agent-comm-plume`** (`~/projects/agent-comm`은 **없다**). 폴더명이 plume인 건 독립 클론 생성 유래일 뿐 — 레포는 `arkedia77/agent-comm` 본체이고, 전용키 `~/.ssh/id_ed25519_agentcomm`+Host alias `github-agentcomm`로 접속한다.
+> - ⚠**olive의 agent-comm 클론 실경로 = `~/projects/agent-comm-plume`** (`~/projects/agent-comm`은 playlist 독립 클론 — ⛔쓰지 않음). 이름과 달리 레포는 `arkedia77/agent-comm` 본체이고, 전용키 `~/.ssh/id_ed25519_agentcomm`+Host alias `github-agentcomm`로 접속한다.
 > - 세션 저장/메모리: 이 폴더(~/projects/flavor)의 .claude/ 스코프에 저장
 > - agent-comm 안에 저장하지 않는다
 
